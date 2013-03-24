@@ -1,2 +1,4 @@
 syntax: glob
 wiki/LocalSettings.php
+viewer/build/
+viewer/archive/

@@ -33,6 +33,12 @@ Ext.define('BioLadderOrg.view.Main', {
             },
             '#descendantsList': {
                 itemtap: function (list, index, target, record) {this.fireEvent('navigatetoentry', record.get('name')); }
+            },
+            '#wikiBtn': {
+                tap: function () {window.open('/wiki','_blank'); }
+            },
+            '#sourceBtn': {
+                tap: function () {window.open('https://code.google.com/p/bioladder/','_blank');}
             }
         },
 
@@ -41,21 +47,31 @@ Ext.define('BioLadderOrg.view.Main', {
         items: [{
             docked: 'top',
             xtype: 'titlebar',
-            title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki'
+            title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki',
+            items: [{
+                xtype: 'button',
+                html: 'wiki',
+                itemId: 'wikiBtn'
+            }, {
+                xtype: 'button',
+                html: 'source',
+                itemId: 'sourceBtn'
+            }]
         }, {
             xtype: 'container',
             centered: true,
             width: 300,
             itemId: 'entryContainer',
             items: [{
-                xtype: 'button',
-                hidden: true,
-                html: 'Ancestor:',
-                itemId: 'ancestorButton'
-            }, {
                 xtype: 'label',
                 html: '',
                 itemId: 'entryLabel'
+            }, {
+                xtype: 'button',
+                hidden: true,
+                html: 'Ancestor:',
+                itemId: 'ancestorButton',
+                style: 'font-size: .7em'
             }, {
                 xtype: 'component',
                 hidden: true,
