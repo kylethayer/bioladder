@@ -1,0 +1,21 @@
+BioLadder.org is an interactive tree of life viewer and wiki, 
+and is open source under the GPL-V3 License. 
+
+It is hosted at:
+http://bioladder.org/
+https://code.google.com/p/bioladder/
+
+
+The Code:
+To run it yourself, you need a web server, PHP and a MySQL Database.
+You can get a combo install of all of them at:
+http://www.apachefriends.org/en/xampp.html
+
+Once you have those, make sure you have the code checked out in the 
+root directory that is being hosted, and they should work.
+
+There are two parts of the project:
+1) wiki directory, which contains a mediawiki with symantic wiki
+2) viewer directory, which contains a Sencha 2.1 app (only works 
+   with Safari and Chrome, when 2.2 comes out, that is supposed 
+   to work with IE10)
