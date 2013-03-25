@@ -112,7 +112,7 @@ Ext.define('BioLadderOrg.model.Entry', {
 Ext.define('BioLadderOrg.model.EntrySearch', {
     runSearch: function (args) {
         var requestFields, i, property,
-            url = '/wiki/api.php?action=ask';
+            url = window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki/api.php?action=ask';
 
         //build 
         url += '&query=';
