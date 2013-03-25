@@ -59,8 +59,6 @@ Ext.define('BioLadderOrg.view.Main', {
             }]
         }, {
             xtype: 'container',
-            centered: true,
-            width: 300,
             itemId: 'entryContainer',
             items: [{
                 xtype: 'label',
@@ -70,12 +68,12 @@ Ext.define('BioLadderOrg.view.Main', {
                 xtype: 'button',
                 hidden: true,
                 html: 'Ancestor:',
-                itemId: 'ancestorButton',
-                style: 'font-size: .7em'
+                itemId: 'ancestorButton'
             }, {
                 xtype: 'component',
                 hidden: true,
-                itemId: 'wikipediaImage'
+                itemId: 'wikipediaImage',
+                style: 'background:#ffffff'
             }, {
                 xtype: 'label',
                 html: 'loading descendants...',
@@ -84,7 +82,6 @@ Ext.define('BioLadderOrg.view.Main', {
                 xtype: 'list',
                 disableSelection: true,
                 height: '300px',
-                width: '300px',
                 hidden: true,
                 itemId: 'descendantsList',
                 itemTpl: 'Descendant: {name}'
