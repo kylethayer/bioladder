@@ -35,7 +35,7 @@ Ext.define('BioLadderOrg.view.Main', {
                 itemtap: function (list, index, target, record) {this.fireEvent('navigatetoentry', record.get('name')); }
             },
             '#wikiBtn': {
-                tap: function () {window.open('/wiki','_blank'); }
+                tap: function () {window.open(window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki','_blank'); }
             },
             '#sourceBtn': {
                 tap: function () {window.open('https://code.google.com/p/bioladder/','_blank');}

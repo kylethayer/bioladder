@@ -114,7 +114,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
         var requestFields, i, property,
             url = window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki/api.php?action=ask';
 
-        //build 
+        //build
         url += '&query=';
         if (args.name) {
             url += '[[' + args.name + ']]'; //NOTE: for multiple names [[Entry1||Entry2]]
