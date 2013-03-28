@@ -47,7 +47,7 @@ Ext.define('BioLadderOrg.view.Main', {
         items: [{
             docked: 'top',
             xtype: 'titlebar',
-            title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki',
+            title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki (for Safari and Chrome)',
             items: [{
                 xtype: 'button',
                 html: 'wiki',
