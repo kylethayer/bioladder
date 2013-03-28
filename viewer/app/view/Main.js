@@ -22,17 +22,13 @@ Ext.define('BioLadderOrg.view.Main', {
     xtype: 'main',
     requires: [
         'Ext.TitleBar',
-        'Ext.Video',
-        'Ext.dataview.List',
-        'Ext.Label'
+        'Ext.Label',
+        'BioLadderOrg.view.EntryPanel'
     ],
     config: {
         control: {
-            '#ancestorButton': {
-                tap: 'onAncestorButtonTap'
-            },
-            '#descendantsList': {
-                itemtap: function (list, index, target, record) {this.fireEvent('navigatetoentry', record.get('name')); }
+            'entrypanel': {
+                navigatetoentry: function(entryName) {this.fireEvent('navigatetoentry', entryName);}
             },
             '#wikiBtn': {
                 tap: function () {window.open(window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki','_blank'); }
@@ -58,108 +54,118 @@ Ext.define('BioLadderOrg.view.Main', {
                 itemId: 'sourceBtn'
             }]
         }, {
+            xtype: 'label',
+            html: 'Ancestor',
+        }, {
+            xtype: 'container',
+            itemId: 'ancestorContainer',
+        }, {
+            xtype: 'component',
+            height: 20
+        }, {
             xtype: 'container',
             itemId: 'entryContainer',
-            items: [{
-                xtype: 'label',
-                html: '',
-                itemId: 'entryLabel'
-            }, {
-                xtype: 'button',
-                hidden: true,
-                html: 'Ancestor:',
-                itemId: 'ancestorButton'
-            }, {
-                xtype: 'component',
-                hidden: true,
-                itemId: 'wikipediaImage',
-                style: 'background:#ffffff'
-            }, {
-                xtype: 'label',
-                html: 'loading descendants...',
-                itemId: 'descendantsListLoadingLabel'
-            }, {
-                xtype: 'list',
-                disableSelection: true,
-                height: '300px',
-                hidden: true,
-                itemId: 'descendantsList',
-                itemTpl: 'Descendant: {name}'
-            }]
-        }]
-    },
-
-    updateEntry: function (newEntry, oldEntry) {
-        var me = this;
-        me.down('#descendantsListLoadingLabel').setHidden(false);
-        me.down('#descendantsList').setHidden(true);
-        me.down('#ancestorButton').setHidden(true);
-        me.down('#wikipediaImage').setHidden(true);
-        me.down('#entryLabel').setHtml('Current: ' + newEntry.get('name'));
-        newEntry.whenLoaded(function (newEntry) {
-            me.onEntryLoaded(newEntry);
-            Ext.Viewport.setMasked(false);
-        });
-    },
-
-    onEntryLoaded: function (newEntry) {
-        if (newEntry === this.getEntry()) {
-            var me = this;
-            newEntry.whenDescendantsLoaded(function (entry) {me.setDescendants(entry); });
-            if (newEntry.get('ancestor')) {
-                newEntry.get('ancestor').ensureFullyLoaded();
-                this.down('#ancestorButton').setHtml('Ancestor: ' + newEntry.get('ancestor').get('name'));
-                this.down('#ancestorButton').setHidden(false);
-            } else {
-                this.down('#ancestorButton').setHidden(true);
-            }
-            this.down('#entryLabel').setHtml('Current: ' + newEntry.get('name'));
-
-            if (newEntry.get('wikipediaImage')) {
-                this.down('#wikipediaImage').setHtml('<img src="' + newEntry.get('wikipediaImage') + '"/>');
-                this.down('#wikipediaImage').setHidden(false);
-            }
+        }, {
+            xtype: 'component',
+            height: 20
+        }, {
+            xtype: 'label',
+            html: 'Descendants'
+        }, {
+            xtype: 'label',
+            html: 'loading descendants...',
+            itemId: 'descendantsListLoadingLabel'
+        }, {
+            xtype: 'container',
+            itemId: 'descendantsContainer',
+            layout: 'hbox'
+        }],
+        
+        layout: {
+            type: 'vbox',
+            align: 'middle'
         }
     },
 
-    setDescendants: function (entry) {
-        var store, index;
-        if (entry === this.getEntry()) {
-            if (entry.get('descendants').length > 0) {
-                store = Ext.create("Ext.data.Store", {
-                    model: "BioLadderOrg.model.Entry"
-                });
-                this.down('#descendantsList').setStore(store);
-                this.down('#descendantsList').getStore().setData(entry.get('descendants'));
-                this.down('#descendantsListLoadingLabel').setHidden(true);
-                this.down('#descendantsList').setHidden(false);
-                for (index in entry.get('descendants')) {
-                    entry.get('descendants')[index].ensureFullyLoaded();
-                }
-            } else {
-                this.down('#descendantsListLoadingLabel').setHidden(true);
-                this.down('#descendantsList').setHidden(true);
-            }
-        }
-    },
-
-    onAncestorButtonTap: function () {
-        var entry = this.getEntry();
-        if (entry) {
-            this.fireEvent('navigatetoentry', entry.get('ancestor').get('name'));
-        }
+    initialize: function(){
+        this.__EntryPanels = [];
     },
 
     gotoEntry: function (name) {
         Ext.Viewport.setMasked({
             xtype: 'loadmask'
         });
-        var entriesStore, entry,
+        var entriesStore, entry, i, 
+            foundEntryPanel = false;
             me = this;
         //Search store for it, then load it, setting a callback
         entriesStore = Ext.getStore('Entries');
 
         entry = Ext.getStore('Entries').findOrCreateEntry(name);
+
         me.setEntry(entry);
+
+        //me.__EntryPanels = [];
+        me.down('#entryContainer').removeAll(false);
+        for(i = 0; i < me.__EntryPanels.length; i++){
+            if(me.__EntryPanels[i].getEntry() == entry){
+                foundEntryPanel = true;
+                me.__EntryPanels[i].setCollapsed(false);
+                me.down('#entryContainer').add(me.__EntryPanels[i]);
+            }
+        }
+
+        if(!foundEntryPanel){
+            var entrypanel = Ext.widget('entrypanel', {
+                entry: entry
+            });
+            me.__EntryPanels.push(entrypanel);
+            entrypanel.setCollapsed(false);
+            me.down('#entryContainer').add(entrypanel);
+        }
+
+        me.down('#ancestorContainer').removeAll(false);
+        entry.whenLoaded(function (loadedEntry) {
+            if (loadedEntry === me.getEntry()) {
+                Ext.Viewport.setMasked(false);
+                var ancestor = loadedEntry.get('ancestor');
+                ancestor.ensureFullyLoaded();
+                var ancestorEntryPanel = me.findOrCreateEntryPanel(ancestor);
+                ancestorEntryPanel.setCollapsed(true);
+                me.down('#ancestorContainer').removeAll(false);
+                me.down('#ancestorContainer').add(ancestorEntryPanel);
+            }
+        });
+        me.down('#descendantsListLoadingLabel').setHidden(false);
+        me.down('#descendantsContainer').removeAll(false);
+        entry.whenDescendantsLoaded(function (loadedEntry) {
+            if (loadedEntry === me.getEntry()) {
+                me.down('#descendantsListLoadingLabel').setHidden(true);
+                me.down('#descendantsContainer').removeAll(false);
+                for (var i = 0; i < loadedEntry.get('descendants').length; i++) {
+                    loadedEntry.get('descendants')[i].ensureFullyLoaded();
+                    var descendantEntryPanel = me.findOrCreateEntryPanel(loadedEntry.get('descendants')[i]);
+                    descendantEntryPanel.setCollapsed(true);
+                    me.down('#descendantsContainer').add(descendantEntryPanel);
+                }
+            }
+        });
+        //Search EntryPanels for one with this entry
+
+        me.setEntry(entry);
+    },
+    
+    findOrCreateEntryPanel: function(entry){
+        for(i = 0; i < me.__EntryPanels.length; i++){
+            if(me.__EntryPanels[i].getEntry() == entry){
+                return me.__EntryPanels[i]
+            }
+        }
+
+        var entrypanel = Ext.widget('entrypanel', {
+            entry: entry
+        });
+        me.__EntryPanels.push(entrypanel);
+        return entrypanel;
     }
 });
