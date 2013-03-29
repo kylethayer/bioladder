@@ -129,11 +129,13 @@ Ext.define('BioLadderOrg.view.Main', {
             if (loadedEntry === me.getEntry()) {
                 Ext.Viewport.setMasked(false);
                 var ancestor = loadedEntry.get('ancestor');
-                ancestor.ensureFullyLoaded();
-                var ancestorEntryPanel = me.findOrCreateEntryPanel(ancestor);
-                ancestorEntryPanel.setCollapsed(true);
-                me.down('#ancestorContainer').removeAll(false);
-                me.down('#ancestorContainer').add(ancestorEntryPanel);
+                if(ancestor){
+                    ancestor.ensureFullyLoaded();
+                    var ancestorEntryPanel = me.findOrCreateEntryPanel(ancestor);
+                    ancestorEntryPanel.setCollapsed(true);
+                    me.down('#ancestorContainer').removeAll(false);
+                    me.down('#ancestorContainer').add(ancestorEntryPanel);
+                }
             }
         });
         me.down('#descendantsListLoadingLabel').setHidden(false);
