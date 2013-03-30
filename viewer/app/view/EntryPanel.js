@@ -31,12 +31,16 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
                 tap: 'onLabelTap'
             }
         },
+        border: 1,
+        style: 'border-color: dark-grey; border-style: solid;',
         collapsed: false,
         entry: null,
         items: [{
             xtype: 'button',
+            baseCls: 'EntryPanelLabel',
             html: '',
-            itemId: 'entryLabel'
+            itemId: 'entryLabel',
+            style: 'background:LightSteelBlue'
         }, {
             xtype: 'component',
             hidden: true,
@@ -56,6 +60,11 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
     },
 
     updateCollapsed: function (newCollapsed) {
+        if (newCollapsed) {
+            this.setWidth(200);
+        } else {
+            this.setWidth(300);
+        }
         if (!newCollapsed && this.getEntry() && this.getEntry().get('wikipediaImage')) {
             this.down('#wikipediaImage').setHtml('<img src="' + this.getEntry().get('wikipediaImage') + '"/>');
             this.down('#wikipediaImage').setHidden(false);
