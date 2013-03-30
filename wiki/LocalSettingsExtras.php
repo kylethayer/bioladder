@@ -19,8 +19,10 @@
 
 
 require_once( "$IP/extensions/Validator/Validator.php" );
-include_once( "$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php" );
-enableSemantics('localhost');
 
+require_once( "$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php" );
+enableSemantics('localhost');
 $smwgShowFactbox = SMW_FACTBOX_NONEMPTY;
 $smwgShowFactboxEdit = SMW_FACTBOX_NONEMPTY;
+
+require_once( "$IP/extensions/SemanticForms/SemanticForms.php" );
