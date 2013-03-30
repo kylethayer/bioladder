@@ -22,7 +22,6 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
     extend: 'Ext.Panel',
 
     requires: [
-        'Ext.TitleBar',
         'Ext.Label'
     ],
 
@@ -32,11 +31,8 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
                 tap: 'onLabelTap'
             }
         },
-
-        entry: null,
         collapsed: false,
-        //centered: true,
-        width: 300,
+        entry: null,
         items: [{
             xtype: 'button',
             html: '',
@@ -46,7 +42,8 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             hidden: true,
             itemId: 'wikipediaImage',
             style: 'background:#ffffff'
-        }]
+        }],
+        width: 300
     },
 
     updateEntry: function (newEntry, oldEntry) {
@@ -58,11 +55,11 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
         });
     },
 
-    updateCollapsed: function(newCollapsed) {
-        if(!newCollapsed && this.getEntry() && this.getEntry().get('wikipediaImage')){
+    updateCollapsed: function (newCollapsed) {
+        if (!newCollapsed && this.getEntry() && this.getEntry().get('wikipediaImage')) {
             this.down('#wikipediaImage').setHtml('<img src="' + this.getEntry().get('wikipediaImage') + '"/>');
             this.down('#wikipediaImage').setHidden(false);
-        }else{
+        } else {
             this.down('#wikipediaImage').setHidden(true);
         }
     },
@@ -75,7 +72,7 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             if (newEntry.get('wikipediaImage') && !me.getCollapsed()) {
                 this.down('#wikipediaImage').setHtml('<img src="' + newEntry.get('wikipediaImage') + '"/>');
                 this.down('#wikipediaImage').setHidden(false);
-            }else{
+            } else {
                 this.down('#wikipediaImage').setHidden(true);
             }
         }
@@ -84,7 +81,7 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
     onLabelTap: function () {
         var entry = this.getEntry();
         if (entry) {
-            this.fireEvent('navigatetoentry', entry.get('name'));
+            this.fireEvent('navigatetoentry', entry);
         }
     }
 });
