@@ -35,6 +35,7 @@ Ext.define('BioLadderOrg.model.Entry', {
             {name: 'name',   type: 'string'},
             {name: 'descendants',  type: 'auto'},
             {name: 'wikipediaImage', type: 'string'},
+            {name: 'wikiPage', type: 'string'},
             //processingFields
             {name: 'isLoaded',  type: 'bool', defaultValue: false},
             {name: 'isLoading',  type: 'bool', defaultValue: false},
@@ -155,7 +156,8 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                 entriesStore = Ext.getStore('Entries');
                 for (entryName in results) {
                     entryFields = {
-                        'name': results[entryName].fulltext
+                        'name': results[entryName].fulltext,
+                        'wikiPage': results[entryName].fullurl
                     };
                     printouts = results[entryName].printouts;
                     if (printouts) {

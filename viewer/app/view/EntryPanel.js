@@ -29,6 +29,9 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
         control: {
             '#entryLabel': {
                 tap: 'onLabelTap'
+            },
+            '#wikiEditBtn': {
+                tap: 'onWikiEditBtnTap'
             }
         },
         border: 1,
@@ -37,7 +40,7 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
         entry: null,
         items: [{
             xtype: 'button',
-            baseCls: 'EntryPanelLabel',
+            baseCls: 'entry-panel-label',
             html: '',
             itemId: 'entryLabel',
             style: 'background:LightSteelBlue'
@@ -46,6 +49,13 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             hidden: true,
             itemId: 'wikipediaImage',
             style: 'background:#ffffff'
+        }, {
+            xtype: 'button',
+            baseCls: 'wiki-edit-btn',
+            html: 'edit',
+            itemId: 'wikiEditBtn',
+            style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
+            width: '3em'
         }],
         width: 300
     },
@@ -62,8 +72,10 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
     updateCollapsed: function (newCollapsed) {
         if (newCollapsed) {
             this.setWidth(200);
+            this.down('#wikiEditBtn').setHidden(true);
         } else {
             this.setWidth(300);
+            this.down('#wikiEditBtn').setHidden(false);
         }
         if (!newCollapsed && this.getEntry() && this.getEntry().get('wikipediaImage')) {
             this.down('#wikipediaImage').setHtml('<img src="' + this.getEntry().get('wikipediaImage') + '"/>');
@@ -84,6 +96,17 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             } else {
                 this.down('#wikipediaImage').setHidden(true);
             }
+        }
+    },
+
+    onWikiEditBtnTap: function() {
+    var entry = this.getEntry();
+        if (entry) {
+            window.open(window.location.pathname.slice(
+                0,
+                window.location.pathname.search('/\/viewer/') - 7) + '/wiki/index.php?title=' + entry.get('name') + '&action=edit',
+                '_blank'
+            );
         }
     },
 
