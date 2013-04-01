@@ -11,8 +11,8 @@ To run it yourself, you need a web server, PHP and a MySQL Database.
 You can get a combo install of all of them at:
 http://www.apachefriends.org/en/xampp.html
 
-Once you have those, make sure you have the code checked out in the 
-root directory that is being hosted.
+Once you have those, make sure you have the code checked out in a 
+directory that is being hosted.
 
 Next go to the wiki page (localhost/wiki) and run through the setup,
 connecting it to your database and such. When you are done, save the
