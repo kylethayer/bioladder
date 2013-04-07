@@ -32,6 +32,9 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             },
             '#wikiEditBtn': {
                 tap: 'onWikiEditBtnTap'
+            },
+            '#wikipediaBtn': {
+                tap: 'onWikipediaBtnTap'
             }
         },
         border: 1,
@@ -48,17 +51,29 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             xtype: 'container',
             itemId: 'collapsibleContent',
             hidden: true,
-            items:[{
+            items: [{
                 xtype: 'component',
                 itemId: 'wikipediaImage',
                 style: 'background:#ffffff'
             }, {
-                xtype: 'button',
-                baseCls: 'wiki-edit-btn',
-                html: 'edit',
-                itemId: 'wikiEditBtn',
-                style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
-                width: '3em'
+                xtype: 'container',
+                items: [{
+                    xtype: 'button',
+                    baseCls: 'wiki-edit-btn',
+                    html: 'edit',
+                    itemId: 'wikiEditBtn',
+                    style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
+                    width: '3em'
+                }, {
+                    xtype: 'button',
+                    baseCls: 'wikipedia-btn',
+                    docked: 'right',
+                    hidden: true,
+                    html: 'wikipedia page',
+                    itemId: 'wikipediaBtn',
+                    style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
+                    width: '9em'
+                }]
             }]
         }],
         width: 300
@@ -66,7 +81,11 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
 
     updateEntry: function (newEntry, oldEntry) {
         var me = this;
+        //reset view elements
         this.down('#wikipediaImage').setHtml('');
+        this.down('#wikipediaBtn').setHidden(true);
+
+        //set name and rest of fields when loaded
         me.down('#entryLabel').setHtml(newEntry.get('name'));
         newEntry.whenLoaded(function (newEntry) {
             me.onEntryLoaded(newEntry);
@@ -89,17 +108,27 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             if (newEntry.get('wikipediaImage')) {
                 this.down('#wikipediaImage').setHtml('<img src="' + newEntry.get('wikipediaImage') + '"/>');
             }
+            if (newEntry.get('wikipediaPage')) {
+                this.down('#wikipediaBtn').setHidden(false);
+            }
         }
     },
 
-    onWikiEditBtnTap: function() {
-    var entry = this.getEntry();
+    onWikiEditBtnTap: function () {
+        var entry = this.getEntry();
         if (entry) {
-            window.open(window.location.pathname.slice(
-                0,
-                window.location.pathname.search('/\/viewer/') - 7) + '/wiki/index.php?title=' + entry.get('name') + '&action=edit',
+            window.open(
+                window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) +
+                    '/wiki/index.php?title=' + entry.get('name') + '&action=edit',
                 '_blank'
             );
+        }
+    },
+
+    onWikipediaBtnTap: function () {
+        var entry = this.getEntry();
+        if (entry) {
+            window.open(entry.get('wikipediaPage'), '_blank');
         }
     },
 

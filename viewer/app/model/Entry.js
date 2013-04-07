@@ -67,7 +67,7 @@ Ext.define('BioLadderOrg.model.Entry', {
                 type: 'string',
                 convert: function (wikipediaPage, record) { //make sure it is a string and a wikipedia page
                     if (wikipediaPage && (typeof wikipediaPage !== 'string' ||
-                        !/^http:\/\/en\.wikipedia\.org\/wiki\/[\w]+$/.test(wikipediaPage))) {
+                        !/^http:\/\/en\.wikipedia\.org\/wiki\/[\w\s-]+$/.test(wikipediaPage))) {
                         window.console.error('wikipediaPage must be at http://en.wikipedia.org/:', wikipediaPage);
                         return null;
                     }
@@ -163,7 +163,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                 url += '[[' + property + '::' + args.conditions[property] + ']]';
             }
         }
-        requestFields =  ['Has Ancestor', 'Has Wikipedia Image'];
+        requestFields =  ['Has Ancestor', 'Has Wikipedia Image', 'Has Wikipedia Page'];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -209,6 +209,9 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                         }
                         if (printouts['Has Wikipedia Image'] && printouts['Has Wikipedia Image'].length > 0) {
                             entryFields.wikipediaImage = printouts['Has Wikipedia Image'][0];
+                        }
+					    if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
+                            entryFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
                         }
                     }
                     //check if Entry already exists, if so add details to it, if not, create it and add to store
