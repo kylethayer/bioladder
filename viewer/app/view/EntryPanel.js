@@ -45,24 +45,28 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             itemId: 'entryLabel',
             style: 'background:LightSteelBlue'
         }, {
-            xtype: 'component',
+            xtype: 'container',
+            itemId: 'collapsibleContent',
             hidden: true,
-            itemId: 'wikipediaImage',
-            style: 'background:#ffffff'
-        }, {
-            xtype: 'button',
-            baseCls: 'wiki-edit-btn',
-            html: 'edit',
-            itemId: 'wikiEditBtn',
-            style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
-            width: '3em'
+            items:[{
+                xtype: 'component',
+                itemId: 'wikipediaImage',
+                style: 'background:#ffffff'
+            }, {
+                xtype: 'button',
+                baseCls: 'wiki-edit-btn',
+                html: 'edit',
+                itemId: 'wikiEditBtn',
+                style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
+                width: '3em'
+            }]
         }],
         width: 300
     },
 
     updateEntry: function (newEntry, oldEntry) {
         var me = this;
-        me.down('#wikipediaImage').setHidden(true);
+        this.down('#wikipediaImage').setHtml('');
         me.down('#entryLabel').setHtml(newEntry.get('name'));
         newEntry.whenLoaded(function (newEntry) {
             me.onEntryLoaded(newEntry);
@@ -72,29 +76,18 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
     updateCollapsed: function (newCollapsed) {
         if (newCollapsed) {
             this.setWidth(200);
-            this.down('#wikiEditBtn').setHidden(true);
+            this.down('#collapsibleContent').setHidden(true);
         } else {
             this.setWidth(300);
-            this.down('#wikiEditBtn').setHidden(false);
-        }
-        if (!newCollapsed && this.getEntry() && this.getEntry().get('wikipediaImage')) {
-            this.down('#wikipediaImage').setHtml('<img src="' + this.getEntry().get('wikipediaImage') + '"/>');
-            this.down('#wikipediaImage').setHidden(false);
-        } else {
-            this.down('#wikipediaImage').setHidden(true);
+            this.down('#collapsibleContent').setHidden(false);
         }
     },
 
     onEntryLoaded: function (newEntry) {
         if (newEntry === this.getEntry()) {
             var me = this;
-            this.down('#entryLabel').setHtml(newEntry.get('name'));
-
-            if (newEntry.get('wikipediaImage') && !me.getCollapsed()) {
+            if (newEntry.get('wikipediaImage')) {
                 this.down('#wikipediaImage').setHtml('<img src="' + newEntry.get('wikipediaImage') + '"/>');
-                this.down('#wikipediaImage').setHidden(false);
-            } else {
-                this.down('#wikipediaImage').setHidden(true);
             }
         }
     },
