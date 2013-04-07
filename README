@@ -26,7 +26,8 @@ and press the "Initialise or upgrade tables" button
 Next you need data in your wiki. Open your wiki and create the page
 "human" (eg. http://localhost/wiki/index.php?title=Human&action=edit) 
 Go to bioladder.org/wiki/index.php?title=Human&action=edit and copy
-the contents to your wiki.
+the contents to your wiki. You will also have to copy over pages with
+the proper property types, like with 'Has Wikipedia Image'.
 
 Now go to local/host and the viewer should work.
 
