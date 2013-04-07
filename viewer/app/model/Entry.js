@@ -25,17 +25,55 @@ Ext.define('BioLadderOrg.model.Entry', {
             {
                 name: 'ancestor',
                 type: 'auto',
-                convert: function (ancestor, record) { //if string, create unloaded Entry object
-                    if (typeof ancestor === 'string') {
+                convert: function (ancestor, record) {
+                    if (ancestor && typeof ancestor === 'string') {
+                        //make sure the name is a legitimate name
+                        if (!/^[\w\s]+$/.test(ancestor)) {
+                            window.console.error('Ancestor name must be normal characters:', ancestor);
+                            return Ext.getStore('Entries').findOrCreateEntry('Could not parse name');
+                        }
+                        //convert it into an ancestor object
                         return Ext.getStore('Entries').findOrCreateEntry(ancestor);
                     }
                     return ancestor;
                 }
+            }, {
+                name: 'name',
+                type: 'string',
+                convert: function (name, record) { //make sure the name is a legitimate name
+                    if (typeof name !== 'string' || !/^[\w\s]+$/.test(name)) {
+                        window.console.error('Name must be normal characters:', name);
+                        return 'Could not parse name';
+                    }
+                    return name;
+                }
             },
-            {name: 'name',   type: 'string'},
-            {name: 'descendants',  type: 'auto'},
-            {name: 'wikipediaImage', type: 'string'},
+            {name: 'descendants', type: 'auto'},
+            {
+                name: 'wikipediaImage',
+                type: 'string',
+                convert: function (wikipediaImage, record) { //make sure it is a string and a wikimedia url
+                    if (wikipediaImage && (typeof wikipediaImage !== 'string' ||
+                        !/^http:\/\/upload\.wikimedia\.org\/[\w\.\/-]+$/.test(wikipediaImage))) {
+                        window.console.error('wikipediaImage must be at http://upload.wikimedia.org/:', wikipediaImage);
+                        return null;
+                    }
+                    return wikipediaImage;
+                }
+            },
             {name: 'wikiPage', type: 'string'},
+            {
+                name: 'wikipediaPage',
+                type: 'string',
+                convert: function (wikipediaPage, record) { //make sure it is a string and a wikipedia page
+                    if (wikipediaPage && (typeof wikipediaPage !== 'string' ||
+                        !/^http:\/\/en\.wikipedia\.org\/wiki\/[\w]+$/.test(wikipediaPage))) {
+                        window.console.error('wikipediaPage must be at http://en.wikipedia.org/:', wikipediaPage);
+                        return null;
+                    }
+                    return wikipediaPage;
+                }
+            },
             //processingFields
             {name: 'isLoaded',  type: 'bool', defaultValue: false},
             {name: 'isLoading',  type: 'bool', defaultValue: false},
@@ -112,7 +150,7 @@ Ext.define('BioLadderOrg.model.Entry', {
 
 Ext.define('BioLadderOrg.model.EntrySearch', {
     runSearch: function (args) {
-        var requestFields, i, property,
+        var me =  this, requestFields, i, property,
             url = window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki/api.php?action=ask';
 
         //build
@@ -147,7 +185,8 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                          * @param {XMLHttpRequest} response The XMLHttpRequest response object.
                          * @param {String} error The error message.
                          */
-                        this.fireEvent('exception', this, response, 'Unable to parse the JSON returned by the server: ' + ex.toString());
+                         //TODO this doesn't work because me doesn't have fireEvent, probably since it is a static function in its class
+                        me.fireEvent('exception', me, response, 'Unable to parse the JSON returned by the server: ' + ex.toString());
                         Ext.Logger.warn('Unable to parse the JSON returned by the server: ' + ex.toString());
                     }
                 }
@@ -159,6 +198,10 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                         'name': results[entryName].fulltext,
                         'wikiPage': results[entryName].fullurl
                     };
+                    if (typeof entryFields.name !== 'string' || !/^[\w\s]+$/.test(entryFields.name)) {
+                        window.console.error('Name must be normal characters:', entryFields.name);
+                        entryFields.name = 'Could not parse name';
+                    }
                     printouts = results[entryName].printouts;
                     if (printouts) {
                         if (printouts['Has Ancestor'] && printouts['Has Ancestor'].length > 0) {
