@@ -46,7 +46,7 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             baseCls: 'entry-panel-label',
             html: '',
             itemId: 'entryLabel',
-            style: 'background:LightSteelBlue'
+            style: 'background:LightSteelBlue; cursor: pointer;'
         }, {
             xtype: 'container',
             itemId: 'collapsibleContent',
