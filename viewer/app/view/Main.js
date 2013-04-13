@@ -22,7 +22,8 @@ Ext.define('BioLadderOrg.view.Main', {
     xtype: 'main',
     requires: [
         'Ext.TitleBar',
-        'BioLadderOrg.view.EntriesContainer'
+        'BioLadderOrg.view.EntriesContainer',
+        'BioLadderOrg.view.AboutSimplifiedAncestryPanel'
     ],
     config: {
         control: {
@@ -34,6 +35,9 @@ Ext.define('BioLadderOrg.view.Main', {
             },
             '#sourceBtn': {
                 tap: function () {window.open('https://code.google.com/p/bioladder/', '_blank'); }
+            },
+            '#aboutSimplifiedAncestryBtn': {
+                tap: function () {Ext.Viewport.add(Ext.widget('aboutSimplifiedAncestryPanel')); }
             }
         },
 
@@ -50,6 +54,13 @@ Ext.define('BioLadderOrg.view.Main', {
                 html: 'source',
                 itemId: 'sourceBtn'
             }]
+        }, {
+            xtype: 'button',
+            baseCls: 'wiki-edit-btn',
+            docked: 'left',
+            html: 'About<BR>Simplified<BR>Ancestry',
+            itemId: 'aboutSimplifiedAncestryBtn',
+            style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small; padding-top:10px; padding-left: 5px;'
         }, {
             xtype: 'entriescontainer'
         }]
