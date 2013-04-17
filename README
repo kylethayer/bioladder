@@ -47,6 +47,11 @@ Then go to your viewer directory (in the shell or cmd) and type
 sencha app build
 It will put the compiled code in viewer/build/BioLadderOrg/production
 
+If you want google analytics code to be built into your production
+versions of the viewer code, just copy the 
+googleAnalyticsInclude.html.template file, remove the template and
+put in your google analytics ID.
+
 
 The Code
 There are two parts of the project:

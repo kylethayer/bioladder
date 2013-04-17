@@ -64,8 +64,22 @@
     </target>
     -->
     
-    <target name="-after-build"/>
+    <target name="-after-build">
+        <!-- Add google analytics code to index.html if it exists -->
+        <antcall target="addGoogleAnalytics"/>
+    </target>
+    
+    <target name="checkGoogleAnalyticsAvailable">
+        <available file="googleAnalyticsInclude.html" property="hasGoogleAnaylticsCode"/>
+    </target>
+
+    <target name="addGoogleAnalytics" depends="checkGoogleAnalyticsAvailable" if="hasGoogleAnaylticsCode">
         <!-- Add google analytics code to index.html -->
-        <!-- load googleAnalyticsInclude.html if it exists -->
+        <loadfile property="googleAnaylticsCode" srcFile="googleAnalyticsInclude.html"/>
+        <replaceregexp file="build/BioLadderOrg/production/index.html"
+               match="&lt;/head>"
+               replace="${googleAnaylticsCode}&lt;/head>"
+               byline="true"
+        />
     </target>
 </project>
