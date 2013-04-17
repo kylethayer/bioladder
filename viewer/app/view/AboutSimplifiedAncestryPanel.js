@@ -23,7 +23,6 @@ Ext.define('BioLadderOrg.view.AboutSimplifiedAncestryPanel', {
 
     config: {
         border: 1,
-        style: 'border-color: dark-grey; border-style: solid;',
         centered: true,
         hideOnMaskTap: true,
         items: [{

@@ -31,11 +31,18 @@ the proper property types, like with 'Has Wikipedia Image'.
 
 Now go to local/host and the viewer should work.
 
+To modify the css, you will need the ruby gem Compass. Install
+Ruby from here: http://www.ruby-lang.org/en/downloads/
+and then install compass by running: gem install compass
+To compile the Sass file run
+compass watch viewer/resources/sass
+To have compass monitor the Sass files as you edit it, run:
+compass watch viewer/resources/sass
+
 In order to compile the viewer for production, you will need
-Sencha CMD: Version used is here is
+Sencha CMD (requires ruby and compass from above)
+Version used in code is:
 http://www.sencha.com/forum/announcement.php?f=89
-Ruby: http://www.ruby-lang.org/en/downloads/
-and you will need to install Compass: gem install compass
 Then go to your viewer directory (in the shell or cmd) and type
 sencha app build
 It will put the compiled code in viewer/build/BioLadderOrg/production

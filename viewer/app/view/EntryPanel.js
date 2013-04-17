@@ -38,40 +38,37 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             }
         },
         border: 1,
-        style: 'border-color: dark-grey; border-style: solid;',
+        cls: 'entry-panel',
         collapsed: false,
         entry: null,
         items: [{
             xtype: 'button',
             baseCls: 'entry-panel-label',
             html: '',
-            itemId: 'entryLabel',
-            style: 'background:LightSteelBlue; cursor: pointer;'
+            itemId: 'entryLabel'
         }, {
             xtype: 'container',
             itemId: 'collapsibleContent',
             hidden: true,
             items: [{
                 xtype: 'component',
-                itemId: 'wikipediaImage',
-                style: 'background:#ffffff'
+                baseCls: 'wikipedia-image',
+                itemId: 'wikipediaImage'
             }, {
                 xtype: 'container',
                 items: [{
                     xtype: 'button',
-                    baseCls: 'wiki-edit-btn',
+                    baseCls: 'link-btn',
                     html: 'edit',
                     itemId: 'wikiEditBtn',
-                    style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
                     width: '3em'
                 }, {
                     xtype: 'button',
-                    baseCls: 'wikipedia-btn',
+                    baseCls: 'link-btn',
                     docked: 'right',
                     hidden: true,
                     html: 'wikipedia page',
                     itemId: 'wikipediaBtn',
-                    style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small;',
                     width: '9em'
                 }]
             }]

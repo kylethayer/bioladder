@@ -63,4 +63,9 @@
         <property name="build.options.native.product" value="product:touch"/>
     </target>
     -->
+    
+    <target name="-after-build"/>
+        <!-- Add google analytics code to index.html -->
+        <!-- load googleAnalyticsInclude.html if it exists -->
+    </target>
 </project>

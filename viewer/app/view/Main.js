@@ -56,11 +56,10 @@ Ext.define('BioLadderOrg.view.Main', {
             }]
         }, {
             xtype: 'button',
-            baseCls: 'wiki-edit-btn',
+            baseCls: 'link-btn',
             docked: 'left',
             html: 'About<BR>Simplified<BR>Ancestry',
-            itemId: 'aboutSimplifiedAncestryBtn',
-            style: 'font-weight: normal; text-decoration: underline; cursor: pointer; color: blue; font-size: small; padding-top:10px; padding-left: 5px;'
+            itemId: 'aboutSimplifiedAncestryBtn'
         }, {
             xtype: 'entriescontainer'
         }]
