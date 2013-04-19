@@ -23,19 +23,19 @@ Ext.define('BioLadderOrg.model.Entry', {
     config: {
         fields: [
             {
-                name: 'ancestor',
+                name: 'simplifiedAncestor',
                 type: 'auto',
-                convert: function (ancestor, record) {
-                    if (ancestor && typeof ancestor === 'string') {
+                convert: function (simplifiedAncestor, record) {
+                    if (simplifiedAncestor && typeof simplifiedAncestor === 'string') {
                         //make sure the name is a legitimate name
-                        if (!/^[\w\s]+$/.test(ancestor)) {
-                            window.console.error('Ancestor name must be normal characters:', ancestor);
+                        if (!/^[\w\s]+$/.test(simplifiedAncestor)) {
+                            window.console.error('Simplified Ancestor name must be normal characters:', ancestor);
                             return Ext.getStore('Entries').findOrCreateEntry('Could not parse name');
                         }
-                        //convert it into an ancestor object
-                        return Ext.getStore('Entries').findOrCreateEntry(ancestor);
+                        //convert it into an simplifiedAncestor object
+                        return Ext.getStore('Entries').findOrCreateEntry(simplifiedAncestor);
                     }
-                    return ancestor;
+                    return simplifiedAncestor;
                 }
             }, {
                 name: 'name',
@@ -48,7 +48,7 @@ Ext.define('BioLadderOrg.model.Entry', {
                     return name;
                 }
             },
-            {name: 'descendants', type: 'auto'},
+            {name: 'simplifiedDescendants', type: 'auto'},
             {
                 name: 'wikipediaImage',
                 type: 'string',
@@ -78,16 +78,16 @@ Ext.define('BioLadderOrg.model.Entry', {
             {name: 'isLoaded',  type: 'bool', defaultValue: false},
             {name: 'isLoading',  type: 'bool', defaultValue: false},
             {name: 'loadedCallbacks',  type: 'auto', defaultValue: []},
-            {name: 'areDescendantsLoaded',  type: 'bool', defaultValue: false},
-            {name: 'areDescendantsLoading',  type: 'bool', defaultValue: false},
-            {name: 'descendantsLoadedCallbacks',  type: 'auto', defaultValue: []}
+            {name: 'areSimplifiedDescendantsLoaded',  type: 'bool', defaultValue: false},
+            {name: 'areSimplifiedDescendantsLoading',  type: 'bool', defaultValue: false},
+            {name: 'simplifiedDescendantsLoadedCallbacks',  type: 'auto', defaultValue: []}
         ],
         isLoaded: false,
         isLoading: false,
         loadedCallbacks: [],
-        areDescendantsLoaded: false,
-        areDescendantsLoading: false,
-        descendantsLoadedCallbacks: []
+        areSimplifiedDescendantsLoaded: false,
+        areSimplifiedDescendantsLoading: false,
+        simplifiedDescendantsLoadedCallbacks: []
     },
 
     ensureFullyLoaded: function () {
@@ -107,32 +107,32 @@ Ext.define('BioLadderOrg.model.Entry', {
                 }
             });
         }
-        if (!me.get('areDescendantsLoaded') && !me.get('areDescendantsLoading')) {
-            me.set('areDescendantsLoading', true);
+        if (!me.get('areSimplifiedDescendantsLoaded') && !me.get('areSimplifiedDescendantsLoading')) {
+            me.set('areSimplifiedDescendantsLoading', true);
             searchObj = Ext.create('BioLadderOrg.model.EntrySearch');
             searchObj.runSearch({
-                conditions: {'Has Ancestor': me.get('name')},
+                conditions: {'Has Simplified Ancestor': me.get('name')},
                 success: function (entries) {
-                    me.set('descendants', entries);
-                    me.set('areDescendantsLoading', false);
-                    me.set('areDescendantsLoaded', true);
-                    for (index in me.get('descendantsLoadedCallbacks')) {
-                        me.get('descendantsLoadedCallbacks')[index](me);
+                    me.set('simplifiedDescendants', entries);
+                    me.set('areSimplifiedDescendantsLoading', false);
+                    me.set('areSimplifiedDescendantsLoaded', true);
+                    for (index in me.get('simplifiedDescendantsLoadedCallbacks')) {
+                        me.get('simplifiedDescendantsLoadedCallbacks')[index](me);
                     }
-                    me.set('descendantsLoadedCallbacks', []);
+                    me.set('simplifiedDescendantsLoadedCallbacks', []);
                 }
             });
         }
     },
 
-    whenDescendantsLoaded: function (callback) {
+    whenSimplifiedDescendantsLoaded: function (callback) {
         var me = this;
-        if (me.get('areDescendantsLoaded')) {
+        if (me.get('areSimplifiedDescendantsLoaded')) {
             callback(me);
             return;
         }
         //make sure a new array is created so we don't mess with the default array
-        me.set('descendantsLoadedCallbacks', [callback].concat(me.get('descendantsLoadedCallbacks')));
+        me.set('simplifiedDescendantsLoadedCallbacks', [callback].concat(me.get('simplifiedDescendantsLoadedCallbacks')));
         me.ensureFullyLoaded();
     },
 
@@ -163,7 +163,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                 url += '[[' + property + '::' + args.conditions[property] + ']]';
             }
         }
-        requestFields =  ['Has Ancestor', 'Has Wikipedia Image', 'Has Wikipedia Page'];
+        requestFields =  ['Has Simplified Ancestor', 'Has Wikipedia Image', 'Has Wikipedia Page'];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -204,13 +204,13 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                     }
                     printouts = results[entryName].printouts;
                     if (printouts) {
-                        if (printouts['Has Ancestor'] && printouts['Has Ancestor'].length > 0) {
-                            entryFields.ancestor = printouts['Has Ancestor'][0].fulltext;
+                        if (printouts['Has Simplified Ancestor'] && printouts['Has Simplified Ancestor'].length > 0) {
+                            entryFields.simplifiedAncestor = printouts['Has Simplified Ancestor'][0].fulltext;
                         }
                         if (printouts['Has Wikipedia Image'] && printouts['Has Wikipedia Image'].length > 0) {
                             entryFields.wikipediaImage = printouts['Has Wikipedia Image'][0];
                         }
-					    if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
+                        if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
                             entryFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
                         }
                     }

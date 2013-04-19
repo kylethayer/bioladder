@@ -37,15 +37,15 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
 
         items: [{
             xtype: 'label',
-            html: 'Ancestor',
-            itemId: 'ancestorLabel'
+            html: 'Simplified Ancestor',
+            itemId: 'simplifiedAncestorLabel'
         }, {
             xtype: 'label',
-            html: 'loading ancestor...',
-            itemId: 'ancestorsListLoadingLabel'
+            html: 'loading simplified ancestor...',
+            itemId: 'simplifiedAncestorsListLoadingLabel'
         }, {
             xtype: 'container',
-            itemId: 'ancestorContainer'
+            itemId: 'simplifiedAncestorContainer'
         }, {
             xtype: 'component',
             height: 20
@@ -57,15 +57,15 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
             height: 20
         }, {
             xtype: 'label',
-            html: 'Descendants',
-            itemId: 'descendantsLabel'
+            html: 'Simplified Descendants',
+            itemId: 'simplifiedDescendantsLabel'
         }, {
             xtype: 'label',
-            html: 'loading descendants...',
-            itemId: 'descendantsListLoadingLabel'
+            html: 'loading simplified descendants...',
+            itemId: 'simplifiedDescendantsListLoadingLabel'
         }, {
             xtype: 'container',
-            itemId: 'descendantsContainer',
+            itemId: 'simplifiedDescendantsContainer',
             layout: 'hbox'
         }],
 
@@ -102,43 +102,43 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
         currentEntryPanel.setCollapsed(false);
         me.down('#entryContainer').add(currentEntryPanel);
 
-        //display ancestors
-        me.down('#ancestorContainer').removeAll(false);
-        me.down('#ancestorsListLoadingLabel').setHidden(false);
-        me.down('#ancestorLabel').setHidden(true);
+        //display simplifiedAncestors
+        me.down('#simplifiedAncestorContainer').removeAll(false);
+        me.down('#simplifiedAncestorsListLoadingLabel').setHidden(false);
+        me.down('#simplifiedAncestorLabel').setHidden(true);
         entry.whenLoaded(function (loadedEntry) {
-            var ancestor, ancestorEntryPanel;
+            var simplifiedAncestor, simplifiedAncestorEntryPanel;
             if (loadedEntry === me.getEntry()) {
                 Ext.Viewport.setMasked(false);
-                ancestor = loadedEntry.get('ancestor');
-                me.down('#ancestorsListLoadingLabel').setHidden(true);
-                if (ancestor) {
-                    me.down('#ancestorLabel').setHidden(false);
-                    ancestor.ensureFullyLoaded();
-                    ancestorEntryPanel = me.findOrCreateEntryPanel(ancestor);
-                    ancestorEntryPanel.setCollapsed(true);
-                    me.down('#ancestorContainer').removeAll(false);
-                    me.down('#ancestorContainer').add(ancestorEntryPanel);
+                simplifiedAncestor = loadedEntry.get('simplifiedAncestor');
+                me.down('#simplifiedAncestorsListLoadingLabel').setHidden(true);
+                if (simplifiedAncestor) {
+                    me.down('#simplifiedAncestorLabel').setHidden(false);
+                    simplifiedAncestor.ensureFullyLoaded();
+                    simplifiedAncestorEntryPanel = me.findOrCreateEntryPanel(simplifiedAncestor);
+                    simplifiedAncestorEntryPanel.setCollapsed(true);
+                    me.down('#simplifiedAncestorContainer').removeAll(false);
+                    me.down('#simplifiedAncestorContainer').add(simplifiedAncestorEntryPanel);
                 }
             }
         });
 
-        //display descendants
-        me.down('#descendantsListLoadingLabel').setHidden(false);
-        me.down('#descendantsContainer').removeAll(false);
-        me.down('#descendantsLabel').setHidden(true);
-        entry.whenDescendantsLoaded(function (loadedEntry) {
+        //display simplifiedDescendants
+        me.down('#simplifiedDescendantsListLoadingLabel').setHidden(false);
+        me.down('#simplifiedDescendantsContainer').removeAll(false);
+        me.down('#simplifiedDescendantsLabel').setHidden(true);
+        entry.whenSimplifiedDescendantsLoaded(function (loadedEntry) {
             var i, descendantEntryPanel;
             if (loadedEntry === me.getEntry()) {
-                me.down('#descendantsListLoadingLabel').setHidden(true);
-                me.down('#descendantsContainer').removeAll(false);
-                if (loadedEntry.get('descendants').length > 0) {
-                    me.down('#descendantsLabel').setHidden(false);
-                    for (i = 0; i < loadedEntry.get('descendants').length; i++) {
-                        loadedEntry.get('descendants')[i].ensureFullyLoaded();
-                        descendantEntryPanel = me.findOrCreateEntryPanel(loadedEntry.get('descendants')[i]);
+                me.down('#simplifiedDescendantsListLoadingLabel').setHidden(true);
+                me.down('#simplifiedDescendantsContainer').removeAll(false);
+                if (loadedEntry.get('simplifiedDescendants').length > 0) {
+                    me.down('#simplifiedDescendantsLabel').setHidden(false);
+                    for (i = 0; i < loadedEntry.get('simplifiedDescendants').length; i++) {
+                        loadedEntry.get('simplifiedDescendants')[i].ensureFullyLoaded();
+                        descendantEntryPanel = me.findOrCreateEntryPanel(loadedEntry.get('simplifiedDescendants')[i]);
                         descendantEntryPanel.setCollapsed(true);
-                        me.down('#descendantsContainer').add(descendantEntryPanel);
+                        me.down('#simplifiedDescendantsContainer').add(descendantEntryPanel);
                     }
                 }
             }
