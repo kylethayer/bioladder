@@ -41,8 +41,8 @@ compass watch viewer/resources/sass
 
 In order to compile the viewer for production, you will need
 Sencha CMD (requires ruby and compass from above)
-Version used in code is:
-http://www.sencha.com/forum/announcement.php?f=89
+Version used in code is 3.1.1:
+http://www.sencha.com/products/sencha-cmd/download
 Then go to your viewer directory (in the shell or cmd) and type
 sencha app build
 It will put the compiled code in viewer/build/BioLadderOrg/production
