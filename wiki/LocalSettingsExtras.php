@@ -26,3 +26,5 @@ $smwgShowFactbox = SMW_FACTBOX_NONEMPTY;
 $smwgShowFactboxEdit = SMW_FACTBOX_NONEMPTY;
 
 require_once( "$IP/extensions/SemanticForms/SemanticForms.php" );
+
+$wgAllowExternalImagesFrom = array('http://bioladder.org/');
