@@ -116,7 +116,7 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
         if (entry) {
             window.open(
                 window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) +
-                    '/wiki/index.php?title=' + entry.get('name') + '&action=edit',
+                    '/wiki/index.php?title=' + entry.get('name') + '&action=formedit',
                 '_blank'
             );
         }

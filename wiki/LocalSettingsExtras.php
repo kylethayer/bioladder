@@ -25,6 +25,11 @@ enableSemantics('localhost');
 $smwgShowFactbox = SMW_FACTBOX_NONEMPTY;
 $smwgShowFactboxEdit = SMW_FACTBOX_NONEMPTY;
 
+#Semantic Forms
 require_once( "$IP/extensions/SemanticForms/SemanticForms.php" );
+$sfgRenameEditTabs = true; # renames the "edit with form" tab to "edit", and the "edit" tab to "edit source" (in whatever language the wiki is being viewed in)
+$wgGroupPermissions['*']['viewedittab'] = false; # Only sysop users can edit raw, everyone else only gets the forms option.
+$wgGroupPermissions['sysop']['viewedittab'] = true;
 
 $wgAllowExternalImagesFrom = array('http://bioladder.org/');
+
