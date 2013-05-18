@@ -5,8 +5,9 @@ It is hosted at:
 http://bioladder.org/
 https://code.google.com/p/bioladder/
 
-
-Installing:
+***********************************************************
+    Installing to run the site:
+***********************************************************
 To run it yourself, you need a web server, PHP and a MySQL Database.
 You can get a combo install of all of them at:
 http://www.apachefriends.org/en/xampp.html
@@ -23,13 +24,29 @@ Next go to the Semantic MediaWiki setup
 wiki/index.php?title=Special:SMWAdmin
 and press the "Initialise or upgrade tables" button
 
-Next you need data in your wiki. Open your wiki and create the page
-"human" (eg. http://localhost/wiki/index.php?title=Human&action=edit) 
-Go to bioladder.org/wiki/index.php?title=Human&action=edit and copy
-the contents to your wiki. You will also have to copy over pages with
-the proper property types, like with 'Has Wikipedia Image'.
+Next you need data in your wiki. In order to set up the semantic forms
+like they are on BioLadder.Org. Copy the source following pages from
+     http://bioladder.org/wiki/index.php?title=
+ to  http://localhost/wiki/index.php?title=
+For the following pages:
+  Property:Has_Simplified_Ancestor
+  Property:Has_Wikipedia_Image
+  Property:Has_Wikipedia_Page
+  Template:Entry
+  Form:Entry
+  Category:Entry
+  Project:Main
 
-Now go to local/host and the viewer should work.
+Now you can use the forms to fill out data, so Copy the data from, 
+for example, bioladder.org/wiki/index.php?title=Human
+to http://localhost/wiki/index.php?title=Human
+"human" (http://localhost/wiki/index.php?title=Human&action=edit) 
+
+Now go to http://localhost/ and the viewer should work.
+
+***********************************************************
+    Additional Installation for editing
+***********************************************************
 
 To modify the css, you will need the ruby gem Compass. Install
 Ruby from here: http://www.ruby-lang.org/en/downloads/
@@ -52,10 +69,11 @@ versions of the viewer code, just copy the
 googleAnalyticsInclude.html.template file, remove the template and
 put in your google analytics ID.
 
-
+***********************************************************
+                The Code:
+***********************************************************
 The Code
 There are two parts of the project:
 1) wiki directory, which contains a mediawiki with symantic wiki
 2) viewer directory, which contains a Sencha 2.1 app (only works 
-   with Safari and Chrome, when 2.2 comes out, that is supposed 
-   to work with IE10)
+   with IE10, Safari and Chrome)
