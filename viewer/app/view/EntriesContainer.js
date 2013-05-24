@@ -30,15 +30,27 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
         control: {
             'entrypanel': {
                 navigatetoentry: 'onNavigateToEntry'
+            },
+            '#aboutSimplifiedAncestryBtn': {
+                tap: function () {Ext.Viewport.add(Ext.widget('aboutSimplifiedAncestryPanel')); }
             }
         },
 
         entry: null,
 
         items: [{
-            xtype: 'label',
-            html: 'Simplified Ancestor',
-            itemId: 'simplifiedAncestorLabel'
+            xtype: 'container',
+            layout: 'hbox',
+            itemId: 'simplifiedAncestorLabel',
+            items:[{
+                xtype: 'label',
+                html: 'Simplified Ancestor'
+            }, {
+                xtype: 'button',
+                baseCls: 'no-underline-link-btn',
+                html: '[?]',
+                itemId: 'aboutSimplifiedAncestryBtn'
+            }]
         }, {
             xtype: 'label',
             html: 'loading simplified ancestor...',
@@ -56,9 +68,18 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
             xtype: 'component',
             height: 20
         }, {
-            xtype: 'label',
-            html: 'Simplified Descendants',
-            itemId: 'simplifiedDescendantsLabel'
+            xtype: 'container',
+            layout: 'hbox',
+            itemId: 'simplifiedDescendantsLabel',
+            items: [{
+                xtype: 'label',
+                html: 'Simplified Descendants'
+            }, {
+                xtype: 'button',
+                baseCls: 'no-underline-link-btn',
+                html: '[?]',
+                itemId: 'aboutSimplifiedAncestryBtn'
+            }]
         }, {
             xtype: 'label',
             html: 'loading simplified descendants...',

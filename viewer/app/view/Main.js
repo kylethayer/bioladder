@@ -35,9 +35,6 @@ Ext.define('BioLadderOrg.view.Main', {
             },
             '#sourceBtn': {
                 tap: function () {window.open('https://code.google.com/p/bioladder/', '_blank'); }
-            },
-            '#aboutSimplifiedAncestryBtn': {
-                tap: function () {Ext.Viewport.add(Ext.widget('aboutSimplifiedAncestryPanel')); }
             }
         },
 
@@ -54,12 +51,6 @@ Ext.define('BioLadderOrg.view.Main', {
                 html: 'source',
                 itemId: 'sourceBtn'
             }]
-        }, {
-            xtype: 'button',
-            baseCls: 'link-btn',
-            docked: 'left',
-            html: 'About<BR>Simplified<BR>Ancestry',
-            itemId: 'aboutSimplifiedAncestryBtn'
         }, {
             xtype: 'entriescontainer'
         }]

@@ -22,39 +22,61 @@ Ext.define('BioLadderOrg.view.AboutSimplifiedAncestryPanel', {
     extend: 'Ext.Panel',
 
     config: {
+        control: {
+            '#AboutSimpAncestryCloseBtn': {
+                tap: function () {this.hide(); }
+            }
+        },
         border: 1,
         centered: true,
         hideOnMaskTap: true,
         items: [{
             xtype: 'titlebar',
             docked: 'top',
-            title: 'Simplified Ancestry'
+            title: 'Simplified Ancestry',
+            items: [{
+                xtype: 'button',
+                html: 'close',
+                itemId: 'AboutSimpAncestryCloseBtn'
+            }]
         }, {
             xtype: 'component',
             html: [
-                '<div style="float:right;">',
-                    '<img src="resources/images/cladeExample.png" ><br><br>',
-                    '<img src="resources/images/simplifiedAncestryExample.png" style="float:right;">',
+                '<div style="float:right;padding-left:5px;padding-right:5px;">',
+                    '<b>Clade Diagram:</b><br><img src="resources/images/cladeExample.png" ><br><br>',
+                    '<b>Simplified Ancestry:</b><br><img src="resources/images/simplifiedAncestryExample.png" style="float:right;"><br>',
+                    '',
                 '</div>',
                 '<p>',
-                    'Scientists set up their classification system using ',
-                    '<a href="http://en.wikipedia.org/wiki/Clade">clades</a>, so they can show common ',
-                    'ancestry without ever saying species "A" descended from species "B" (top diagram). ',
-                    'After all, "B" may have actually descended from some undiscovered cousin species of "A."',
+                    '<b>What is "simplified ancestry"?</b>',
+                '</p><br>',
+                    'Biologists don\'t tend to make claims about direct ancestry and descent. Rather, ',
+                    'they group animals by common ancestry into ',
+                    '<a href="http://en.wikipedia.org/wiki/Clade" target="_blank">clades</a>, so that biological trees ',
+                    'of ancestors and descendants can be filled in more completely as we make new ',
+                    'scientific discoveries.',
                 '</p><br>',
                 '<p>',
-                    'Bioladder.org uses a simplified ancestry system that makes that leap of showing ',
-                    '"A" as the ancestor of "B" for demonstration purposes (bottom diagram).',
-                '</p><br>',
-                '<p>',
-                    'We hope future versions to be able to show both our simplified ancestry, and the ',
-                    'cladistic classifications together.',
+                    'For example, while a <a href="#Chicken" target="_blank">chicken</a> is not the direct descendant of ',
+                    'a <a href="#Tyrannosaurus" target="_blank">Tyrannosaurus Rex<a>, it would appear in the same clade. ',
+                    'We also know that <a href="#Compsognathus" target="_blank">Compsognathus<a> is higher in the ',
+                    'evolutionary tree than either <a href="#Chicken" target="_blank">chickens</a> or ',
+                    '<a href="#Tyrannosaurus" target="_blank">tyrannosaurs</a>, but we cannot say definitively that ',
+                    '<a href="#Compsognathus" target="_blank">Compsognathus<a> is the direct ancestor of either species. For ',
+                    'the purposes of this site, we choose to make the leap of showing ',
+                    '<a href="#Compsognathus" target="_blank">Compsognathus<a> as the "simplified ancestor" of both ',
+                    'species. This is for demonstration purposes&mdash;so that you can see the general flow of how species ',
+                    'have evolved over time. While more species might get filled in later, it is unlikely ',
+                    'that the evolutionary tree as a whole would change.',
                 '</p>'].join(''),
             style: 'font-size: 16px; margin-left: 10px; margin-top: 5px; margin-right: 5px;'
         }],
+        maxHeight: 600,
+        maxWidth: 650,
         modal: true,
-        height: 420,
-        width: 420
+        height: "90%",
+        scrollable: "vertical",
+        width: "90%"
     },
 
     initialize: function () {
