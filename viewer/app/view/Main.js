@@ -22,19 +22,17 @@ Ext.define('BioLadderOrg.view.Main', {
     xtype: 'main',
     requires: [
         'Ext.TitleBar',
+        'BioLadderOrg.view.AboutSimplifiedAncestryPanel',
         'BioLadderOrg.view.EntriesContainer',
-        'BioLadderOrg.view.AboutSimplifiedAncestryPanel'
+        'BioLadderOrg.view.HowToHelpPanel'
     ],
     config: {
         control: {
             'entriescontainer': {
                 navigatetoentry: function (entryName) {this.fireEvent('navigatetoentry', entryName); }
             },
-            '#wikiBtn': {
-                tap: function () {window.open(window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki', '_blank'); }
-            },
-            '#sourceBtn': {
-                tap: function () {window.open('https://code.google.com/p/bioladder/', '_blank'); }
+            '#howToHelpBtn': {
+                tap: function() {Ext.Viewport.add(Ext.widget('howToHelpPanel')); }
             }
         },
 
@@ -44,12 +42,8 @@ Ext.define('BioLadderOrg.view.Main', {
             title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki (for IE10, Safari and Chrome)',
             items: [{
                 xtype: 'button',
-                html: 'wiki',
-                itemId: 'wikiBtn'
-            }, {
-                xtype: 'button',
-                html: 'source',
-                itemId: 'sourceBtn'
+                html: 'How To Help',
+                itemId: 'howToHelpBtn'
             }]
         }, {
             xtype: 'entriescontainer'
