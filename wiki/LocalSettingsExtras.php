@@ -17,7 +17,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
+# Enabled Extensions.
 require_once( "$IP/extensions/Validator/Validator.php" );
 
 require_once( "$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php" );
@@ -32,4 +32,6 @@ $wgGroupPermissions['*']['viewedittab'] = false; # Only sysop users can edit raw
 $wgGroupPermissions['sysop']['viewedittab'] = true;
 
 $wgAllowExternalImagesFrom = array('http://bioladder.org/');
+
+require_once( "$IP/extensions/SpamBlacklist/SpamBlacklist.php" );
 
