@@ -18,6 +18,8 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Enabled Extensions.
+require_once( "$IP/extensions/googleAnalytics/googleAnalytics.php" );
+
 require_once( "$IP/extensions/Validator/Validator.php" );
 
 require_once( "$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php" );
