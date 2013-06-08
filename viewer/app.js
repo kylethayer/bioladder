@@ -54,6 +54,7 @@ Ext.application({
         'AboutSimplifiedAncestryPanel',
         'EntriesContainer',
         'EntryPanel',
+        'HowToHelpPanel',
         'Main'
     ],
 

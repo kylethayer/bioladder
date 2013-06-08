@@ -77,7 +77,7 @@
         "appModels": "Entry",
         "appControllers": "Main",
         "appStores": "Entries",
-        "appViews": "AboutSimplifiedAncestryPanel,EntriesContainer,EntryPanel,Main"
+        "appViews": "AboutSimplifiedAncestryPanel,EntriesContainer,EntryPanel,HowToHelpPanel,Main"
       }
     },
     "resources/sass/app.scss": {

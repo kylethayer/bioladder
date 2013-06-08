@@ -93,7 +93,10 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
         layout: {
             type: 'vbox',
             align: 'middle'
-        }
+        },
+        height: '100%',
+        width: '100%',
+        scrollable: 'both'
     },
 
     initialize: function () {
