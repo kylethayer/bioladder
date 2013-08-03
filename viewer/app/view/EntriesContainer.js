@@ -159,10 +159,41 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                 if (loadedEntry.get('simplifiedDescendants').length > 0) {
                     me.down('#simplifiedDescendantsLabel').setHidden(false);
                     for (i = 0; i < loadedEntry.get('simplifiedDescendants').length; i++) {
+                        var descContainer = Ext.widget('container', {
+                            itemId: 'descCont_' +loadedEntry.get('simplifiedDescendants')[i].get('name'),
+                            layout: {type: 'vbox', align: 'center'}
+                        });
+
+                        var popDescContainer =  Ext.widget('container', {
+                            layout: {type: 'vbox', align: 'center'},
+                            items:[
+                                {xtype: 'label', html: '<b>:</b>'}, 
+                                { xtype: 'label', html: '<b>:</b>'}, 
+                                {xtype: 'label', html: 'Loading...'}
+                            ]
+                        });
+                        
                         loadedEntry.get('simplifiedDescendants')[i].ensureFullyLoaded();
                         descendantEntryPanel = me.findOrCreateEntryPanel(loadedEntry.get('simplifiedDescendants')[i]);
                         descendantEntryPanel.setCollapsed(true);
-                        me.down('#simplifiedDescendantsContainer').add(descendantEntryPanel);
+                        descContainer.add(descendantEntryPanel);
+                        descContainer.add(popDescContainer);
+                        
+                        //Display popular descendants when they are loaded
+                        me.addPopularDescendantsWhenLoaded(popDescContainer, loadedEntry.get('simplifiedDescendants')[i]);
+                        
+                        //Make sure one more level of descendants are loaded so popular descendants show up
+                        loadedEntry.get('simplifiedDescendants')[i].whenSimplifiedDescendantsLoaded(function (loadedDescEntry) {
+                            if(loadedDescEntry.get('simplifiedDescendants')){
+                                for(var j = 0; j < loadedDescEntry.get('simplifiedDescendants').length; j++){
+                                    loadedDescEntry.get('simplifiedDescendants')[j].ensureFullyLoaded();
+                                }
+                            }
+                        });
+                        
+                        me.down('#simplifiedDescendantsContainer').add(descContainer);
+                        
+                        me.down('#simplifiedDescendantsContainer').add({xtype: 'component',width: 10});
                     }
                 }
             }
@@ -182,5 +213,36 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
         });
         me.__EntryPanels.push(entrypanel);
         return entrypanel;
+    },
+    
+    addPopularDescendantsWhenLoaded: function(popDescContainer, entry){
+        var me = this;
+        entry.whenSimplifiedDescendantsLoaded(function (loadedDescEntry) {
+            popDescContainer.removeAll(true);
+            if(loadedDescEntry.get('popularDescendants') && loadedDescEntry.get('popularDescendants').length > 0) {
+                popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
+                popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
+                var popularDescendants = loadedDescEntry.get('popularDescendants');
+                var popDescPanelsContainer =  Ext.widget('container', {
+                    //this panel is rotated so it doesn't imply that one popular descendant is ranked above another
+                    // rotate for Safari, Firefox, IE, Opera, Internet Explorer 
+                    style: '-webkit-transform: rotate(-90deg) translateX(-75px);'+ //safari and chrome
+                        ' -moz-transform: rotate(-90deg) translateX(-75px);'+ //firefox
+                        ' transform: rotate(-90deg) translateX(-75px);'+ //ie10
+                        ' -o-transform: rotate(-90deg) translateX(-75px);' //opera
+                });
+                var firstDesc = true;
+                for(i = 0; i < popularDescendants.length; i++){
+                    if(!firstDesc){
+                        popDescPanelsContainer.add({xtype: 'component',width: 10, height: 10});
+                    }
+                    firstDesc = false;
+                    var panel = me.findOrCreateEntryPanel(popularDescendants[i]);
+                    panel.setCollapsed(true);
+                    popDescPanelsContainer.add(panel);
+                }
+                 popDescContainer.add(popDescPanelsContainer);
+            }
+        });
     }
 });

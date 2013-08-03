@@ -37,3 +37,6 @@ $wgAllowExternalImagesFrom = array('http://bioladder.org/');
 
 require_once( "$IP/extensions/SpamBlacklist/SpamBlacklist.php" );
 
+#Custom BioLadder.Org Extensions
+require_once( "$IP/extensions/BioLadderFieldHandlers/PopularityFieldHandler.php" );
+

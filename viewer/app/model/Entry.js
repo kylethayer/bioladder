@@ -49,12 +49,32 @@ Ext.define('BioLadderOrg.model.Entry', {
                 }
             },
             {name: 'simplifiedDescendants', type: 'auto'},
+            {  
+                name: 'popularDescendants',
+                type: 'auto',
+                convert: function (popularDescendants, record) {
+                    if(popularDescendants != null && popularDescendants.length > 0){
+                        for(var i = 0; i < popularDescendants.length; i++){
+                            if (popularDescendants[i] && typeof popularDescendants[i] === 'string') {
+                                //make sure the name is a legitimate name
+                                if (!/^[\w\s]+$/.test(popularDescendants[i])) {
+                                    window.console.error('Popular Descendant name must be normal characters:', popularDescendants[i]);
+                                    popularDescendants[i] = Ext.getStore('Entries').findOrCreateEntry('Could not parse name');
+                                }
+                                //convert it into an simplifiedAncestor object
+                                popularDescendants[i] = Ext.getStore('Entries').findOrCreateEntry(popularDescendants[i]);
+                            }
+                        }
+                    }
+                    return popularDescendants;
+                }
+            },
             {
                 name: 'wikipediaImage',
                 type: 'string',
                 convert: function (wikipediaImage, record) { //make sure it is a string and a wikimedia url
                     if (wikipediaImage && (typeof wikipediaImage !== 'string' ||
-                        !/^http:\/\/upload\.wikimedia\.org\/[\w\.\/-]+$/.test(wikipediaImage))) {
+                        !/^https?:\/\/upload\.wikimedia\.org\/[%\w\.\/-]+$/.test(wikipediaImage))) {
                         window.console.error('wikipediaImage must be at http://upload.wikimedia.org/:', wikipediaImage);
                         return null;
                     }
@@ -67,7 +87,7 @@ Ext.define('BioLadderOrg.model.Entry', {
                 type: 'string',
                 convert: function (wikipediaPage, record) { //make sure it is a string and a wikipedia page
                     if (wikipediaPage && (typeof wikipediaPage !== 'string' ||
-                        !/^http:\/\/en\.wikipedia\.org\/wiki\/[\w\s-]+$/.test(wikipediaPage))) {
+                        !/^https?:\/\/en\.wikipedia\.org\/wiki\/[\w\s-_%]+$/.test(wikipediaPage))) {
                         window.console.error('wikipediaPage must be at http://en.wikipedia.org/:', wikipediaPage);
                         return null;
                     }
@@ -163,7 +183,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                 url += '[[' + property + '::' + args.conditions[property] + ']]';
             }
         }
-        requestFields =  ['Has Simplified Ancestor', 'Has Wikipedia Image', 'Has Wikipedia Page'];
+        requestFields =  ['Has Simplified Ancestor', 'Has Wikipedia Image', 'Has Wikipedia Page', 'Has Popular Descendants'];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -212,6 +232,13 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                         }
                         if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
                             entryFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
+                        }
+                        if (printouts['Has Popular Descendants'] && printouts['Has Popular Descendants'].length > 0) {
+                            popularDescendants = [];
+                            for(var i = 0; i < printouts['Has Popular Descendants'].length; i++){
+                              popularDescendants[i] = printouts['Has Popular Descendants'][i].fulltext;
+                            }
+                            entryFields.popularDescendants = popularDescendants;
                         }
                     }
                     //check if Entry already exists, if so add details to it, if not, create it and add to store
