@@ -17,6 +17,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ var firstTimeLoad = true;
+ 
 Ext.define('BioLadderOrg.view.EntriesContainer', {
     xtype: 'entriescontainer',
     extend: 'Ext.Container',
@@ -57,7 +59,11 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
             itemId: 'simplifiedAncestorsListLoadingLabel'
         }, {
             xtype: 'container',
-            itemId: 'simplifiedAncestorContainer'
+            itemId: 'simplifiedAncestorContainer',
+            layout: {
+                type: 'vbox',
+                align: 'middle'
+            }
         }, {
             xtype: 'component',
             height: 20
@@ -88,6 +94,9 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
             xtype: 'container',
             itemId: 'simplifiedDescendantsContainer',
             layout: 'hbox'
+        }, {
+            xtype: 'component',
+            height: 20
         }],
 
         layout: {
@@ -143,6 +152,14 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                     simplifiedAncestorEntryPanel.setCollapsed(true);
                     me.down('#simplifiedAncestorContainer').removeAll(false);
                     me.down('#simplifiedAncestorContainer').add(simplifiedAncestorEntryPanel);
+                    if(firstTimeLoad){ //show instructions first time
+                        me.down('#simplifiedAncestorContainer').add({
+                            xtype: 'label',
+                            html: '<b>^ click here ^<b>',
+                        });
+                        me.down('#simplifiedAncestorContainer').add({xtype: 'component', height: 20});
+                        firstTimeLoad = false;
+                    }
                 }
             }
         });
@@ -223,13 +240,17 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
                 var popularDescendants = loadedDescEntry.get('popularDescendants');
+                var xTranslate = -75;
+                if(popularDescendants.length == 1){
+                    xTranslate = -92;
+                }
                 var popDescPanelsContainer =  Ext.widget('container', {
                     //this panel is rotated so it doesn't imply that one popular descendant is ranked above another
                     // rotate for Safari, Firefox, IE, Opera, Internet Explorer 
-                    style: '-webkit-transform: rotate(-90deg) translateX(-75px);'+ //safari and chrome
-                        ' -moz-transform: rotate(-90deg) translateX(-75px);'+ //firefox
-                        ' transform: rotate(-90deg) translateX(-75px);'+ //ie10
-                        ' -o-transform: rotate(-90deg) translateX(-75px);' //opera
+                    style: '-webkit-transform: rotate(-90deg) translateX('+xTranslate+'px);'+ //safari and chrome
+                        ' -moz-transform: rotate(-90deg) translateX('+xTranslate+'px);'+ //firefox
+                        ' transform: rotate(-90deg) translateX('+xTranslate+'px);'+ //ie10
+                        ' -o-transform: rotate(-90deg) translateX('+xTranslate+'px);' //opera
                 });
                 var firstDesc = true;
                 for(i = 0; i < popularDescendants.length; i++){
@@ -241,7 +262,10 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                     panel.setCollapsed(true);
                     popDescPanelsContainer.add(panel);
                 }
-                 popDescContainer.add(popDescPanelsContainer);
+                popDescContainer.add(popDescPanelsContainer);
+                if(popularDescendants.length > 0){//This is a hack to add more space since I had to use a hack to rotate the popular descendants.
+                    popDescContainer.add({xtype: 'component', height: 180});
+                }
             }
         });
     }

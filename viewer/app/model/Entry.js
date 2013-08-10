@@ -28,7 +28,7 @@ Ext.define('BioLadderOrg.model.Entry', {
                 convert: function (simplifiedAncestor, record) {
                     if (simplifiedAncestor && typeof simplifiedAncestor === 'string') {
                         //make sure the name is a legitimate name
-                        if (!/^[\w\s]+$/.test(simplifiedAncestor)) {
+                        if (!/^[-_\w\s]+$/.test(simplifiedAncestor)) {
                             window.console.error('Simplified Ancestor name must be normal characters:', ancestor);
                             return Ext.getStore('Entries').findOrCreateEntry('Could not parse name');
                         }
@@ -41,7 +41,7 @@ Ext.define('BioLadderOrg.model.Entry', {
                 name: 'name',
                 type: 'string',
                 convert: function (name, record) { //make sure the name is a legitimate name
-                    if (typeof name !== 'string' || !/^[\w\s]+$/.test(name)) {
+                    if (typeof name !== 'string' || !/^[-_\w\s]+$/.test(name)) {
                         window.console.error('Name must be normal characters:', name);
                         return 'Could not parse name';
                     }
@@ -124,6 +124,9 @@ Ext.define('BioLadderOrg.model.Entry', {
                         me.get('loadedCallbacks')[index](me);
                     }
                     me.set('loadedCallbacks', []);
+                },
+                failure: function (record){
+                    Ext.Msg.alert("Load Failed", "Failed to load an organism entry, you may need to refresh the page");
                 }
             });
         }
@@ -140,6 +143,9 @@ Ext.define('BioLadderOrg.model.Entry', {
                         me.get('simplifiedDescendantsLoadedCallbacks')[index](me);
                     }
                     me.set('simplifiedDescendantsLoadedCallbacks', []);
+                },
+                failure: function (){
+                    Ext.Msg.alert("Load Failed", "Failed to load descendants of an organism, you may need to refresh the page");
                 }
             });
         }
@@ -210,6 +216,10 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                         Ext.Logger.warn('Unable to parse the JSON returned by the server: ' + ex.toString());
                     }
                 }
+                if(data.query === undefined){
+                    Ext.Msg.alert("Load Failed", "Failed to load an organism entry, you may need to refresh the page");
+                    return;
+                }
                 results = data.query.results;
                 entries = [];
                 entriesStore = Ext.getStore('Entries');
@@ -218,7 +228,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                         'name': results[entryName].fulltext,
                         'wikiPage': results[entryName].fullurl
                     };
-                    if (typeof entryFields.name !== 'string' || !/^[\w\s]+$/.test(entryFields.name)) {
+                    if (typeof entryFields.name !== 'string' || !/^[-_\w\s]+$/.test(entryFields.name)) {
                         window.console.error('Name must be normal characters:', entryFields.name);
                         entryFields.name = 'Could not parse name';
                     }

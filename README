@@ -45,7 +45,7 @@ to http://localhost/wiki/index.php?title=Human
 Now go to http://localhost/ and the viewer should work.
 
 ***********************************************************
-    Additional Installation for editing
+    Additional Installation for bots and code editing
 ***********************************************************
 
 To modify the css, you will need the ruby gem Compass. Install
@@ -71,6 +71,13 @@ put in your google analytics ID.
 
 For Google Analytics in the wiki, add to the end of LocalSettings.php:
 $wgGoogleAnalyticsAccount = "UA-*********";
+
+The PopularDescendants bot requires Ruby (see above) with the
+mediawiki-gateway and rubygems installed.
+  gem install rubygems-update
+  gem install mediawiki-gateway
+    (0.5.2 wouldn't install on it's own, you may need to run:
+       gem install mediawiki-gateway -v '0.5.1')
 
 ***********************************************************
                 The Code:

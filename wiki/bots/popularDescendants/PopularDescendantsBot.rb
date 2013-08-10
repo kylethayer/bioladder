@@ -16,7 +16,9 @@
  #  You should have received a copy of the GNU General Public License
  #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
+ #
 
+require 'rubygems'
 require 'media_wiki'
 #see https://github.com/jpatokal/mediawiki-gateway
 
@@ -135,13 +137,13 @@ def processPopularDescendantsForEntry(simplifiedAncestorName)
     ancestorEntryText.sub!(/\|Popular Descendants=[^\n^\r^\|^}]*/, '|Popular Descendants=' + newPopularDescendantsString)
   else
     puts "adding PopularDescendants #{newPopularDescendantsString}"
-    ancestorEntryText.sub!(/{{Entry/, "{{Entry\n|Popular Descendants=" +newPopularDescendantsString)
+    ancestorEntryText.sub!(/\{\{Entry/, "{{Entry\n|Popular Descendants=" +newPopularDescendantsString)
   end
   
   if(/\|Popular Descendants Out Of Date[^\n^\r^\|^}]*/.match(ancestorEntryText))
     ancestorEntryText.sub!(/\|Popular Descendants Out Of Date[^\n^\r^\|^}]*/, '|Popular Descendants Out Of Date=parent')
   else
-    ancestorEntryText.sub!(/{{Entry/, "{{Entry\n|Popular Descendants Out Of Date=parent")
+    ancestorEntryText.sub!(/\{\{Entry/, "{{Entry\n|Popular Descendants Out Of Date=parent")
   end
   puts ""
   puts "saving #{simplifiedAncestorName}..."
@@ -205,4 +207,5 @@ maxEntriesToProcess = 25
     puts "completed"
     break
   end
+  sleep(1) # pause to allow other non-bot requests to go through
 end
