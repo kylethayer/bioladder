@@ -23,7 +23,7 @@ Ext.define('BioLadderOrg.controller.Main', {
     config: {
         control: {
             main: {
-                navigatetoentry: 'onNavigateToEntry'
+                navigatetotaxon: 'onNavigateToTaxon'
             }
         },
         routes: {
@@ -35,15 +35,15 @@ Ext.define('BioLadderOrg.controller.Main', {
         }
     },
 
-    onNavigateToEntry: function (name) {
+    onNavigateToTaxon: function (name) {
         this.redirectTo(name);
     },
 
     onNoRoute: function () {
-        this.onNavigateToEntry('Human');
+        this.onNavigateToTaxon('Human');
     },
 
     onRouteName: function (name) {
-        this.getMain().gotoEntry(name);
+        this.getMain().gotoTaxon(name);
     }
 });

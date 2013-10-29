@@ -19,26 +19,26 @@
 
  var firstTimeLoad = true;
  
-Ext.define('BioLadderOrg.view.EntriesContainer', {
-    xtype: 'entriescontainer',
+Ext.define('BioLadderOrg.view.TaxaContainer', {
+    xtype: 'taxacontainer',
     extend: 'Ext.Container',
 
     requires: [
         'Ext.Label',
-        'BioLadderOrg.view.EntryPanel'
+        'BioLadderOrg.view.TaxonPanel'
     ],
 
     config: {
         control: {
-            'entrypanel': {
-                navigatetoentry: 'onNavigateToEntry'
+            'taxonpanel': {
+                navigatetotaxon: 'onNavigateToTaxon'
             },
             '#aboutSimplifiedAncestryBtn': {
                 tap: function () {Ext.Viewport.add(Ext.widget('aboutSimplifiedAncestryPanel')); }
             }
         },
 
-        entry: null,
+        taxon: null,
 
         items: [{
             xtype: 'container',
@@ -69,7 +69,7 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
             height: 20
         }, {
             xtype: 'container',
-            itemId: 'entryContainer'
+            itemId: 'taxonContainer'
         }, {
             xtype: 'component',
             height: 20
@@ -109,49 +109,49 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
     },
 
     initialize: function () {
-        this.__EntryPanels = [];
+        this.__TaxonPanels = [];
     },
 
-    onNavigateToEntry: function (entry) {
-        if (this.getEntry() !== entry) {
-            this.fireEvent('navigatetoentry', entry.get('name'));
+    onNavigateToTaxon: function (taxon) {
+        if (this.getTaxon() !== taxon) {
+            this.fireEvent('navigatetotaxon', taxon.get('name'));
         }
     },
 
-    gotoEntry: function (name) {
+    gotoTaxon: function (name) {
         Ext.Viewport.setMasked({
             xtype: 'loadmask'
         });
-        var entry, i, currentEntryPanel,
+        var taxon, i, currentTaxonPanel,
             me = this;
 
-        entry = Ext.getStore('Entries').findOrCreateEntry(name);
+        taxon = Ext.getStore('Taxa').findOrCreateTaxon(name);
 
-        me.setEntry(entry);
+        me.setTaxon(taxon);
 
-        //display current entry
-        me.down('#entryContainer').removeAll(false); //clear the entryContainer without deleting the EntryPanels
-        currentEntryPanel = me.findOrCreateEntryPanel(entry);
-        currentEntryPanel.setCollapsed(false);
-        me.down('#entryContainer').add(currentEntryPanel);
+        //display current taxon
+        me.down('#taxonContainer').removeAll(false); //clear the taxonContainer without deleting the TaxonPanels
+        currentTaxonPanel = me.findOrCreateTaxonPanel(taxon);
+        currentTaxonPanel.setCollapsed(false);
+        me.down('#taxonContainer').add(currentTaxonPanel);
 
         //display simplifiedAncestors
         me.down('#simplifiedAncestorContainer').removeAll(false);
         me.down('#simplifiedAncestorsListLoadingLabel').setHidden(false);
         me.down('#simplifiedAncestorLabel').setHidden(true);
-        entry.whenLoaded(function (loadedEntry) {
-            var simplifiedAncestor, simplifiedAncestorEntryPanel;
-            if (loadedEntry === me.getEntry()) {
+        taxon.whenLoaded(function (loadedTaxon) {
+            var simplifiedAncestor, simplifiedAncestorTaxonPanel;
+            if (loadedTaxon === me.getTaxon()) {
                 Ext.Viewport.setMasked(false);
-                simplifiedAncestor = loadedEntry.get('simplifiedAncestor');
+                simplifiedAncestor = loadedTaxon.get('simplifiedAncestor');
                 me.down('#simplifiedAncestorsListLoadingLabel').setHidden(true);
                 if (simplifiedAncestor) {
                     me.down('#simplifiedAncestorLabel').setHidden(false);
                     simplifiedAncestor.ensureFullyLoaded();
-                    simplifiedAncestorEntryPanel = me.findOrCreateEntryPanel(simplifiedAncestor);
-                    simplifiedAncestorEntryPanel.setCollapsed(true);
+                    simplifiedAncestorTaxonPanel = me.findOrCreateTaxonPanel(simplifiedAncestor);
+                    simplifiedAncestorTaxonPanel.setCollapsed(true);
                     me.down('#simplifiedAncestorContainer').removeAll(false);
-                    me.down('#simplifiedAncestorContainer').add(simplifiedAncestorEntryPanel);
+                    me.down('#simplifiedAncestorContainer').add(simplifiedAncestorTaxonPanel);
                     if(firstTimeLoad){ //show instructions first time
                         me.down('#simplifiedAncestorContainer').add({
                             xtype: 'label',
@@ -168,16 +168,16 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
         me.down('#simplifiedDescendantsListLoadingLabel').setHidden(false);
         me.down('#simplifiedDescendantsContainer').removeAll(false);
         me.down('#simplifiedDescendantsLabel').setHidden(true);
-        entry.whenSimplifiedDescendantsLoaded(function (loadedEntry) {
-            var i, descendantEntryPanel;
-            if (loadedEntry === me.getEntry()) {
+        taxon.whenSimplifiedDescendantsLoaded(function (loadedTaxon) {
+            var i, descendantTaxonPanel;
+            if (loadedTaxon === me.getTaxon()) {
                 me.down('#simplifiedDescendantsListLoadingLabel').setHidden(true);
                 me.down('#simplifiedDescendantsContainer').removeAll(false);
-                if (loadedEntry.get('simplifiedDescendants').length > 0) {
+                if (loadedTaxon.get('simplifiedDescendants').length > 0) {
                     me.down('#simplifiedDescendantsLabel').setHidden(false);
-                    for (i = 0; i < loadedEntry.get('simplifiedDescendants').length; i++) {
+                    for (i = 0; i < loadedTaxon.get('simplifiedDescendants').length; i++) {
                         var descContainer = Ext.widget('container', {
-                            itemId: 'descCont_' +loadedEntry.get('simplifiedDescendants')[i].get('name'),
+                            itemId: 'descCont_' +loadedTaxon.get('simplifiedDescendants')[i].get('name'),
                             layout: {type: 'vbox', align: 'center'}
                         });
 
@@ -190,20 +190,20 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                             ]
                         });
                         
-                        loadedEntry.get('simplifiedDescendants')[i].ensureFullyLoaded();
-                        descendantEntryPanel = me.findOrCreateEntryPanel(loadedEntry.get('simplifiedDescendants')[i]);
-                        descendantEntryPanel.setCollapsed(true);
-                        descContainer.add(descendantEntryPanel);
+                        loadedTaxon.get('simplifiedDescendants')[i].ensureFullyLoaded();
+                        descendantTaxonPanel = me.findOrCreateTaxonPanel(loadedTaxon.get('simplifiedDescendants')[i]);
+                        descendantTaxonPanel.setCollapsed(true);
+                        descContainer.add(descendantTaxonPanel);
                         descContainer.add(popDescContainer);
                         
                         //Display popular descendants when they are loaded
-                        me.addPopularDescendantsWhenLoaded(popDescContainer, loadedEntry.get('simplifiedDescendants')[i]);
+                        me.addPopularDescendantsWhenLoaded(popDescContainer, loadedTaxon.get('simplifiedDescendants')[i]);
                         
                         //Make sure one more level of descendants are loaded so popular descendants show up
-                        loadedEntry.get('simplifiedDescendants')[i].whenSimplifiedDescendantsLoaded(function (loadedDescEntry) {
-                            if(loadedDescEntry.get('simplifiedDescendants')){
-                                for(var j = 0; j < loadedDescEntry.get('simplifiedDescendants').length; j++){
-                                    loadedDescEntry.get('simplifiedDescendants')[j].ensureFullyLoaded();
+                        loadedTaxon.get('simplifiedDescendants')[i].whenSimplifiedDescendantsLoaded(function (loadedDescTaxon) {
+                            if(loadedDescTaxon.get('simplifiedDescendants')){
+                                for(var j = 0; j < loadedDescTaxon.get('simplifiedDescendants').length; j++){
+                                    loadedDescTaxon.get('simplifiedDescendants')[j].ensureFullyLoaded();
                                 }
                             }
                         });
@@ -217,29 +217,29 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
         });
     },
 
-    findOrCreateEntryPanel: function (entry) {
-        var i, entrypanel, me = this;
-        for (i = 0; i < me.__EntryPanels.length; i++) {
-            if (me.__EntryPanels[i].getEntry() === entry) {
-                return me.__EntryPanels[i];
+    findOrCreateTaxonPanel: function (taxon) {
+        var i, taxonpanel, me = this;
+        for (i = 0; i < me.__TaxonPanels.length; i++) {
+            if (me.__TaxonPanels[i].getTaxon() === taxon) {
+                return me.__TaxonPanels[i];
             }
         }
 
-        entrypanel = Ext.widget('entrypanel', {
-            entry: entry
+        taxonpanel = Ext.widget('taxonpanel', {
+            taxon: taxon
         });
-        me.__EntryPanels.push(entrypanel);
-        return entrypanel;
+        me.__TaxonPanels.push(taxonpanel);
+        return taxonpanel;
     },
     
-    addPopularDescendantsWhenLoaded: function(popDescContainer, entry){
+    addPopularDescendantsWhenLoaded: function(popDescContainer, taxon){
         var me = this;
-        entry.whenSimplifiedDescendantsLoaded(function (loadedDescEntry) {
+        taxon.whenSimplifiedDescendantsLoaded(function (loadedDescTaxon) {
             popDescContainer.removeAll(true);
-            if(loadedDescEntry.get('popularDescendants') && loadedDescEntry.get('popularDescendants').length > 0) {
+            if(loadedDescTaxon.get('popularDescendants') && loadedDescTaxon.get('popularDescendants').length > 0) {
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
-                var popularDescendants = loadedDescEntry.get('popularDescendants');
+                var popularDescendants = loadedDescTaxon.get('popularDescendants');
                 var xTranslate = -75;
                 if(popularDescendants.length == 1){
                     xTranslate = -92;
@@ -258,7 +258,7 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                         popDescPanelsContainer.add({xtype: 'component',width: 10, height: 10});
                     }
                     firstDesc = false;
-                    var panel = me.findOrCreateEntryPanel(popularDescendants[i]);
+                    var panel = me.findOrCreateTaxonPanel(popularDescendants[i]);
                     panel.setCollapsed(true);
                     popDescPanelsContainer.add(panel);
                 }

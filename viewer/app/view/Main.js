@@ -23,13 +23,13 @@ Ext.define('BioLadderOrg.view.Main', {
     requires: [
         'Ext.TitleBar',
         'BioLadderOrg.view.AboutSimplifiedAncestryPanel',
-        'BioLadderOrg.view.EntriesContainer',
+        'BioLadderOrg.view.TaxaContainer',
         'BioLadderOrg.view.HowToHelpPanel'
     ],
     config: {
         control: {
-            'entriescontainer': {
-                navigatetoentry: function (entryName) {this.fireEvent('navigatetoentry', entryName); }
+            'taxacontainer': {
+                navigatetotaxon: function (taxonName) {this.fireEvent('navigatetotaxon', taxonName); }
             },
             '#howToHelpBtn': {
                 tap: function() {Ext.Viewport.add(Ext.widget('howToHelpPanel')); }
@@ -46,11 +46,11 @@ Ext.define('BioLadderOrg.view.Main', {
                 itemId: 'howToHelpBtn'
             }]
         }, {
-            xtype: 'entriescontainer'
+            xtype: 'taxacontainer'
         }]
     },
 
-    gotoEntry: function (name) {
-        this.down('entriescontainer').gotoEntry(name);
+    gotoTaxon: function (name) {
+        this.down('taxacontainer').gotoTaxon(name);
     }
 });

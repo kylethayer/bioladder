@@ -47,19 +47,19 @@ Ext.application({
     ],
 
     models:[
-        'Entry'
+        'Taxon'
     ],
 
     views: [
         'AboutSimplifiedAncestryPanel',
-        'EntriesContainer',
-        'EntryPanel',
+        'TaxaContainer',
+        'TaxonPanel',
         'HowToHelpPanel',
         'Main'
     ],
 
     stores: [
-        'Entries'
+        'Taxa'
     ],
 
     controllers: [

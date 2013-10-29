@@ -18,21 +18,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('BioLadderOrg.store.Entries', {
+Ext.define('BioLadderOrg.store.Taxa', {
     extend: 'Ext.data.Store',
 
     config: {
-        model: "BioLadderOrg.model.Entry"
+        model: "BioLadderOrg.model.Taxon"
     },
 
-    findOrCreateEntry: function (name) {
-        var newEntry,
-            existingEntryIndex = this.findExact('name', name);
-        if (existingEntryIndex !== -1) {
-            return this.getAt(existingEntryIndex);
+    findOrCreateTaxon: function (name) {
+        var newTaxon,
+            existingTaxonIndex = this.findExact('name', name);
+        if (existingTaxonIndex !== -1) {
+            return this.getAt(existingTaxonIndex);
         }
-        newEntry = Ext.create('BioLadderOrg.model.Entry', {name: name});
-        this.add(newEntry);
-        return newEntry;
+        newTaxon = Ext.create('BioLadderOrg.model.Taxon', {name: name});
+        this.add(newTaxon);
+        return newTaxon;
     }
 });

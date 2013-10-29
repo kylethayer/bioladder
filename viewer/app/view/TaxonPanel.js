@@ -17,8 +17,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('BioLadderOrg.view.EntryPanel', {
-    xtype: 'entrypanel',
+Ext.define('BioLadderOrg.view.TaxonPanel', {
+    xtype: 'taxonpanel',
     extend: 'Ext.Panel',
 
     requires: [
@@ -27,7 +27,7 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
 
     config: {
         control: {
-            '#entryLabel': {
+            '#taxonLabel': {
                 tap: 'onLabelTap'
             },
             '#wikiEditBtn': {
@@ -38,14 +38,14 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
             }
         },
         border: 1,
-        cls: 'entry-panel',
+        cls: 'taxon-panel',
         collapsed: false,
-        entry: null,
+        taxon: null,
         items: [{
             xtype: 'button',
-            baseCls: 'entry-panel-label',
+            baseCls: 'taxon-panel-label',
             html: '',
-            itemId: 'entryLabel'
+            itemId: 'taxonLabel'
         }, {
             xtype: 'container',
             itemId: 'collapsibleContent',
@@ -76,16 +76,16 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
         width: 300
     },
 
-    updateEntry: function (newEntry, oldEntry) {
+    updateTaxon: function (newTaxon, oldTaxon) {
         var me = this;
         //reset view elements
         this.down('#wikipediaImage').setHtml('');
         this.down('#wikipediaBtn').setHidden(true);
 
         //set name and rest of fields when loaded
-        me.down('#entryLabel').setHtml(newEntry.get('name'));
-        newEntry.whenLoaded(function (newEntry) {
-            me.onEntryLoaded(newEntry);
+        me.down('#taxonLabel').setHtml(newTaxon.get('name'));
+        newTaxon.whenLoaded(function (newTaxon) {
+            me.onTaxonLoaded(newTaxon);
         });
     },
 
@@ -99,40 +99,40 @@ Ext.define('BioLadderOrg.view.EntryPanel', {
         }
     },
 
-    onEntryLoaded: function (newEntry) {
-        if (newEntry === this.getEntry()) {
+    onTaxonLoaded: function (newTaxon) {
+        if (newTaxon === this.getTaxon()) {
             var me = this;
-            if (newEntry.get('wikipediaImage')) {
-                this.down('#wikipediaImage').setHtml('<img src="' + newEntry.get('wikipediaImage') + '"/>');
+            if (newTaxon.get('wikipediaImage')) {
+                this.down('#wikipediaImage').setHtml('<img src="' + newTaxon.get('wikipediaImage') + '"/>');
             }
-            if (newEntry.get('wikipediaPage')) {
+            if (newTaxon.get('wikipediaPage')) {
                 this.down('#wikipediaBtn').setHidden(false);
             }
         }
     },
 
     onWikiEditBtnTap: function () {
-        var entry = this.getEntry();
-        if (entry) {
+        var taxon = this.getTaxon();
+        if (taxon) {
             window.open(
                 window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) +
-                    '/wiki/index.php?title=' + entry.get('name') + '&action=formedit',
+                    '/wiki/index.php?title=' + taxon.get('name') + '&action=formedit',
                 '_blank'
             );
         }
     },
 
     onWikipediaBtnTap: function () {
-        var entry = this.getEntry();
-        if (entry) {
-            window.open(entry.get('wikipediaPage'), '_blank');
+        var taxon = this.getTaxon();
+        if (taxon) {
+            window.open(taxon.get('wikipediaPage'), '_blank');
         }
     },
 
     onLabelTap: function () {
-        var entry = this.getEntry();
-        if (entry) {
-            this.fireEvent('navigatetoentry', entry);
+        var taxon = this.getTaxon();
+        if (taxon) {
+            this.fireEvent('navigatetotaxon', taxon);
         }
     }
 });

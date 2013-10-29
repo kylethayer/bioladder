@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('BioLadderOrg.model.Entry', {
+Ext.define('BioLadderOrg.model.Taxon', {
     extend: 'Ext.data.Model',
 
     config: {
@@ -30,10 +30,10 @@ Ext.define('BioLadderOrg.model.Entry', {
                         //make sure the name is a legitimate name
                         if (!/^[-_\w\s]+$/.test(simplifiedAncestor)) {
                             window.console.error('Simplified Ancestor name must be normal characters:', ancestor);
-                            return Ext.getStore('Entries').findOrCreateEntry('Could not parse name');
+                            return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
                         //convert it into an simplifiedAncestor object
-                        return Ext.getStore('Entries').findOrCreateEntry(simplifiedAncestor);
+                        return Ext.getStore('Taxa').findOrCreateTaxon(simplifiedAncestor);
                     }
                     return simplifiedAncestor;
                 }
@@ -59,10 +59,10 @@ Ext.define('BioLadderOrg.model.Entry', {
                                 //make sure the name is a legitimate name
                                 if (!/^[\w\s]+$/.test(popularDescendants[i])) {
                                     window.console.error('Popular Descendant name must be normal characters:', popularDescendants[i]);
-                                    popularDescendants[i] = Ext.getStore('Entries').findOrCreateEntry('Could not parse name');
+                                    popularDescendants[i] = Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                                 }
                                 //convert it into an simplifiedAncestor object
-                                popularDescendants[i] = Ext.getStore('Entries').findOrCreateEntry(popularDescendants[i]);
+                                popularDescendants[i] = Ext.getStore('Taxa').findOrCreateTaxon(popularDescendants[i]);
                             }
                         }
                     }
@@ -114,10 +114,10 @@ Ext.define('BioLadderOrg.model.Entry', {
         var searchObj, index, me = this;
         if (!me.get('isLoaded') && !me.get('isLoading')) {
             me.set('isLoading', true);
-            searchObj = Ext.create('BioLadderOrg.model.EntrySearch');
+            searchObj = Ext.create('BioLadderOrg.model.TaxonSearch');
             searchObj.runSearch({
                 name: me.get('name'),
-                success: function (entries) {
+                success: function (taxa) {
                     //This should be already done: me.set('isLoaded', true);
                     me.set('isLoading', false);
                     for (index in me.get('loadedCallbacks')) {
@@ -126,17 +126,17 @@ Ext.define('BioLadderOrg.model.Entry', {
                     me.set('loadedCallbacks', []);
                 },
                 failure: function (record){
-                    Ext.Msg.alert("Load Failed", "Failed to load an organism entry, you may need to refresh the page");
+                    Ext.Msg.alert("Load Failed", "Failed to load an organism Taxon, you may need to refresh the page");
                 }
             });
         }
         if (!me.get('areSimplifiedDescendantsLoaded') && !me.get('areSimplifiedDescendantsLoading')) {
             me.set('areSimplifiedDescendantsLoading', true);
-            searchObj = Ext.create('BioLadderOrg.model.EntrySearch');
+            searchObj = Ext.create('BioLadderOrg.model.TaxonSearch');
             searchObj.runSearch({
                 conditions: {'Has Simplified Ancestor': me.get('name')},
-                success: function (entries) {
-                    me.set('simplifiedDescendants', entries);
+                success: function (taxa) {
+                    me.set('simplifiedDescendants', taxa);
                     me.set('areSimplifiedDescendantsLoading', false);
                     me.set('areSimplifiedDescendantsLoaded', true);
                     for (index in me.get('simplifiedDescendantsLoadedCallbacks')) {
@@ -174,7 +174,7 @@ Ext.define('BioLadderOrg.model.Entry', {
     }
 });
 
-Ext.define('BioLadderOrg.model.EntrySearch', {
+Ext.define('BioLadderOrg.model.TaxonSearch', {
     runSearch: function (args) {
         var me =  this, requestFields, i, property,
             url = window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki/api.php?action=ask';
@@ -182,7 +182,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
         //build
         url += '&query=';
         if (args.name) {
-            url += '[[' + args.name + ']]'; //NOTE: for multiple names [[Entry1||Entry2]]
+            url += '[[' + args.name + ']]'; //NOTE: for multiple names [[Taxon1||Taxon2]]
         }
         if (args.conditions) {
             for (property in args.conditions) {
@@ -199,7 +199,7 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
         Ext.Ajax.request({
             url: url,
             success: function (response) {
-                var results, entries, entriesStore, entryName, entryFields, printouts, fieldName, entry,
+                var results, taxa, taxaStore, taxonName, taxonFields, printouts, fieldName, taxon,
                     data = response.responseText;
                 if (typeof data === 'string') {
                     try {
@@ -217,49 +217,49 @@ Ext.define('BioLadderOrg.model.EntrySearch', {
                     }
                 }
                 if(data.query === undefined){
-                    Ext.Msg.alert("Load Failed", "Failed to load an organism entry, you may need to refresh the page");
+                    Ext.Msg.alert("Load Failed", "Failed to load an organism taxon, you may need to refresh the page");
                     return;
                 }
                 results = data.query.results;
-                entries = [];
-                entriesStore = Ext.getStore('Entries');
-                for (entryName in results) {
-                    entryFields = {
-                        'name': results[entryName].fulltext,
-                        'wikiPage': results[entryName].fullurl
+                taxa = [];
+                taxaStore = Ext.getStore('Taxa');
+                for (taxonName in results) {
+                    taxonFields = {
+                        'name': results[taxonName].fulltext,
+                        'wikiPage': results[taxonName].fullurl
                     };
-                    if (typeof entryFields.name !== 'string' || !/^[-_\w\s]+$/.test(entryFields.name)) {
-                        window.console.error('Name must be normal characters:', entryFields.name);
-                        entryFields.name = 'Could not parse name';
+                    if (typeof taxonFields.name !== 'string' || !/^[-_\w\s]+$/.test(taxonFields.name)) {
+                        window.console.error('Name must be normal characters:', taxonFields.name);
+                        taxonFields.name = 'Could not parse name';
                     }
-                    printouts = results[entryName].printouts;
+                    printouts = results[taxonName].printouts;
                     if (printouts) {
                         if (printouts['Has Simplified Ancestor'] && printouts['Has Simplified Ancestor'].length > 0) {
-                            entryFields.simplifiedAncestor = printouts['Has Simplified Ancestor'][0].fulltext;
+                            taxonFields.simplifiedAncestor = printouts['Has Simplified Ancestor'][0].fulltext;
                         }
                         if (printouts['Has Wikipedia Image'] && printouts['Has Wikipedia Image'].length > 0) {
-                            entryFields.wikipediaImage = printouts['Has Wikipedia Image'][0];
+                            taxonFields.wikipediaImage = printouts['Has Wikipedia Image'][0];
                         }
                         if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
-                            entryFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
+                            taxonFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
                         }
                         if (printouts['Has Popular Descendants'] && printouts['Has Popular Descendants'].length > 0) {
                             popularDescendants = [];
                             for(var i = 0; i < printouts['Has Popular Descendants'].length; i++){
                               popularDescendants[i] = printouts['Has Popular Descendants'][i].fulltext;
                             }
-                            entryFields.popularDescendants = popularDescendants;
+                            taxonFields.popularDescendants = popularDescendants;
                         }
                     }
-                    //check if Entry already exists, if so add details to it, if not, create it and add to store
-                    entry = Ext.getStore('Entries').findOrCreateEntry(entryFields.name);
-                    for (fieldName in entryFields) {
-                        entry.set(fieldName, entryFields[fieldName]);
+                    //check if Taxon already exists, if so add details to it, if not, create it and add to store
+                    taxon = Ext.getStore('Taxa').findOrCreateTaxon(taxonFields.name);
+                    for (fieldName in taxonFields) {
+                        taxon.set(fieldName, taxonFields[fieldName]);
                     }
-                    entry.set('isLoaded', true);
-                    entries.push(entry);
+                    taxon.set('isLoaded', true);
+                    taxa.push(taxon);
                 }
-                args.success(entries);
+                args.success(taxa);
             }
         });
     }
