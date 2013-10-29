@@ -155,9 +155,9 @@ Ext.define('BioLadderOrg.view.EntriesContainer', {
                     if(firstTimeLoad){ //show instructions first time
                         me.down('#simplifiedAncestorContainer').add({
                             xtype: 'label',
-                            html: '<b>^ click here ^<b>',
+                            html: '^ click above ^',
                         });
-                        me.down('#simplifiedAncestorContainer').add({xtype: 'component', height: 20});
+                        me.down('#simplifiedAncestorContainer').add({xtype: 'component', height: 10});
                         firstTimeLoad = false;
                     }
                 }
