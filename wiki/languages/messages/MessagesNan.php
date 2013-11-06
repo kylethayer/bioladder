@@ -18,8 +18,8 @@ $datePreferences = array(
 $defaultDateFormat = 'nan';
 $dateFormats = array(
 	'nan time' => 'H:i',
-	'nan date' => 'Y-"nî" n-"goe̍h" j-"jἰt" (l)',
-	'nan both' => 'Y-"nî" n-"goe̍h" j-"jἰt" (D) H:i',
+	'nan date' => 'Y-"nî" n-"goe̍h" j-"ji̍t" (l)',
+	'nan both' => 'Y-"nî" n-"goe̍h" j-"ji̍t" (D) H:i',
 );
 
 $messages = array(
@@ -167,7 +167,6 @@ $messages = array(
 'qbbrowse' => 'Liū-lám',
 'qbedit' => 'Siu-kái',
 'qbpageoptions' => 'Chit ia̍h',
-'qbpageinfo' => 'Bo̍k-lo̍k',
 'qbmyoptions' => 'Goá ê ia̍h',
 'qbspecialpages' => 'Te̍k-sû-ia̍h',
 'faq' => 'Būn-tah',
@@ -396,8 +395,6 @@ $2',
 
 Lí ē-sái mài kì-miâ kè-siok sú-iōng {{SITENAME}}, mā ē-sái iōng kāng-ê a̍h-sī pa̍t-ê sin-hūn têng teng-ji̍p.
 Chhiaⁿ chù-ì: ū-kóa ia̍h ū khó-lêng khoàⁿ-tio̍h bē-su lí iû-goân teng-ji̍p tiong; che chi-iàu piàⁿ tiāu lí ê browser ê cache chiū ē chèng-siông.",
-'welcomecreation' => '==Hoan-gêng $1!==
-Í-keng khui hó lí ê kháu-chō.  M̄-hó bē-kì-tit chhiâu lí ê iōng-chiá siat-tēng.',
 'yourname' => 'Lí ê iōng-chiá miâ-chheng:',
 'yourpassword' => 'Lí ê bi̍t-bé:',
 'yourpasswordagain' => 'Têng phah bi̍t-bé:',
@@ -440,7 +437,7 @@ Tùi khoàⁿ-māi,  lí phah--ê.',
 'noemailprefs' => 'Tī lí ê siat-piān chí-tēng chi̍t ê tiān-chú-phoe tē-chí thang hō͘ chia ê kong-lêng ē-tàng ēng.',
 'emailconfirmlink' => 'Chhiáⁿ khak-jīn lí ê e-mail chū-chí ū-hāu',
 
-# E-mail sending
+# Email sending
 'user-mail-no-addy' => 'Siūⁿ beh kià tiān-chú-phoe, m̄-koh bô siá tē-chí.',
 
 # Change password dialog
@@ -846,7 +843,7 @@ Also see [[Special:WantedCategories|wanted categories]].',
 # Special:LinkSearch
 'linksearch' => 'Chhiau-chhoē chām-goā liân-kiat',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Bô siu-phoe ê chū-chí',
 'mailnologintext' => 'Lí it-tēng ài [[Special:UserLogin|teng-ji̍p]] jī-chhiáⁿ ū 1 ê ū-hāu ê e-mail chū-chí tī lí ê [[Special:Preferences|iōng-chiá siat-tēng]] chiah ē-tàng kià e-mail hō· pa̍t-ūi iōng-chiá.',
 'emailuser' => 'Kià e-mail hō· iōng-chiá',
@@ -1108,7 +1105,7 @@ Lí ē-sái khoàⁿ i ê goân-sú-bé.',
 'monthsall' => 'choân-pō͘',
 'limitall' => '全部',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Khak-jīn e-mail chū-chí',
 'confirmemail_text' => 'Sú-iōng e-mail kong-lêng chìn-chêng tio̍h seng khak-jīn lí ê e-mail chū-chí ū-hāu. Chhi̍h ē-pêng hit-ê liú-á thang kià 1 tiuⁿ khak-jīn phoe hō· lí. Hit tiuⁿ phoe lāi-bīn ū 1 ê te̍k-sû liân-kiat. Chhiáⁿ iōng liû-lám-khì khui lâi khoàⁿ, án-ne tō ē-tit khak-jīn lí ê chū-chí ū-hāu.',
 'confirmemail_send' => 'Kià khak-jīn phoe',

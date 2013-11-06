@@ -8,6 +8,7 @@
  * @file
  *
  * @author Horacewai2
+ * @author Justincheng12345
  * @author Kaganer
  * @author KaiesTse
  * @author Mark85296341
@@ -157,7 +158,6 @@ $specialPageAliases = array(
 	'Recentchanges'             => array( '最近修改' ),
 	'Recentchangeslinked'       => array( '外鏈修改' ),
 	'Revisiondelete'            => array( '修訂版本刪除' ),
-	'RevisionMove'              => array( '修訂版本移動' ),
 	'Search'                    => array( '搜索' ),
 	'Shortpages'                => array( '短版' ),
 	'Specialpages'              => array( '特別頁' ),
@@ -375,7 +375,6 @@ $messages = array(
 'qbbrowse' => '瀏覽',
 'qbedit' => '編輯',
 'qbpageoptions' => '呢一頁',
-'qbpageinfo' => '附近文字',
 'qbmyoptions' => '我嘅選項',
 'qbspecialpages' => '特別頁',
 'faq' => 'FAQ',
@@ -613,11 +612,8 @@ $1',
 # Login and logout pages
 'logouttext' => "'''你而家已經登出咗。'''
 
-你重可以用匿名身份用{{SITENAME}}，又或者[[Special:UserLogin|重新登入]]。
+你重可以用匿名身份用{{SITENAME}}，又或者<span class='plainlinks'>[$1 重新登入]</span>。
 但係留意某啲頁面可能會繼續話你未登入，除非等你清除瀏覽器嘅快取儲存。",
-'welcomecreation' => '== 歡迎， $1！ ==
-
-你個戶口已經起好。唔好唔記得去改改你嘅[[Special:Preferences|{{SITENAME}}喜好設定]]喎。',
 'yourname' => '用戶名:',
 'yourpassword' => '密碼:',
 'yourpasswordagain' => '再輸入密碼:',
@@ -699,7 +695,7 @@ $1',
 'loginlanguagelabel' => '語言：$1',
 'suspicious-userlogout' => '你去登出嘅要求已經拒絕咗，因為佢可能由壞咗嘅瀏覽器或者快取代理傳送。',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => '響 PHP 嘅 mail() 參數度出現咗未知嘅錯誤',
 
 # Change password dialog
@@ -808,8 +804,7 @@ $1',
 'noarticletext' => '喺呢一頁而家並冇任何嘅文字，你可以喺其它嘅頁面中[[Special:Search/{{PAGENAME}}|搵呢一頁嘅標題]]，
 <span class="plainlinks">[{{fullurl:{{#Special:Log}}|page={{FULLPAGENAMEE}}}} 搵有關嘅日誌]，
 或者[{{fullurl:{{FULLPAGENAME}}|action=edit}} 編輯呢一版]</span>。',
-'noarticletext-nopermission' => '喺呢一頁而家並冇任何嘅文字，你可以喺其它嘅頁面中[[Special:Search/{{PAGENAME}}|搵呢一頁嘅標題]]，
-或者<span class="plainlinks">[{{fullurl:{{#Special:Log}}|page={{FULLPAGENAMEE}}}} 搵有關嘅日誌]</span>。',
+'noarticletext-nopermission' => '呢一頁而家冇任何文字，你可以喺其它嘅頁面中[[Special:Search/{{PAGENAME}}|搵呢一頁嘅標題]]，或者<span class="plainlinks">[{{fullurl:{{#Special:Log}}|page={{FULLPAGENAMEE}}}} 搵有關嘅日誌]</span>。',
 'userpage-userdoesnotexist' => '用戶戶口"<nowiki>$1</nowiki>"重未開。請響䦒／編輯呢版之前先檢查一下。',
 'userpage-userdoesnotexist-view' => '用戶戶口"$1"重未開。',
 'blocked-notice-logextract' => '呢位用戶而家被封鎖緊。
@@ -885,7 +880,6 @@ $1',
 'template-semiprotected' => '(半保護)',
 'hiddencategories' => '呢一版係屬於$1個隱藏類嘅成員:',
 'edittools' => '<!-- 喺呢度嘅文字會喺編輯框下面同埋上載表格中顯示。 -->',
-'nocreatetitle' => '頁面建立被限制',
 'nocreatetext' => '{{SITENAME}}已經限制咗起新版嘅能力。
 你可以番轉頭去編輯一啲已經存在嘅頁面，或者[[Special:UserLogin|登入或開個新戶口]]。',
 'nocreate-loggedin' => '你並無許可權去開新版。',
@@ -1097,7 +1091,7 @@ $1",
 'mergelogpagetext' => '下面係一個最近由一版嘅修訂記錄合併到另一個嘅一覽。',
 
 # Diffs
-'history-title' => '"$1"嘅修訂歷史',
+'history-title' => '「$1」嘅修訂歷史',
 'difference-multipage' => '（版之間嘅差異）',
 'lineno' => '第$1行：',
 'compareselectedversions' => '比較被選嘅修訂',
@@ -1178,7 +1172,7 @@ $1",
 
 # Preferences page
 'preferences' => '喜好設定',
-'mypreferences' => '安排與架生',
+'mypreferences' => '自訂喜好',
 'prefs-edits' => '編輯數:',
 'prefsnologin' => '重未登入',
 'prefsnologintext' => '你一定要去<span class="plainlinks">[{{fullurl:{{#Special:UserLogin}}|returnto=$1}} 登入]</span>設定好用戶喜好值先。',
@@ -1288,7 +1282,7 @@ $1",
 'prefs-displaywatchlist' => '顯示選項',
 'prefs-diffs' => '差異',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => '電郵地址睇嚟有效',
 'email-address-validity-invalid' => '請打一個有效嘅電郵地址',
 
@@ -1398,11 +1392,13 @@ $1",
 'right-override-export-depth' => '倒出包含有五層深連版嘅頁面',
 'right-sendemail' => '寄電郵畀其他用戶',
 
+# Special:Log/newusers
+'newuserlogpage' => '使用者開戶記錄',
+'newuserlogpagetext' => '呢個係一個使用者開戶嘅日誌',
+
 # User rights log
 'rightslog' => '用戶權限日誌',
 'rightslogtext' => '呢個係用戶權力嘅修改日誌。',
-'rightslogentry' => '已經將$1嘅組別從$2改到去$3',
-'rightsnone' => '(無)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => '讀呢版',
@@ -1862,7 +1858,7 @@ Template:搞清楚',
 'listusers-editsonly' => '只顯示有編輯嘅用戶',
 'listusers-creationsort' => '按建立日期排序',
 'usereditcount' => '$1次編輯',
-'usercreated' => '響$1 $2建立',
+'usercreated' => '響$1 $2{{GENDER:$3|建立}}',
 'newpages' => '新頁',
 'newpages-username' => '用戶名：',
 'ancientpages' => '舊頁面',
@@ -1952,10 +1948,6 @@ Template:搞清楚',
 'activeusers-hidesysops' => '隱藏管理員',
 'activeusers-noresult' => '搵唔到用戶。',
 
-# Special:Log/newusers
-'newuserlogpage' => '使用者開戶記錄',
-'newuserlogpagetext' => '呢個係一個使用者開戶嘅日誌',
-
 # Special:ListGroupRights
 'listgrouprights' => '用戶組權限',
 'listgrouprights-summary' => '下面係一個響呢個wiki定義咗嘅用戶權限一覽，同埋佢哋嘅存取權。
@@ -1975,7 +1967,7 @@ Template:搞清楚',
 'listgrouprights-addgroup-self-all' => '加入全部組到自己嘅戶口度',
 'listgrouprights-removegroup-self-all' => '響自己嘅戶口度可以拎走全部組',
 
-# E-mail user
+# Email user
 'mailnologin' => '冇傳送地址',
 'mailnologintext' => '你一定要[[Special:UserLogin|登入咗]]同埋喺你嘅[[Special:Preferences|喜好設定]]度有個有效嘅電郵地址先可以傳送電郵畀其他用戶。',
 'emailuser' => '發電郵畀呢位用戶',
@@ -2041,11 +2033,7 @@ Template:搞清楚',
 
 'enotif_mailer' => '{{SITENAME}}通知郵遞員',
 'enotif_reset' => '將所有頁面標成已視察',
-'enotif_newpagetext' => '呢個係一個新頁面。',
 'enotif_impersonal_salutation' => '{{SITENAME}}用戶',
-'changed' => '修改過',
-'created' => '建立過',
-'enotif_subject' => '{{SITENAME}}嘅頁面$PAGETITLE已由$PAGEEDITOR$CHANGEDORCREATED',
 'enotif_lastvisited' => '你上次視察以嚟嘅修改請睇$1。',
 'enotif_lastdiff' => '睇$1去睇吓呢一次更改。',
 'enotif_anon_editor' => '匿名用戶$1',
@@ -2072,6 +2060,8 @@ wiki: $PAGEEDITOR_WIKI
 
 回饋及更多幫助：
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => '建立過',
+'changed' => '修改過',
 
 # Delete
 'deletepage' => '刪除頁面',
@@ -2236,7 +2226,7 @@ $1',
 'blanknamespace' => '（主）',
 
 # Contributions
-'contributions' => '用戶貢獻',
+'contributions' => '{{GENDER:$1|用戶}}貢獻',
 'contributions-title' => '$1嘅用戶貢獻',
 'mycontris' => '個人貢獻',
 'contribsub2' => '$1嘅貢獻 ($2)',
@@ -2326,7 +2316,7 @@ $1',
 'ipusubmit' => '拎走呢個封鎖',
 'unblocked' => '"[[User:$1|$1]]"已經解封',
 'unblocked-id' => '$1嘅封鎖已經拎走咗',
-'ipblocklist' => 'IP地址同用戶名阻止名單',
+'ipblocklist' => '封咗嘅用戶',
 'ipblocklist-legend' => '搵一位封咗嘅用戶',
 'ipblocklist-submit' => '搵',
 'ipblocklist-localblock' => '本地封鎖',
@@ -2781,8 +2771,6 @@ $1',
 
 /*
 Short names for language variants used for language conversion links.
-To disable showing a particular link, set it to 'disable', e.g.
-'variantname-zh-sg' => 'disable',
 Variants for Chinese language
 */
 'variantname-zh-hans' => '簡體',
@@ -2813,7 +2801,7 @@ Variants for Chinese language
 'metadata-help' => '呢個檔案有額外嘅資料。佢應該係數碼相機或者掃描器整出來嘅。如果佢整咗之後畀人改過，裏面嘅資料未必同改過之後相符。',
 'metadata-expand' => '打開詳細資料',
 'metadata-collapse' => '收埋詳細資料',
-'metadata-fields' => '響呢個信息列出嘅 EXIF 元數據項目會喺圖像頁中包含起嚟，而且個元數據表除咗喺下面列出嘅項目之外，其它嘅項目預設會被隱藏。
+'metadata-fields' => '響呢個信息列出嘅EXIF元數據項目會喺圖像頁中包含起嚟，而且個元數據表除咗喺下面列出嘅項目之外，其它嘅項目預設會隱藏。
 * make
 * model
 * datetimeoriginal
@@ -3102,7 +3090,7 @@ Variants for Chinese language
 'monthsall' => '全部',
 'limitall' => '全部',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => '確認電郵地址',
 'confirmemail_noemail' => '你唔需要響你嘅[[Special:Preferences|用戶喜好設定]]度設定一個有效嘅電郵地址。',
 'confirmemail_text' => '{{SITENAME}}需要你喺使用電郵功能之前驗證吓你嘅電郵地址。啟用下邊個掣嚟發封確認信去你個地址度。封信入面會附帶一條包含代碼嘅連結；喺你個瀏覽器度打開條連結嚟確認你嘅電郵地址係有效嘅。',
@@ -3372,7 +3360,7 @@ MediaWiki是基於使用目的而加以發佈，但係就唔會負上任何嘅�
 # New logging system
 'revdelete-restricted' => '已經應用限制到操作員',
 'revdelete-unrestricted' => '已經拎走對於操作員嘅限制',
-'newuserlog-byemail' => '密碼已由電郵寄出',
+'rightsnone' => '(無)',
 
 # Search suggestions
 'searchsuggest-search' => '搵嘢',

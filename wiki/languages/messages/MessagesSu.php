@@ -274,7 +274,6 @@ $messages = array(
 'qbbrowse' => 'Sungsi',
 'qbedit' => 'Édit',
 'qbpageoptions' => 'Kaca ieu',
-'qbpageinfo' => 'Kontéks',
 'qbmyoptions' => 'Kaca kuring',
 'qbspecialpages' => 'Kaca husus',
 'faq' => 'NLD',
@@ -518,11 +517,8 @@ Pikeun alihbasa, mangga sumping ka [//translatewiki.net/wiki/Main_Page?setlang=e
 # Login and logout pages
 'logouttext' => "'''Anjeun ayeuna geus kaluar log.'''
 
-Anjeun bisa tetep migunakeun {{SITENAME}} bari anonim, atawa bisa [[Special:UserLogin|asup log deui]] salaku pamaké nu sarua atawa nu séjén deui.
+Anjeun bisa tetep migunakeun {{SITENAME}} bari anonim, atawa bisa <span class='plainlinks'>[$1 asup log deui]</span> salaku pamaké nu sarua atawa nu séjén deui.
 Mangkahadé, sababaraha kaca bakal tetep némbongkeun saolah-olah anjeun asup log kénéh nepi ka anjeun ngosongkeun ''cache'' panyungsi anjeun.",
-'welcomecreation' => '==Wilujeng sumping, $1!==
-Rekening anjeun geus dijieun.
-Tong hilap ngarobih [[Special:Preferences|{{SITENAME}} préferénsi]] anjeun.',
 'yourname' => 'Sandiasma:',
 'yourpassword' => 'Sandi anjeun',
 'yourpasswordagain' => 'Ketik deui sandi anjeun',
@@ -605,7 +601,7 @@ Tungguan heula sakeudeung, laju cobaan deui.',
 'loginlanguagelabel' => 'Basa: $1',
 'suspicious-userlogout' => "Pamundut anjeun pikeun kaluar log ditolak ku sabab sigana dikirim ku pangaprak buntu atawa ''cache'' proxi.",
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'Kasalahan nu teu kanyahoan dina fungsi PHP surélék().',
 'user-mail-no-addy' => 'Nyobaan ngirim surélék tanpa alamat.',
 
@@ -825,7 +821,6 @@ kuncén nu ngonci pangkalan data mikeun kajelasan : $1",
 'template-semiprotected' => '(semi-dikonci)',
 'hiddencategories' => 'Ieu kaca kaasup {{PLURAL:$1|1 kategori nyumput|$1 kategori nyumput}}:',
 'edittools' => '<!-- Téks di dieu bakal némbongan di handapeun formulir édit jeung muat.-->',
-'nocreatetitle' => 'Nyieun kaca kakara diwatesan',
 'nocreatetext' => '{{SITENAME}} nutup kabisa nyieun kaca anyar.
 Mangga édit artikel nu geus aya, atawa [[Special:UserLogin|asup log/daptar heula]].',
 'nocreate-loggedin' => 'Anjeun teu diwenangkeun pikeun nyieun kaca anyar.',
@@ -1210,7 +1205,7 @@ Mun geus anggeus teu bisa dibolaykeun.',
 'prefs-displaywatchlist' => 'Pilihan pidangan',
 'prefs-diffs' => 'Béda',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'Alamat surélék sigana bener',
 'email-address-validity-invalid' => 'Asupkeun alamat ratron nu bener',
 
@@ -1314,12 +1309,13 @@ Mun geus anggeus teu bisa dibolaykeun.',
 'right-siteadmin' => 'Ngonci jeung muka konci databés',
 'right-sendemail' => 'Kirim surélék ka pamaké séjén',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Log akun anyar',
+'newuserlogpagetext' => 'Di handap ieu béréndélan log pamaké anyar.',
+
 # User rights log
 'rightslog' => 'Log hak pamaké',
 'rightslogtext' => 'Ieu mangrupa log parobahan hak-hak pamaké.',
-'rightslogentry' => 'ngarobah kaanggotaan grup pikeun $1 tina $2 jadi $3',
-'rightslogentry-autopromote' => 'geus sacara otomatis dipromosikeun ti $2 ka $3',
-'rightsnone' => '(euweuh)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'maca ieu kaca',
@@ -1820,10 +1816,6 @@ Baca ogé [[Special:WantedCategories|kategori nu dipikabutuh]].',
 'activeusers-hidesysops' => 'Sumputkeun kuncén',
 'activeusers-noresult' => 'Teu kapendak.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Log akun anyar',
-'newuserlogpagetext' => 'Di handap ieu béréndélan log pamaké anyar.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Hak-hak grup pamaké',
 'listgrouprights-summary' => 'Ieu mangrupa daptar jumplukan pamaké anu aya di wiki ieu, kalawan daptar hak aksés maranéhanana.
@@ -1843,7 +1835,7 @@ Baca ogé [[Special:WantedCategories|kategori nu dipikabutuh]].',
 'listgrouprights-addgroup-self-all' => 'Tambahkeun sakabéh grup ka akun sorangan',
 'listgrouprights-removegroup-self-all' => 'Piceun sakabéh grup ti akun sorangan',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Euweuh alamat ngirim',
 'mailnologintext' => "Anjeun kudu '''[[Special:UserLogin|asup log]]''' sarta boga alamat surélék nu sah na [[Special:Preferences|préferénsi]] anjeun sangkan bisa nyurélékan pamaké séjén.",
 'emailuser' => 'Surélékan pamaké ieu',
@@ -1907,11 +1899,7 @@ Jaga, parobahan na kaca ieu katut kaca obrolanana bakal dibéréndélkeun di din
 
 'enotif_mailer' => 'Surat Émbaran {{SITENAME}}',
 'enotif_reset' => 'Tandaan sadaya kaca nu geus dilongok',
-'enotif_newpagetext' => 'Kaca ieu anyar.',
 'enotif_impersonal_salutation' => 'Pamaké {{SITENAME}}',
-'changed' => 'geus robah',
-'created' => 'geus dijieun',
-'enotif_subject' => 'Kaca $PAGETITLE {{SITENAME}} geus $CHANGEDORCREATED ku $PAGEEDITOR',
 'enotif_lastvisited' => 'Tempo $1 pikeun sadaya parobahan ti saprak anjeun ninggalkeun ieu kaca.',
 'enotif_lastdiff' => 'Buka $1 pikeun nempo ieu parobahan.',
 'enotif_anon_editor' => 'pamaké anonim $1',
@@ -1936,6 +1924,8 @@ Pikeun ngarobah setélan dabtar awaseun anjeun, sindang ka {{SERVER}}{{localurl:
 
 Asupan jeung bantuan salajengna:
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'geus dijieun',
+'changed' => 'geus robah',
 
 # Delete
 'deletepage' => 'Hapus kaca',
@@ -2851,7 +2841,7 @@ Nu séjénna bakal disumputkeun sakumaha asalna.
 'monthsall' => 'kabéh',
 'limitall' => 'kabéh',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Konfirmasi alamat surélék',
 'confirmemail_noemail' => 'Alamat surélék anu didaptarkeun dina [[Special:Preferences|préferénsi pamaké]] anjeun teu sah.',
 'confirmemail_text' => 'Wiki ieu merlukeun anjeun sangkan méré konfirmasi alamat surélék saméméh migunakeun fitur surélék. Aktifkeun tombol di handap pikeun ngirimkeun surat konfirmasi ka alamat anjeun. Suratna ngandung tumbu nu ngandung sandina; muatkeun tumbuna kana panyungsi anjeun pikeun ngonfirmasi yén alamat surélék anjeun sah.',
@@ -3052,7 +3042,7 @@ Coba ku sawangan normal.',
 # New logging system
 'revdelete-restricted' => 'akses geus dibatesan ukur keur kuncén',
 'revdelete-unrestricted' => 'Watesan akses kuncén dihapuskeun',
-'newuserlog-byemail' => 'Sandi geus dikirim maké surélék.',
+'rightsnone' => '(euweuh)',
 
 # Feedback
 'feedback-subject' => 'Ngeunaan:',

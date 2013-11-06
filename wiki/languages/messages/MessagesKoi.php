@@ -385,6 +385,9 @@ $messages = array(
 
 'grouppage-sysop' => '{{ns:project}}:Веськöтлiссез',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Уджкерисьö гижöтчан журнал',
+
 # User rights log
 'rightslog' => 'Уджкерисьлö позяннэз сьöртi журнал',
 
@@ -489,13 +492,10 @@ $messages = array(
 # Special:LinkSearch
 'linksearch' => 'Вики сайöдз ыстöттэз',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Уджкерисьö гижöтчан журнал',
-
 # Special:ListGroupRights
 'listgrouprights-members' => '(уджкериссезлöн нимлёдз)',
 
-# E-mail user
+# Email user
 'emailuser' => 'Этiя ужкерисьлö гижöт',
 'emailfrom' => 'Кинсянь:',
 'emailto' => 'Кинлö:',

@@ -11,6 +11,7 @@
  * @author O
  * @author Reedy
  * @author Wu-chinese.com
+ * @author Yfdyh000
  */
 
 $fallback = 'zh-hans';
@@ -159,7 +160,6 @@ $messages = array(
 'qbbrowse' => '浏览',
 'qbedit' => '编辑',
 'qbpageoptions' => '迭只页面',
-'qbpageinfo' => '上下文',
 'qbmyoptions' => '我个选项',
 'qbspecialpages' => '特殊页面',
 'faq' => 'FAQs',
@@ -382,11 +382,8 @@ $2',
 # Login and logout pages
 'logouttext' => "侬已经登出哉。'''
 
-侬可以继续匿名使用{{SITENAME}} ，也可以再次以相同或者两样个用户名[[Special:UserLogin|登录]]。
+侬可以继续匿名使用{{SITENAME}} ，也可以再次以相同或者两样个用户名<span class='plainlinks'>[$1 登录]</span>。
 注意，有眼页面作兴还是会搭侬登出前头一样显示，一脚到侬清除浏览器缓存。",
-'welcomecreation' => '== 欢迎侬， $1！ ==
-
-侬个户头已经建立好哉。弗要忘记脱设定侬个[[Special:Preferences|{{SITENAME}}的个人参数]]噢。',
 'yourname' => '用户名:',
 'yourpassword' => '密码:',
 'yourpasswordagain' => '再拍一遍密码:',
@@ -628,7 +625,6 @@ $2',
 'template-protected' => '（保护）',
 'template-semiprotected' => '（半保护垃许）',
 'hiddencategories' => '箇只页面是属于$1个隐藏分类个成员：',
-'nocreatetitle' => '创建页面受限',
 'nocreatetext' => '{{SITENAME}}限制了创建新页面功能。侬可以返回并编辑已有个页面，或者[[Special:UserLogin|登录或创建新账户]]。',
 'nocreate-loggedin' => '侬呒没权限创建新页面。',
 'sectioneditnotsupported-title' => '段落编辑弗支持',
@@ -1000,9 +996,11 @@ $1",
 'grouppage-sysop' => '{{ns:project}}:管理员',
 'grouppage-bureaucrat' => '{{ns:project}}:行政员',
 
+# Special:Log/newusers
+'newuserlogpage' => '用户创建日志',
+
 # User rights log
 'rightslog' => '用户权限日志',
-'rightsnone' => '（呒）',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-edit' => '编辑箇只页面',
@@ -1192,13 +1190,10 @@ $1",
 # Special:ListUsers
 'listusers-submit' => '显示',
 
-# Special:Log/newusers
-'newuserlogpage' => '用户创建日志',
-
 # Special:ListGroupRights
 'listgrouprights-members' => '（成员列表）',
 
-# E-mail user
+# Email user
 'emailuser' => '发E-mail拨该个用户',
 'emailfrom' => '从',
 'emailto' => '发拨',
@@ -1229,9 +1224,8 @@ $1",
 'watching' => '监控……',
 'unwatching' => '解除监控……',
 
-'enotif_newpagetext' => '该个是一只新页面。',
-'changed' => '改变哉',
 'created' => '建立哉',
+'changed' => '改变哉',
 
 # Delete
 'deletepage' => '删脱页面',
@@ -1490,8 +1484,6 @@ $1",
 
 /*
 Short names for language variants used for language conversion links.
-To disable showing a particular link, set it to 'disable', e.g.
-'variantname-zh-sg' => 'disable',
 Variants for Chinese language
 */
 'variantname-zh-tw' => '台湾',
@@ -1541,7 +1533,7 @@ Variants for Chinese language
 'namespacesall' => '全部',
 'monthsall' => '全',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => '确认电子邮件地址',
 'confirmemail_text' => '该只wiki要求倷来拉用电子邮件服务之前验证电子邮件地址个有效性。揿底下只揿钮来发封确认信到倷电子邮箱。个封信里会有加密个链接。登倷个浏览器里向打开该只链接，确认倷个电子邮箱地址是有效个。',
 'confirmemail_send' => '发送确认码',
@@ -1581,12 +1573,12 @@ Variants for Chinese language
 'autosumm-new' => '新页面：$1',
 
 # Watchlist editor
-'watchlistedit-normal-title' => '编辑监控列表',
+'watchlistedit-normal-title' => '编辑监视列表',
 
 # Watchlist editing tools
 'watchlisttools-view' => '查看搭界个修改',
 'watchlisttools-edit' => '查看并编辑监控列表',
-'watchlisttools-raw' => '编辑源监控列表',
+'watchlisttools-raw' => '编辑原始监视列表',
 
 # Special:Version
 'version' => '版本',
@@ -1602,5 +1594,6 @@ Variants for Chinese language
 # New logging system
 'revdelete-restricted' => '已将限制应用到管理员',
 'revdelete-unrestricted' => '已移除对管理员个限制',
+'rightsnone' => '（呒）',
 
 );

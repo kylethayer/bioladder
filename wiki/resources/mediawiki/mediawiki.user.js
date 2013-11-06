@@ -61,7 +61,7 @@
 		 *
 		 * @return String: Random set of 32 alpha-numeric characters
 		 */
-		function generateId() {
+		this.generateRandomSessionId = function () {
 			var i, r,
 				id = '',
 				seed = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -70,7 +70,7 @@
 				id += seed.substring( r, r + 1 );
 			}
 			return id;
-		}
+		};
 
 		/**
 		 * Gets the current user's name.
@@ -86,6 +86,25 @@
 		 */
 		this.name = function () {
 			return this.getName();
+		};
+
+		/**
+		 * Get date user registered, if available.
+		 *
+		 * @return {Date|false|null} date user registered, or false for anonymous users, or
+		 *  null when data is not available
+		 */
+		this.getRegistration = function () {
+			var registration = mw.config.get( 'wgUserRegistration' );
+			if ( this.isAnon() ) {
+				return false;
+			} else if ( registration === null ) {
+				// Information may not be available if they signed up before
+				// MW began storing this.
+				return null;
+			} else {
+				return new Date( registration );
+			}
 		};
 
 		/**
@@ -115,37 +134,23 @@
 		this.sessionId = function () {
 			var sessionId = $.cookie( 'mediaWiki.user.sessionId' );
 			if ( typeof sessionId === 'undefined' || sessionId === null ) {
-				sessionId = generateId();
+				sessionId = user.generateRandomSessionId();
 				$.cookie( 'mediaWiki.user.sessionId', sessionId, { 'expires': null, 'path': '/' } );
 			}
 			return sessionId;
 		};
 
 		/**
-		 * Gets the current user's name or a random ID automatically generated and kept in a cookie.
-		 *
-		 * This ID is persistent for anonymous users, staying in their browser up to 1 year. The
-		 * expiration time is reset each time the ID is queried, so in most cases this ID will
-		 * persist until the browser's cookies are cleared or the user doesn't visit for 1 year.
+		 * Gets the current user's name or the session ID
 		 *
 		 * @return String: User name or random session ID
 		 */
 		this.id = function() {
-			var id,
-				name = user.getName();
+			var name = user.getName();
 			if ( name ) {
 				return name;
 			}
-			id = $.cookie( 'mediaWiki.user.id' );
-			if ( typeof id === 'undefined' || id === null ) {
-				id = generateId();
-			}
-			// Set cookie if not set, or renew it if already set
-			$.cookie( 'mediaWiki.user.id', id, {
-				expires: 365,
-				path: '/'
-			} );
-			return id;
+			return user.sessionId();
 		};
 
 		/**

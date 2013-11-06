@@ -350,7 +350,7 @@ $messages = array(
 'cancel' => 'Anulo',
 'moredotdotdot' => 'Më shumë...',
 'mypage' => 'Faqja ime',
-'mytalk' => 'Diskutimet e mia',
+'mytalk' => 'Diskutimet',
 'anontalk' => 'Diskutimet për këtë IP',
 'navigation' => 'Shfleto',
 'and' => '&#32;dhe',
@@ -360,7 +360,6 @@ $messages = array(
 'qbbrowse' => 'Shfletoni',
 'qbedit' => 'Redaktoni',
 'qbpageoptions' => 'Kjo faqe',
-'qbpageinfo' => 'Kontekst',
 'qbmyoptions' => 'Faqet e mia',
 'qbspecialpages' => 'Faqet speciale',
 'faq' => 'Pyetje që bëhen shpesh',
@@ -383,6 +382,7 @@ $messages = array(
 'namespaces' => 'Hapsirat e emrit',
 'variants' => 'Variante',
 
+'navigation-heading' => 'Menuja e navigimit',
 'errorpagetitle' => 'Gabim',
 'returnto' => 'Kthehuni tek $1',
 'tagline' => 'Nga {{SITENAME}}',
@@ -489,8 +489,7 @@ $1",
 'viewsourceold' => 'shiko tekstin',
 'editlink' => 'redakto',
 'viewsourcelink' => 'Shiko tekstin',
-'editsectionhint' => 'Redaktoni seksionin:
-Edit section: $1',
+'editsectionhint' => 'Redaktoni seksionin: $1',
 'toc' => 'Përmbajtje',
 'showtoc' => 'trego',
 'hidetoc' => 'fshih',
@@ -626,11 +625,11 @@ Administratori i cili e mbylli atë e dha këtë shpjegim: "$3".',
 # Login and logout pages
 'logouttext' => "'''Ju keni dalë jashtë.''' 
 
- Ju mund të vazhdoni të përdorni {{SITENAME}} në mënyrë anonime, ose mund të [[Special:UserLogin|identifikoheni përsëri]] si përdoruesi i mëparshëm ose si një përdorues tjetër. 
+ Ju mund të vazhdoni të përdorni {{SITENAME}} në mënyrë anonime, ose mund të <span class='plainlinks'>[$1 identifikoheni përsëri]</span> si përdoruesi i mëparshëm ose si një përdorues tjetër. 
  Kini parasysh që disa faqe mund të shfaqen sikur të ishit i identifikuar derisa të fshini ''cache''-in e shfletuesit tuaj.",
-'welcomecreation' => '== Mirësevini, $1! == 
- Llogaria juaj është krijuar. 
- Mos harroni të ndryshoni [[Special:Preferences|{{SITENAME}} preferencat]] tuaja.',
+'welcomeuser' => 'Mirë se vini, $1!',
+'welcomecreation-msg' => 'Llogaria juaj u krijua. 
+Mos harroni të ndryshoni [[Special:Preferences|{{SITENAME}} preferencat]] tuaja.',
 'yourname' => 'Fusni nofkën tuaj',
 'yourpassword' => 'Fusni fjalëkalimin tuaj',
 'yourpasswordagain' => 'Fusni fjalëkalimin përsëri',
@@ -715,7 +714,7 @@ Duhet të hyni brenda dhe të ndërroni fjalëkalimin tani nëse ky person jeni 
 'loginlanguagelabel' => 'Gjuha: $1',
 'suspicious-userlogout' => 'Kërkesa juaj për të shkëputet u mohua sepse duket sikur është dërguar nga një shfletues të thyer ose caching proxy.',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'Gabim i panjohur në funksionin e postës PHP ()',
 'user-mail-no-addy' => 'Provuat të dërgoni një korrespondencë pa adresë elektronike',
 
@@ -873,10 +872,8 @@ Kjo adresë IP mund të përdoret nga disa përdorues.
 Ju mund [[Special:Search/{{PAGENAME}}|ta kërkoni këtë titull]] në faqe tjera,
 <span class="plainlinks">[{{fullurl:{{#Special:Log}}|page={{FULLPAGENAMEE}}}} të kërkoni ngjarjet e ngjashme në regjistër],
 ose [{{fullurl:{{FULLPAGENAME}}|action=edit}} të redaktoni këtë faqe]</span>.',
-'noarticletext-nopermission' => 'Momentalisht nuk ka tekst në këtë faqe.
-Ju mundeni [[Special:Search/{{PAGENAME}}|me kërku këtë titull]] në faqe tjera,
-<span class="plainlinks">[{{fullurl:{{#Special:Log}}|page={{FULLPAGENAMEE}}}} me kërku në regjistrat tematikisht të afërm],
-apo [{{fullurl:{{FULLPAGENAME}}|action=edit}} me redaktu këtë faqe]</span>.',
+'noarticletext-nopermission' => 'Për momentin faqja e kërkuar është bosh.
+Ju mund të [[Special:Search/{{PAGENAME}}|kërkoni këtë titiull]] në faqet e tjera, ose të <span class="plainlinks">[{{fullurl:{{#Special:Log}}|page={{FULLPAGENAMEE}}}} këtkoni regjistrat e ngjashëm]</span>, por ju nuk mundeni ta krijoni këtë faqe.',
 'missing-revision' => 'Inspektimi #$1 i faqes me emrin "{{PAGENAME}}" nuk ekziston.
 
 Kjo zakonisht shkaktuar duke ndjekur një lidhje të vjetër tek një faqe që është fshirë. Hollësitë mund të gjenden në [{{fullurl:{{#Special:Log}}/delete|page={{FULLPAGENAMEE}}}} regjistrin e fshirjeve].',
@@ -963,7 +960,6 @@ Regjistri më i vonshëm i hyrjeve është poshtë për referncë:",
 'template-semiprotected' => '(gjysëm-mbrojtur)',
 'hiddencategories' => 'Kjo faqe është nën {{PLURAL:$1|një kategori të fshehur|$1 kategori të fshehura}}:',
 'edittools' => '<!-- Teksti këtu do të tregohet poshtë kutive të redaktimit dhe ngarkimit të skedave. -->',
-'nocreatetitle' => 'Krijimi i faqeve të reja është i kufizuar.',
 'nocreatetext' => 'Mundësia për të krijuar faqe të reja është kufizuar. Duhet të [[Special:UserLogin|hyni ose të hapni një llogari]] për të krijuar faqe të reja, ose mund të ktheheni mbrapsh dhe të redaktoni një faqe ekzistuese.',
 'nocreate-loggedin' => 'Nuk ju lejohet të krijoni faqe të reja.',
 'sectioneditnotsupported-title' => 'Redaktimi i pjesës nuk është i mbështetur',
@@ -986,6 +982,9 @@ Duket se është grisur.',
 'edit-already-exists' => 'Faqja nuk mundej të hapet.
 Ajo tanimë ekziston.',
 'defaultmessagetext' => 'Teksti i porosisë së parazgjedhur',
+
+# Content models
+'content-model-text' => 'tekst i thejshtë',
 
 # Parser/template warnings
 'expensive-parserfunction-warning' => 'Kujdes: Kjo faqe ka shumë kërkesa që kërkojnë analizë gramatikore të kushtueshme për sistemin.
@@ -1177,7 +1176,7 @@ Kini kujdes se përdorimi i lidhjeve të shfletimit do të ndryshojë përzgjedh
 'mergelogpagetext' => 'Më poshtë jepet një listë e bashkimeve së fundmi nga historiku i një faqeje në historikun e një faqeje tjetër.',
 
 # Diffs
-'history-title' => 'Historiku i redaktimeve te "$1"',
+'history-title' => 'Historiku i redaktimeve të "$1"',
 'difference-title' => 'Ndryshimi mes inspektimeve të "$1"',
 'difference-title-multipage' => 'Ndryshimi mes faqeve "$1" dhe "$2"',
 'difference-multipage' => '(Ndryshimi midis faqeve)',
@@ -1376,7 +1375,7 @@ Kjo informatë është publike.',
 'prefs-displaywatchlist' => 'Shfaq opsionet',
 'prefs-diffs' => 'Ndryshimet',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'E-mail adresa është e vlefshme.',
 'email-address-validity-invalid' => 'Futni një e-mali adresë të vlefshme.',
 
@@ -1488,12 +1487,13 @@ Kjo informatë është publike.',
 'right-sendemail' => 'Dërgo e-mail tek përdoruesit e tjerë',
 'right-passwordreset' => 'Shiko e-mail-et e rivendosjes së fjalëkalimit',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Regjistri i llogarive',
+'newuserlogpagetext' => 'Ky është një regjistër i llogarive të fundit që janë hapur',
+
 # User rights log
 'rightslog' => 'Regjistri i privilegjeve të përdoruesit',
 'rightslogtext' => 'Ky është një regjistër për ndryshimet e privilegjeve të përdoruesit.',
-'rightslogentry' => 'u ndryshua anëtarësimi i grupit për $1 nga $2 tek $3',
-'rightslogentry-autopromote' => 'automatikisht u rrit në datyrë nga $2 në $3',
-'rightsnone' => '(asgjë)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'lexo këtë faqe',
@@ -2120,10 +2120,6 @@ Protokolle të mbështetura: <code>$1<code> (mos shtoni ndonjërin nga këta në
 'activeusers-hidesysops' => 'Fshih administratorët',
 'activeusers-noresult' => 'Asnjë përdorues nuk u gjet.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Regjistri i llogarive',
-'newuserlogpagetext' => 'Ky është një regjistër i llogarive të fundit që janë hapur',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Grupime përdoruesish me privilegje',
 'listgrouprights-summary' => 'Më poshtë jepet grupimi i përdoruesve sipas privilegjeve që ju janë dhënë në këtë wiki. Më shumë informacion rreth privilegjeve në veçanti mund të gjendet [[{{MediaWiki:Listgrouprights-helppage}}|këtu]].',
@@ -2142,7 +2138,7 @@ Protokolle të mbështetura: <code>$1<code> (mos shtoni ndonjërin nga këta në
 'listgrouprights-addgroup-self-all' => 'Shtoni të gjitha grupet tek llogaria',
 'listgrouprights-removegroup-self-all' => 'Hiq të gjitha grupet nga llogaria',
 
-# E-mail user
+# Email user
 'mailnologin' => "S'ka adresë dërgimi",
 'mailnologintext' => 'Duhet të keni [[Special:UserLogin|hyrë brenda]] dhe të keni një adresë të saktë në [[Special:Preferences|parapëlqimet]] tuaja për tu dërguar email përdoruesve të tjerë.',
 'emailuser' => 'Email përdoruesit',
@@ -2216,11 +2212,7 @@ Në qoftë se dëshironi të hiqni një faqe nga lista mbikqyrëse më vonë, sh
 
 'enotif_mailer' => 'Postieri Njoftues i {{SITENAME}}',
 'enotif_reset' => 'Shëno të gjitha faqet e vizituara',
-'enotif_newpagetext' => 'Kjo është një faqe e re.',
 'enotif_impersonal_salutation' => 'Përdorues i {{SITENAME}}',
-'changed' => 'ndryshuar',
-'created' => 'u krijua',
-'enotif_subject' => '{{SITENAME}} faqja $PAGETITLE u $CHANGEDORCREATED prej $PAGEEDITOR',
 'enotif_lastvisited' => 'Shikoni $1 për të gjitha ndryshimet që prej vizitës tuaj të fundit.',
 'enotif_lastdiff' => 'Shikoni $1 për ndryshime.',
 'enotif_anon_editor' => 'përdorues anonim $1',
@@ -2276,6 +2268,8 @@ $UNWATCHURL
 
 Për të na dhënë përshtypjet tuaja ose për ndihmë të mëtejshme:
 {{canonicalurl:{{MediaWiki:Helpage}}}}',
+'created' => 'u krijua',
+'changed' => 'ndryshuar',
 
 # Delete
 'deletepage' => 'Grise faqen',
@@ -2456,9 +2450,9 @@ $1',
 'blanknamespace' => '(Artikujt)',
 
 # Contributions
-'contributions' => 'Kontributet',
+'contributions' => 'Kontributet e {{GENDER:$1|përdoruesit|përdorueses}}',
 'contributions-title' => 'Kontributet e përdoruesit për $1',
-'mycontris' => 'Redaktimet e mia',
+'mycontris' => 'Kontributet',
 'contribsub2' => 'Për $1 ($2)',
 'nocontribs' => 'Nuk ka asnjë ndryshim që përputhet me këto kritere.',
 'uctop' => ' (sipër)',
@@ -2499,7 +2493,7 @@ Bllokimi i funditë është më poshtë për referencë:',
 'whatlinkshere-hideredirs' => '$1 përcjellimet',
 'whatlinkshere-hidetrans' => '$1 përfshirjet',
 'whatlinkshere-hidelinks' => '$1 lidhjet',
-'whatlinkshere-hideimages' => '$1 lidhjet e figurave',
+'whatlinkshere-hideimages' => '$1 lidhjet me skedat',
 'whatlinkshere-filters' => 'Filtra',
 
 # Block/unblock
@@ -2598,7 +2592,7 @@ Regjistri i bllokimeve është poshtë për referncë:',
 'blocklogtext' => 'Ky është një regjistër bllokimesh dhe çbllokimesh të përdoruesve. IP-të e bllokuara automatikisht nuk janë të dhëna. Shikoni dhe [[Special:BlockList|listën e IP-ve të bllokuara]] për një listë të bllokimeve të tanishme.',
 'unblocklogentry' => 'çbllokoi "$1"',
 'block-log-flags-anononly' => 'vetëm anonimët',
-'block-log-flags-nocreate' => 'krijimi i kontove është pamundësuar',
+'block-log-flags-nocreate' => 'krijimi i llogarive është pamundësuar',
 'block-log-flags-noautoblock' => 'vetëbllokimi është pamundësuar',
 'block-log-flags-noemail' => 'posta elektronike është e bllokuar',
 'block-log-flags-nousertalk' => 'nuk mund të redaktojë faqen e tij të diskutimit',
@@ -2851,7 +2845,6 @@ Ju lutemi provoni përsëri.',
 
 # JavaScriptTest
 'javascripttest' => 'Duke testuar JavaScript',
-'javascripttest-disabled' => 'Ky funksion nuk është mundësuar në këtë wiki.',
 'javascripttest-title' => 'Duke kryer testet $1',
 'javascripttest-pagetext-noframework' => 'Kjo faqe është rezervuar për kryerjen e testimeve JavaScript.',
 'javascripttest-pagetext-unknownframework' => 'Kornizë pune e panjohur testuese "$1".',
@@ -3467,7 +3460,7 @@ Në qoftë se skeda është ndryshuar nga gjendja origjinale, disa hollësira mu
 'monthsall' => 'të gjitha',
 'limitall' => 'Të gjitha',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Vërtetoni adresën tuaj',
 'confirmemail_noemail' => 'Ju nuk keni dhënë email të sakt te [[Special:Preferences|parapëlqimet e juaja]].',
 'confirmemail_text' => 'Për të marrë email duhet të vërtetoni adresen tuaj. Shtypni butonin e mëposhtëm për të dërguar një email vërtetimi tek adresa juaj. Email-i do të përmbajë një lidhje me kod të shifruar. Duke ndjekur lidhjen nëpërmjet shfletuesit tuaj do të vërtetoni adresën.',
@@ -3783,7 +3776,7 @@ Kjo faqe është duke përjetuar vështirësi teknike.',
 'logentry-newusers-create' => '$1 krijoi një llogari',
 'logentry-newusers-create2' => '$1 krijoi një llogari $3',
 'logentry-newusers-autocreate' => 'Llogaria $1 u krijua automatikisht',
-'newuserlog-byemail' => 'fjalëkalimi u dërgua në postën elektronike',
+'rightsnone' => '(asgjë)',
 
 # Feedback
 'feedback-bugornote' => 'Nëse jeni gati për të përshkruar një problem teknik me detaje ju lutemi [$1 raportoni një problem].

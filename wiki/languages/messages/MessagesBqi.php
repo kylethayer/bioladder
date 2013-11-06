@@ -15,6 +15,8 @@
 
 $fallback = 'fa';
 
+$rtl = true;
+
 $messages = array(
 # User preference toggles
 'tog-underline' => 'لینکهای خط به زیر',
@@ -546,7 +548,7 @@ $2',
 # Special:Categories
 'categories' => 'دسته ها',
 
-# E-mail user
+# Email user
 'emailuser' => 'امیل ای کاربر',
 
 # Watchlist

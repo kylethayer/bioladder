@@ -503,7 +503,6 @@ $messages = array(
 'qbbrowse' => 'Шолу',
 'qbedit' => 'Өңдеу',
 'qbpageoptions' => 'Бұл бет',
-'qbpageinfo' => 'Айнала',
 'qbmyoptions' => 'Беттерім',
 'qbspecialpages' => 'Арнайы беттер',
 'faq' => 'Жиі қойылған сауалдар',
@@ -756,11 +755,8 @@ $2',
 # Login and logout pages
 'logouttext' => "'''Жүйеден шықтыңыз.'''
 
-Жүйеге кірместен де {{SITENAME}} жобасын пайдалана аласыз, немесе баяғы не өзге қатысушы ретінде жүйеге [[Special:UserLogin|қайта кіруіңізге]] болады.
+Жүйеге кірместен де {{SITENAME}} жобасын пайдалана аласыз, немесе баяғы не өзге қатысушы ретінде жүйеге <span class='plainlinks'>[$1 қайта кіруіңізге]</span> болады.
 Аңғартпа: Кейбір беттер шолғышыңыздың кэшін тазартқанша әлі де жүйеге кіріп отырғаныңыздай көрінуі мүмкін.",
-'welcomecreation' => '== Қош келдіңіз, $1! ==
-Жаңа тіркелгіңіз жасалды.
-Өзіңіздің [[Special:Preferences|жеке баптауларыңызды]] өзгертуді ұмытпаңыз.',
 'yourname' => 'Қатысушы аты:',
 'yourpassword' => 'Құпия сөз:',
 'yourpasswordagain' => 'Құпия сөзді қайталаңыз:',
@@ -852,7 +848,7 @@ $2',
 'loginlanguagelabel' => 'Тіл: $1',
 'suspicious-userlogout' => 'Сіздің жүйеден шығу сұранымыңыз қабылданбады, өйткені, бұл жарамсыз браузер немесе кэштеуші проксидің сұранымына ұқсайды.',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'Mail() PHP-функциясындағы белгісіз қате.',
 'user-mail-no-addy' => 'Е-пошта есімінсіз хабарлама жіберуге талпынды.',
 
@@ -1057,7 +1053,6 @@ IP-мекенжайыңыз бұл беттің түзету тарихында 
 'template-protected' => '(қорғалған)',
 'template-semiprotected' => '(жартылай қорғалған)',
 'hiddencategories' => 'Бұл бет $1 жасырын санаттың мүшесі:',
-'nocreatetitle' => 'Бетті бастау шектелген',
 'nocreatetext' => '{{SITENAME}} жобасында жаңа бет бастауы шектелген.
 Кері қайтып бар бетті өңдеуіңізге болады, немесе [[Special:UserLogin|кіруіңізге не тіркелуіңізге]] болады.',
 'nocreate-loggedin' => 'Жаңа бет бастауға рұқсатыңыз жоқ.',
@@ -1496,11 +1491,13 @@ $3 келтірілген себебі: ''$2''",
 'right-userrights-interwiki' => 'Басқа үикилердегі қатысушылардың құқықтарын өңдеу',
 'right-siteadmin' => 'Дерекқорды құлыптау және құлыптауын өшіру',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Тіркелу журналы',
+'newuserlogpagetext' => 'Бұл қатысушы тіркелгі жасау журналы',
+
 # User rights log
 'rightslog' => 'Қатысушы құқықтары журналы',
 'rightslogtext' => 'Бұл қатысушы құқықтарын өзгерту журналы.',
-'rightslogentry' => '$1 кірген топтарын $2 дегеннен $3 дегенге өзгертті',
-'rightsnone' => '(ешқандай)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'Осы бетті оқу',
@@ -1921,10 +1918,6 @@ Also see [[Special:WantedCategories|wanted categories]].',
 'listusers-submit' => 'Көрсет',
 'listusers-noresult' => 'Қатысушы табылған жоқ.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Тіркелу журналы',
-'newuserlogpagetext' => 'Бұл қатысушы тіркелгі жасау журналы',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Қатысушы тобы құқықтары',
 'listgrouprights-summary' => 'Келесі тізімде бұл уикиде тағайындалған қатысушы құқықтары (байланысты қатынау құқықтарымен бірге) көрсетіледі.
@@ -1934,7 +1927,7 @@ Also see [[Special:WantedCategories|wanted categories]].',
 'listgrouprights-helppage' => '{{ns:help}}:Топ құқықтары',
 'listgrouprights-members' => '(мүше тізімі)',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Еш мекенжай жөнелтілген жоқ',
 'mailnologintext' => 'Басқа қатысушыға хат жөнелту үшін [[{{#special:Userlogin}}|кіруіңіз]] жөн, және [[{{#special:Preferences}}|бапталымдарыңызда]] жарамды е-пошта мекенжайы болуы жөн.',
 'emailuser' => 'Қатысушыға хат жазу',
@@ -1991,11 +1984,7 @@ Also see [[Special:WantedCategories|wanted categories]].',
 
 'enotif_mailer' => '{{SITENAME}} ескерту хат жіберу қызметі',
 'enotif_reset' => 'Барлық бет келіп-кетілді деп белгіле',
-'enotif_newpagetext' => 'Мынау жаңа бет.',
 'enotif_impersonal_salutation' => '{{SITENAME}} қатысушысы',
-'changed' => 'өзгертті',
-'created' => 'бастады',
-'enotif_subject' => '{{SITENAME}} жобасында $PAGEEDITOR $PAGETITLE атаулы бетті $CHANGEDORCREATED',
 'enotif_lastvisited' => 'Соңғы келіп-кетуіңізден бері болған өзгерістер үшін $1 дегенді қараңыз.',
 'enotif_lastdiff' => 'Осы өзгеріс үшін $1 дегенді қараңыз.',
 'enotif_anon_editor' => 'тіркелгісіз қатысушы $1',
@@ -2023,6 +2012,8 @@ $NEWPAGE
 
 Сын-пікір беру және былайғы жәрдем алу үшін:
 {{canonicalurl:{{{{ns:mediawiki}}:Helppage}}}}',
+'created' => 'бастады',
+'changed' => 'өзгертті',
 
 # Delete
 'deletepage' => 'Бетті жою',
@@ -2944,7 +2935,7 @@ $1',
 'namespacesall' => 'барлығы',
 'monthsall' => 'барлығы',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Е-пошта мекенжайын құптау',
 'confirmemail_noemail' => '[[{{#special:Preferences}}|Пайдаланушылық бапталымдарыңызда]] жарамды е-пошта мекенжайын қоймапсыз.',
 'confirmemail_text' => '{{SITENAME}} е-пошта мүмкіндіктерін пайдалану үшін алдынан е-пошта мекенжайыңыздың жарамдылығын тексеріп шығуыңыз керек.
@@ -3189,7 +3180,7 @@ $5
 'logentry-newusers-create' => '$1 жаңадан аккаунт тіркеді',
 'logentry-newusers-create2' => '$1 $3 деген аккаунт тіркеді',
 'logentry-newusers-autocreate' => '$1 аккаунты автоматты түрде тіркелді',
-'newuserlog-byemail' => 'Құпия сөз e-mail арқылы жіберілді',
+'rightsnone' => '(ешқандай)',
 
 # Search suggestions
 'searchsuggest-search' => 'Іздеу',

@@ -453,9 +453,11 @@ n = nasvareigs lobuojums.',
 'right-upload_by_url' => 'Īsyuteit failu nu URL adresa',
 'right-delete' => 'Iztreit puslopys',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Jaunūs lītuotuoju registrs',
+
 # User rights log
 'rightslog' => 'Lītuotuoju tīseibu registrs',
-'rightsnone' => '(navā)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'skaiteit itū puslopu',
@@ -589,14 +591,11 @@ Lopys, kas ir tovā [[Special:Watchlist|puorraugamūs rokstu sarokstā]] ir '''r
 # Special:ListUsers
 'listusers-submit' => 'Paruodeit',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Jaunūs lītuotuoju registrs',
-
 # Special:ListGroupRights
 'listgrouprights-members' => '(dalinīku saroksts)',
 'listgrouprights-addgroup' => 'Dalikt {{PLURAL:$2|grupu|grupys}}: $1',
 
-# E-mail user
+# Email user
 'emailuser' => 'Syuteit e-postu itam lītuotuojam',
 'emailmessage' => 'Viestejums:',
 
@@ -901,5 +900,8 @@ Puorejī lauki, piec nūklusiejuma, byus nūglobuoti.
 
 # Special:SpecialPages
 'specialpages' => 'Specialuos puslopys',
+
+# New logging system
+'rightsnone' => '(navā)',
 
 );

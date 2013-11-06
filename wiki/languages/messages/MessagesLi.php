@@ -301,7 +301,6 @@ $messages = array(
 'qbbrowse' => 'Bladere',
 'qbedit' => 'Bewirke',
 'qbpageoptions' => 'Pagina-opties',
-'qbpageinfo' => 'Pagina-informatie',
 'qbmyoptions' => 'mien opties',
 'qbspecialpages' => "Speciaal pagina's",
 'faq' => 'FAQ (väölgesjtèlde vraoge)',
@@ -558,11 +557,8 @@ d\'n Opgegaeve raej vanne sloetendje admin waar "\'\'$3\'\'".',
 # Login and logout pages
 'logouttext' => "'''De bis noe aafgemeld.'''
 
-De kèns {{SITENAME}} noe anoniem (mit vermeljing van IP-adres) gebroeke, of [[Special:UserLogin|opnuuj aanmelde]] ónger dezelfde of 'ne angere naam.
+De kèns {{SITENAME}} noe anoniem (mit vermeljing van IP-adres) gebroeke, of <span class='plainlinks'>[$1 opnuuj aanmelde]</span> ónger dezelfde of 'ne angere naam.
 Mäögelik waert nog 'n deil pagina's getuind esofs te nog aangemeld bis pès te de cache van diene browser laeg maaks.",
-'welcomecreation' => '== Wèlkóm, $1! ==
-Diene gebroeker is noe vaerdig.
-Vergaet neet dien [[Special:Preferences|veurkäöre veur {{SITENAME}}]] aan te passe.',
 'yourname' => 'Diene gebroekersnaam',
 'yourpassword' => 'Die wachwaord',
 'yourpasswordagain' => 'Wachwaord opnuuj intype',
@@ -649,7 +645,7 @@ Doe mós effe wachte ierdets te 't obbenuuts kens perbere.",
 'loginlanguagelabel' => 'Taol: $1',
 'suspicious-userlogout' => "Dien verzeuk óm aaf te melde is genegeerd, ómdet 't liek esof 't verzeuk is versjik door 'ne browser of cacheproxy dae kepot is.",
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => "Dao haet ziech 'n ónbekénde fout veurgedaon in de mail()-functie van PHP",
 'user-mail-no-addy' => "Perbeerdjes 'ne mail te sjikke zónger 'n adres",
 
@@ -873,7 +869,6 @@ De lèste logbookregel vólg hier:",
 'template-protected' => '(besjirmp)',
 'template-semiprotected' => '(semi-besjörmp)',
 'hiddencategories' => 'Dees pagina vélt in de volgende verborge {{PLURAL:$1|categorie|categorië}}:',
-'nocreatetitle' => "'t Aanmake van pagina's is beperk",
 'nocreatetext' => "{{SITENAME}} haet de mäögelikheid óm nuuj pagina's te make beperk.
 De kans al besjtaonde pagina's verangere, of de kans [[Special:UserLogin|dich aanmelde of 'n gebroekersaccount aanmake]].",
 'nocreate-loggedin' => "De höbs gein rechte óm nuuj pagina's te make.",
@@ -1299,7 +1294,7 @@ Deze informatie is zichbaar veur angere gebroekers.',
 'prefs-displaywatchlist' => 'Toeaningsinstèllinger',
 'prefs-diffs' => 'Vers',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => "'t E-mailadres liek geldig",
 'email-address-validity-invalid' => "Gif 'n geldig e-mailadres op",
 
@@ -1411,12 +1406,13 @@ Deze informatie is zichbaar veur angere gebroekers.',
 'right-sendemail' => 'Versjik e-mail aan anger gebroekers',
 'right-passwordreset' => 'Bekiek e-mails van ópnuuj ingestèldje wachwäörd',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Logbook nuuj gebroekers',
+'newuserlogpagetext' => 'Hiej ónger saton de nuuj ingesjreve gebroekers.',
+
 # User rights log
 'rightslog' => 'Gebroekersrechtelogbook',
 'rightslogtext' => 'Hiej onger staon de wieziginge in gebroekersrechte.',
-'rightslogentry' => 'wiezigde de gebroekersrechte veur $1 van $2 nao $3',
-'rightslogentry-autopromote' => 'is autematis gepromoveerdj vanne groep "$2" nao de groep "$3"',
-'rightsnone' => '(gein)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'dees pagina te bekieke',
@@ -2041,10 +2037,6 @@ Haet mèndestes e toepleveldomein, wie beveurbeildj "*.org".<br />
 'activeusers-hidesysops' => 'Verberg admins',
 'activeusers-noresult' => 'Gein gebroekers gevónje.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Logbook nuuj gebroekers',
-'newuserlogpagetext' => 'Hiej ónger saton de nuuj ingesjreve gebroekers.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Rechte van gebroekersgróppe',
 'listgrouprights-summary' => 'Op dees pazjena sjtaon de gebroekersgróppe in deze wiki besjreve, mit zien biebehurende rechte.
@@ -2064,7 +2056,7 @@ Infermasie daoreuver èn de individueel rechter vinjs te [[{{MediaWiki:Listgroup
 'listgrouprights-addgroup-self-all' => 'Voeg alle gruup toe aan eige gebroeker',
 'listgrouprights-removegroup-self-all' => 'Wösj alle gruup van eige gebroeker',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Gein e-mailadres bekènd veur deze gebroeker',
 'mailnologintext' => "De mos zien [[Special:UserLogin|aangemèld]] en 'n gèldig e-mailadres in bie dien [[Special:Preferences|veurkäöre]] höbbe ingevuld om mail nao anger gebroekers te sjture.",
 'emailuser' => "Sjik deze gebroeker 'nen e-mail",
@@ -2137,11 +2129,7 @@ Toekomstige verangeringe aan dees pagina en de biebehurende euverlèkpagina weur
 
 'enotif_mailer' => '{{SITENAME}} notificatiemail',
 'enotif_reset' => "Mèrk alle bezochde pazjena's aan.",
-'enotif_newpagetext' => "DIt is 'n nuuj pazjena.",
 'enotif_impersonal_salutation' => '{{SITENAME}} gebroeker',
-'changed' => 'verangerd',
-'created' => 'aangemaak',
-'enotif_subject' => 'De {{SITENAME}}pagina $PAGETITLE is $CHANGEDORCREATED door $PAGEEDITOR',
 'enotif_lastvisited' => 'Zuug $1 veur al verangeringe saer dien lèste bezeuk.',
 'enotif_lastdiff' => 'Zuug $1 om deze wieziging te zeen.',
 'enotif_anon_editor' => 'anonieme gebroeker $1',
@@ -2170,6 +2158,8 @@ $UNWATCHURL
 
 Commentaar en wiejer assistentie:
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'aangemaak',
+'changed' => 'verangerd',
 
 # Delete
 'deletepage' => 'Pagina ewegsjaffe',
@@ -2728,7 +2718,6 @@ Slaon de oetveur op dien eige systeem op, en voeg dae dao nao hiej toe.',
 
 # JavaScriptTest
 'javascripttest' => 'Tes JavaScript',
-'javascripttest-disabled' => 'Dees funksje steit oet op deze wiki.',
 'javascripttest-title' => 'Veur tes oet veur $1',
 'javascripttest-pagetext-noframework' => "Dees pagina is gerizzerveerd veur 't oetveure van JavaScriptteste.",
 'javascripttest-pagetext-unknownframework' => 'Ónbekèndje testframework "$1".',
@@ -3340,7 +3329,7 @@ Alle volgende links die op dezelfde regel sjtaon, waere behanjeld es oetzunjerin
 'monthsall' => 'al',
 'limitall' => 'al',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Bevèstig e-mailadres',
 'confirmemail_noemail' => 'Doe höbs gein geldig e-mailadres ingegaeve in dien [[Special:Preferences|veurkäöre]].',
 'confirmemail_text' => "Deze wiki vereis dats te dien e-mailadres instèls iedats te e-mailfuncties
@@ -3658,7 +3647,7 @@ Aafbeildinge waere in häör vollejige resolutie getoeandj. Anger bestandjstypes
 'logentry-newusers-create' => "$1 haet 'ne gebroeker aangemaak",
 'logentry-newusers-create2' => "$1 haet 'ne gebroeker $3 aangemaak",
 'logentry-newusers-autocreate' => 'De gebroeker $1 is autematis aangemaak',
-'newuserlog-byemail' => 'wachwaord is versjik per e-mail',
+'rightsnone' => '(gein)',
 
 # Feedback
 'feedback-bugornote' => 'Es se zewied bös óm e technisch perbleem in détail te besjrieve, [$1 rapperteer \'ne bug]. 

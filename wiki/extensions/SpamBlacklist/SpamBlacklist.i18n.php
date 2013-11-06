@@ -9,10 +9,10 @@
 $messages = array();
 
 $messages['en'] = array(
-	'spam-blacklist' => ' # External URLs matching this list will be blocked when added to a page.
- # This list affects only this wiki; refer also to the global blacklist.
- # For documentation see https://www.mediawiki.org/wiki/Extension:SpamBlacklist
- #<!-- leave this line exactly as it is --> <pre>
+	'spam-blacklist' => ' #<!-- leave this line exactly as it is --> <pre>
+# External URLs matching this list will be blocked when added to a page.
+# This list affects only this wiki; refer also to the global blacklist.
+# For documentation see https://www.mediawiki.org/wiki/Extension:SpamBlacklist
 #
 # Syntax is as follows:
 #   * Everything from a "#" character to the end of the line is a comment
@@ -23,29 +23,34 @@ $messages['en'] = array(
 # External URLs matching this list will *not* be blocked even if they would
 # have been blocked by blacklist entries.
 #
+# Syntax is as follows:
+#   * Everything from a "#" character to the end of the line is a comment
+#   * Every non-blank line is a regex fragment which will only match hosts inside URLs
+
  #</pre> <!-- leave this line exactly as it is -->',
-	'email-blacklist' => ' # E-mail addresses matching this list will be blocked from registering or sending e-mails
- # This list affects only this wiki; refer also to the global blacklist.
- # For documentation see https://www.mediawiki.org/wiki/Extension:SpamBlacklist
- #<!-- leave this line exactly as it is --> <pre>
+	'email-blacklist' => ' #<!-- leave this line exactly as it is --> <pre>
+# Email addresses matching this list will be blocked from registering or sending emails
+# This list affects only this wiki; refer also to the global blacklist.
+# For documentation see https://www.mediawiki.org/wiki/Extension:SpamBlacklist
 #
 # Syntax is as follows:
 #   * Everything from a "#" character to the end of the line is a comment
-#   * Every non-blank line is a regex fragment which will only match hosts inside e-mail addresses
+#   * Every non-blank line is a regex fragment which will only match hosts inside email addresses
 
  #</pre> <!-- leave this line exactly as it is -->',
 	'email-whitelist' => ' #<!-- leave this line exactly as it is --> <pre>
 # Email addresses matching this list will *not* be blocked even if they would
 # have been blocked by blacklist entries.
 #
- #</pre> <!-- leave this line exactly as it is -->
 # Syntax is as follows:
 #   * Everything from a "#" character to the end of the line is a comment
-#   * Every non-blank line is a regex fragment which will only match hosts inside e-mail addresses',
+#   * Every non-blank line is a regex fragment which will only match hosts inside email addresses
 
-	'spam-blacklisted-email' => 'Blacklisted e-mail address',
-	'spam-blacklisted-email-text' => 'Your e-mail address is currently blacklisted from sending e-mails to other users.',
-	'spam-blacklisted-email-signup' => 'The given e-mail address is currently blacklisted from use.',
+ #</pre> <!-- leave this line exactly as it is -->',
+
+	'spam-blacklisted-email' => 'Blacklisted email address',
+	'spam-blacklisted-email-text' => 'Your email address is currently blacklisted from sending emails to other users.',
+	'spam-blacklisted-email-signup' => 'The given email address is currently blacklisted from use.',
 
 	'spam-invalid-lines' =>	"The following spam blacklist {{PLURAL:$1|line is an|lines are}} invalid regular {{PLURAL:$1|expression|expressions}} and {{PLURAL:$1|needs|need}} to be corrected before saving the page:",
 	'spam-blacklist-desc' => 'Regex-based anti-spam tool: [[MediaWiki:Spam-blacklist]] and [[MediaWiki:Spam-whitelist]]',
@@ -54,16 +59,25 @@ $messages['en'] = array(
 /** Message documentation (Message documentation)
  * @author Purodha
  * @author SPQRobin
+ * @author Shirayuki
  * @author Siebrand
  * @author The Evil IP address
  */
 $messages['qqq'] = array(
 	'spam-blacklist' => "See also: [[MediaWiki:spam-whitelist]] and [[MediaWiki:captcha-addurl-whitelist]]. You can translate the text, including 'Leave this line exactly as it is'. Some lines of this messages have one (1) leading space.",
 	'spam-whitelist' => "See also: [[MediaWiki:spam-blacklist]] and [[MediaWiki:captcha-addurl-whitelist]]. You can translate the text, including 'Leave this line exactly as it is'. Some lines of this messages have one (1) leading space.",
+	'email-blacklist' => "See also: [[MediaWiki:email-whitelist]] and [[MediaWiki:captcha-addurl-whitelist]]. You can translate the text, including 'Leave this line exactly as it is'. Some lines of this messages have one (1) leading space.",
+	'email-whitelist' => "See also: [[MediaWiki:email-blacklist]] and [[MediaWiki:captcha-addurl-whitelist]]. You can translate the text, including 'Leave this line exactly as it is'. Some lines of this messages have one (1) leading space.",
 	'spam-blacklisted-email' => 'Title of errorpage when trying to send an email with a blacklisted e-mail address',
 	'spam-blacklisted-email-text' => 'Text of errorpage when trying to send an e-mail with a blacklisted e-mail address',
 	'spam-blacklisted-email-signup' => 'Error when trying to create an account with an invalid e-mail address',
-	'spam-blacklist-desc' => '{{desc}}',
+	'spam-invalid-lines' => 'Used as an error message.
+
+This message is followed by a list of bad lines.
+
+Parameters:
+* $1 - the number of bad lines',
+	'spam-blacklist-desc' => '{{desc|name=Spam Blacklist|url=http://www.mediawiki.org/wiki/Extension:SpamBlacklist}}',
 );
 
 /** Aragonese (aragonés)
@@ -585,13 +599,53 @@ $messages['cy'] = array(
 );
 
 /** Danish (dansk)
+ * @author Christian List
+ * @author HenrikKbh
  * @author Hylle
  */
 $messages['da'] = array(
-	'spam-blacklisted-email' => 'Sortlistede e-mail adresser',
+	'spam-blacklist' => '#<!-- lad denne linje være nøjagtig som den er --> <pre>
+ # Denne liste blokerer matchende eksterne URL\'er matching fra at blive tilføjet siden.
+ # denne liste berører kun denne wiki; henviser også til den globale sortliste.
+ # For dokumentation se https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+#
+# syntaksen er som følger:
+ #  * alt fra et "#" tegn til slutningen af linjen er en kommentar
+ #  * hver ikke-tomme linjer anvendes som regulære udtryk for at matcha domænenavne i webadresser
+ #</pre> <!-- lad denne linje være nøjagtig som den er -->',
+	'spam-whitelist' => '#<!-- lad denne linje være nøjagtig som den er --> <pre>
+# Eksterne URL\'er på denne liste bliver ikke blokeret, selvom de ville være blevet det gennem den globale sortliste.
+# For dokumentation se https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+#
+# Syntaksen er som følger:
+#  * alt fra et "#" tegn til slutningen af linjen er en kommentar
+#  * hver ikke-tomme linjer anvendes som regulære udtryk for at matcha domænenavne i webadresser
+#</pre> <!-- lad denne linje være nøjagtig som den er -->',
+	'email-blacklist' => '#<!-- lad denne linje være nøjagtig som den er --> <pre>
+# E-mail adresser der er på denne liste vil blive blokeret fra at registreres eller fra at sende e-mails
+# Denne liste vedrører kun denne wiki; se også den globale sortliste
+# For dokumentation se https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+#
+# Syntaksen er som følger:
+#  * alt fra et "#" tegn til slutningen af linjen er en kommentar
+#  * hver ikke-tomme linjer anvendes som regulære udtryk for at matche domænenavne i webadresser
+#</pre> <!-- lad denne linje være nøjagtig som den er -->',
+	'email-whitelist' => '#<!-- lad denne linje være nøjagtig som den er --> <pre>
+# E-mail adresser på denne liste bliver ikke blokeret, selvom de ville være blevet det gennem den globale sortliste.
+#
+# Syntaksen er som følger:
+#  * alt fra et "#" tegn til slutningen af linjen er en kommentar
+#  * hver ikke-tomme linjer anvendes som regulære udtryk for at matcha domænenavne i webadresser
+#</pre> <!-- lad denne linje være nøjagtig som den er -->',
+	'spam-blacklisted-email' => 'Sortlistet e-mailadresse',
+	'spam-blacklisted-email-text' => 'Din e-mail-adresse er i øjeblikket blokeret for at sende emails til andre brugere.',
+	'spam-blacklisted-email-signup' => 'Den angivne e-mail-adresse er i øjeblikket blokeret for brug.',
+	'spam-invalid-lines' => 'Følgende {{PLURAL:$1|linje|linjer}} i spamsortelisten er {{PLURAL:$1|et ugyldigt regulært udtryk|ugyldige regulære udtryk}} og må rettes før lagring af siden:',
+	'spam-blacklist-desc' => 'Antispamværktøj baseret på regulære udtryk: [[MediaWiki:Spam-blacklist]] og [[MediaWiki:Spam-whitelist]]',
 );
 
 /** German (Deutsch)
+ * @author Geitost
  * @author Kghbln
  * @author Raimond Spekking
  * @author Umherirrender
@@ -616,14 +670,14 @@ $messages['de'] = array(
 #   * Jede nicht-leere Zeile ist ein regulärer Ausdruck, der gegen die Host-Namen in den URLs geprüft wird.
 
  #</pre> <!-- Diese Zeile darf nicht verändert werden! -->',
-	'email-blacklist' => ' # E-Mail-Adressen, die in dieser Liste enthalten sind, blockieren die Registrierung sowie das Senden von E-Mail-Nachrichten.
- # Diese Liste hat nur Auswirkungen auf dieses Wiki. Siehe ggf. auch die globale Blockierliste.
- # Siehe auch https://www.mediawiki.org/wiki/Extension:SpamBlacklist für die Dokumentation dieser Funktion.
- #<!-- Diese Zeile darf nicht verändert werden! --> <pre>
+	'email-blacklist' => ' #<!-- Diese Zeile darf nicht verändert werden! --> <pre>
+ # E-Mail-Adressen, die in dieser Liste enthalten sind, werden bei der Registrierung sowie beim Senden von E-Mail-Nachrichten geblockt.
+ # Diese Liste hat nur Auswirkungen auf dieses Wiki. Siehe gegebenenfalls auch die globale Blockierliste.
+ # Zur Dokumentation dieser Funktion siehe auch https://www.mediawiki.org/wiki/Extension:SpamBlacklist.
 #
-# Syntax:
-#   * Alles ab dem „#“-Zeichen bis zum Ende der Zeile ist ein Kommentar
-#   * Jede nicht-leere Zeile ist ein regulärer Ausdruck, der gegen die Host-Namen in den E-Mail-Adressen geprüft wird.
+# Syntax wie folgt:
+#   * Alles ab dem „#“-Zeichen bis zum Ende der Zeile ist ein Kommentar.
+#   * Jede nicht-leere Zeile ist ein regulärer Ausdruck, der gegen die Host-Namen in den E-Mail-Adressen abgeglichen wird.
 
  #</pre> <!-- Diese Zeile darf nicht verändert werden! -->',
 	'email-whitelist' => ' #<!-- Diese Zeile darf nicht verändert werden! --> <pre>
@@ -637,6 +691,22 @@ $messages['de'] = array(
 	'spam-blacklisted-email-signup' => 'Die angegebene E-Mail-Adresse ist derzeit für das Senden von E-Mail-Nachrichten an andere Benutzer blockiert.',
 	'spam-invalid-lines' => 'Die {{PLURAL:$1|folgende Zeile|folgenden Zeilen}} in der Blockierliste {{PLURAL:$1|ist ein ungültiger regulärer Ausdruck|sind ungültige reguläre Ausdrücke}}. Sie {{PLURAL:$1|muss|müssen}} vor dem Speichern der Seite korrigiert werden:',
 	'spam-blacklist-desc' => 'Ermöglicht ein, durch reguläre Ausdrücke gestütztes, Anti-Spam-Werkzeug: [[MediaWiki:Spam-blacklist]] und [[MediaWiki:Spam-whitelist]]',
+);
+
+/** Swiss High German (Schweizer Hochdeutsch)
+ * @author Geitost
+ */
+$messages['de-ch'] = array(
+	'email-blacklist' => ' #<!-- Diese Zeile darf nicht verändert werden! --> <pre>
+ # E-Mail-Adressen, die in dieser Liste enthalten sind, werden bei der Registrierung sowie beim Senden von E-Mail-Nachrichten geblockt.
+ # Diese Liste hat nur Auswirkungen auf dieses Wiki. Siehe gegebenenfalls auch die globale Blockierliste.
+ # Zur Dokumentation dieser Funktion siehe auch https://www.mediawiki.org/wiki/Extension:SpamBlacklist.
+#
+# Syntax wie folgt:
+#   * Alles ab dem «#»-Zeichen bis zum Ende der Zeile ist ein Kommentar.
+#   * Jede nicht-leere Zeile ist ein regulärer Ausdruck, der gegen die Host-Namen in den E-Mail-Adressen abgeglichen wird.
+
+ #</pre> <!-- Diese Zeile darf nicht verändert werden! -->',
 );
 
 /** German (formal address) (Deutsch (Sie-Form)‎)
@@ -1284,17 +1354,18 @@ $messages['hi'] = array(
 
 /** Croatian (hrvatski)
  * @author Dnik
+ * @author Roberta F.
  * @author SpeedyGonsales
  */
 $messages['hr'] = array(
 	'spam-blacklist' => ' # Vanjske URLovi koji budu pronađeni pomoću ovog popisa nije moguće snimiti na stranicu wikija.
- # Ovaj popis utiče samo na ovaj wiki; provjerite globalnu "crnu listu".
+ # Ovaj popis utječe samo na ovaj wiki; provjerite globalnu "crnu listu".
  # Za dokumentaciju pogledajte https://www.mediawiki.org/wiki/Extension:SpamBlacklist
  #<!-- leave this line exactly as it is --> <pre>
 #
-# Rabi se slijedeća sintaksa:
+# Rabi se sljedeća sintaksa:
 #   * Sve poslije "#" znaka do kraja linije je komentar
-#   * svaki neprazni redak je dio regularnog izraza (\'\'regex fragment\'\') koji odgovara imenu poslužitelja u URL-u
+#   * svaki redak koji nije prazan dio je regularnog izraza (\'\'regex fragment\'\') koji odgovara imenu poslužitelja u URL-u
 
  #</pre> <!-- leave this line exactly as it is -->',
 	'spam-whitelist' => ' #<!-- leave this line exactly as it is --> <pre>
@@ -1610,10 +1681,10 @@ $messages['it'] = array(
  * @author Whym
  */
 $messages['ja'] = array(
-	'spam-blacklist' => ' # この一覧に掲載されている外部URLをページに追加すると編集をブロックします。
- # この一覧はこのウィキでのみ有効です。グローバル ブラックリストも参照してください。
- # 利用方法は https://www.mediawiki.org/wiki/Extension:SpamBlacklist/ja をご覧ください。
- #<!-- この行は変更しないでください --> <pre>
+	'spam-blacklist' => ' #<!-- この行は変更しないでください --> <pre>
+# この一覧に掲載されている外部URLをページに追加すると編集をブロックします。
+# この一覧はこのウィキでのみ有効です。グローバル ブラックリストも参照してください。
+# 利用方法は https://www.mediawiki.org/wiki/Extension:SpamBlacklist/ja をご覧ください。
 #
 # 構文は以下の通りです:
 #  * 「#」以降行末まではコメントです
@@ -1625,14 +1696,14 @@ $messages['ja'] = array(
 # たとえブラックリストに掲載されていたとしても、ブロック*されません*。
 #
 # 構文は以下の通りです:
-#  * "#"文字から行末まではコメントとして扱われます
+#  * 「#」文字から行末まではコメントとして扱われます
 #  * 空白を含まない行は、URLに含まれるホスト名との一致を検出する正規表現です
 
  #</pre> <!-- この行は変更しないでください -->',
 	'spam-blacklisted-email' => '拒否リストにあるメールアドレス',
 	'spam-blacklisted-email-text' => 'メールアドレスが拒否リストに入っているため、他の利用者にメールを送信できません。',
 	'spam-blacklisted-email-signup' => '指定されたメールアドレスは現在拒否リストに入っており、使用できません。',
-	'spam-invalid-lines' => 'このスパムブラックリストには、無効な{{PLURAL:$1|正規表現}}を含む{{PLURAL:$1|行}}があります。保存する前に問題部分を修正してください：',
+	'spam-invalid-lines' => 'このスパムブラックリストには、無効な{{PLURAL:$1|正規表現}}を含む{{PLURAL:$1|行}}があります。保存する前に問題部分を修正してください:',
 	'spam-blacklist-desc' => '正規表現を用いたスパム対策ツール: [[MediaWiki:Spam-blacklist|スパムブラックリスト]]および[[MediaWiki:Spam-whitelist|スパムホワイトリスト]]',
 );
 
@@ -1843,7 +1914,7 @@ $messages['ko'] = array(
  # * "#" 다음부터 줄의 끝까지는 주석으로 취급됩니다
  # * 빈 줄이 아닌 모든 줄은 이메일 주소의 호스트만 검사하는 정규 표현식입니다.',
 	'spam-blacklisted-email' => '이메일 주소가 블랙리스트됨',
-	'spam-blacklisted-email-text' => '당신의 이메일 주소는 다른 사용자가 이메일을 보내지 못하도록 블랙리스트에 올라와 있습니다.',
+	'spam-blacklisted-email-text' => '이메일 주소는 다른 사용자가 이메일을 보내지 못하도록 블랙리스트에 올라와 있습니다.',
 	'spam-blacklisted-email-signup' => '입력한 이메일 주소는 사용할 수 없도록 블랙리스트되어 있습니다.',
 	'spam-invalid-lines' => '스팸 블랙리스트의 다음 {{PLURAL:$1|줄}}에 잘못된 정규 표현식이 사용되어 저장하기 전에 바르게 고쳐져야 합니다:',
 	'spam-blacklist-desc' => '정규 표현식을 이용해 스팸을 막습니다: [[MediaWiki:Spam-blacklist]]와 [[MediaWiki:Spam-whitelist]]를 사용합니다.',
@@ -1859,7 +1930,7 @@ $messages['ksh'] = array(
  #<!-- Loß di Reih hee jenou esu wi se es --> <pre>
 # Dä Opbou es:
 # * Alles fun enem #-Zeiche bes an et Engk fun ene Reih es ene Kommentaa för de Minsche
-# * Jede Reih met jet dren es en Stöck regular Expression, wat alleins Domains en URLs treffe kann
+# * Jede Reih met jet dren es e Stöck rejolähre Ußdrok, wat alleins Domains en URLs treffe kann
 
  #</pre> <!-- Lohß di Reih he jenou esu wi se es -->',
 	'spam-whitelist' => ' #<!-- Loß di Reih hee jenou esu wi se es --> <pre>
@@ -1867,7 +1938,7 @@ $messages['ksh'] = array(
 # sellefts wann se op en „schwazze Leß“ shtonn
 # Dä Opbou es:
 # * Alles fun enem #-Zeiche bes an et Engk fun ene Reih es ene Kommentaa för de Minsche
-# * Jede Reih met jet dren es en Stöck regular Expression, wat alleins Domains en URLs treffe kann
+# * Jede Reih met jet dren es e Stöck rejolähre Ußdrok, wat alleins Domains en URLs treffe kann
  #</pre> <!-- Lohß di Reih he jenou esu wi se es -->',
 	'email-blacklist' => ' # e-mail-Addräße uß dä Leß wäde nit zojelohße beim Aanmälde un beim e-mail-Verschecke.
  # Heh di Liß eß bloß för heh dat Wiki joot. Loor Der och de jemeinsame „schwazze Leß“ aan.
@@ -1875,7 +1946,7 @@ $messages['ksh'] = array(
  #<!-- Loß di Reih hee jenou esu wi se es --> <pre>
 # Dä Opbou es:
 # * Alles fun enem #-Zeiche bes an et Engk fun ene Reih es ene Kommentaa för de Minsche
-# * Jede Reih met jet dren es en regular Expression, wohmet dä Name vum Rääschner en de e-mail-Addräße jeprööf wääde kann.
+# * Jede Reih met jet dren es ene rejolähre Ußdrok, wohmet dä Name vum Rääschner en de e-mail-Addräße jeprööf wääde kann.
 
  #</pre> <!-- Lohß di Reih he jenou esu wi se es -->',
 	'email-whitelist' => ' #<!-- Loß di Reih hee jenou esu wi se es --> <pre>
@@ -1885,14 +1956,14 @@ $messages['ksh'] = array(
  #</pre> <!-- Lohß di Reih he jenou esu wi se es -->
 # Dä Opbou es:
 # * Alles fun enem #-Zeiche bes an et Engk fun ene Reih es ene Kommentaa för de Minsche
-# * Jede Reih met jet dren es en regular Expression, wohmet dä Name vum Rääschner en de e-mail-Addräße jeprööf wääde kann.',
+# * Jede Reih met jet dren es ene rejolähre Ußdrok, wohmet dä Name vum Rääschner en de e-mail-Addräße jeprööf wääde kann.',
 	'spam-blacklisted-email' => 'Di <i lang="en">e-mail</i>-Addräß es op der „schwazze Lėß“',
 	'spam-blacklisted-email-text' => 'Ding <i lang="en">e-mail</i>-Addräß es em Momang op dä „schwazze Lėß“ un De kanns dermet kein <i lang="en">e-mail</i> aan ander Metmaacher verschecke.',
 	'spam-blacklisted-email-signup' => 'Di aanjejovve Addräß för de <i lang="en">e-mail</i> es em Momang op dä „schwazze Lėß“ un kann nit jebruch wääde.',
-	'spam-invalid-lines' => 'Mer han Fääler en <i lang="en">regular expressions</i> jefonge.
-{{PLURAL:$1|De Reih unge stemmp nit un moß|Di $1 Reije unge stimme nit un möße|Dat he sull}}
-för em Afspeichere eets en Odenung jebraat wäde:',
-	'spam-blacklist-desc' => 'Jäje SPAM met <i lang="en">regular expressions</i> — övver en [[MediaWiki:Spam-blacklist|„schwazze Leß“]] un en [[MediaWiki:Spam-whitelist|Leß met Ußnahme dofun]].',
+	'spam-invalid-lines' => 'Mer han Fähler en rejolähre Ußdröck jefonge.
+{{PLURAL:$1|De Reih onge schtemmp nit un moß|Di $1 Reije onge schtemme nit un möße|Dat sull}}
+för em Afschpeischere eets en Oodenong jebraat wääde:',
+	'spam-blacklist-desc' => 'Met rejolähre Ußdröck jääje der <i lang="en">SPAM<i> — övver en [[MediaWiki:Spam-blacklist|„schwazze Leß“]] un en [[MediaWiki:Spam-whitelist|Leß met Ußnahme dohfun]].',
 );
 
 /** Luxembourgish (Lëtzebuergesch)
@@ -1958,6 +2029,13 @@ $messages['li'] = array(
 	'spam-blacklisted-email-signup' => "'t Opgegaeve e-mailadres steit momenteel oppe zwarte lies.",
 	'spam-invalid-lines' => "De volgende {{PLURAL:$1|regel|regel}} van de zwarte lies {{PLURAL:$1|is 'n|zeen}} onzjuuste reguliere {{PLURAL:$1|oetdrukking|oetdrukkinge}}  en {{PLURAL:$1|mót|mótte}} verbaeterd waere alveures de pazjena kin waere opgeslage:",
 	'spam-blacklist-desc' => 'Antispamfunctionaliteit via reguliere expressies: [[MediaWiki:Spam-blacklist]] en [[MediaWiki:Spam-whitelist]]',
+);
+
+/** Minangkabau (Baso Minangkabau)
+ * @author Iwan Novirion
+ */
+$messages['min'] = array(
+	'spam-blacklist-desc' => 'Pakakeh anti-spam babasis regex: [[MediaWiki:Spam-blacklist]] jo [[MediaWiki:Spam-whitelist]]',
 );
 
 /** Macedonian (македонски)
@@ -2321,6 +2399,7 @@ $messages['oc'] = array(
 );
 
 /** Oriya (ଓଡ଼ିଆ)
+ * @author Jnanaranjan Sahu
  * @author Psubhashish
  */
 $messages['or'] = array(
@@ -2343,6 +2422,28 @@ $messages['or'] = array(
 #   * ସବୁ ଅଣ-ଖାଲି ଧାଡ଼ି ଏକ regex ଖଣ୍ଡ ଯାହା କେବଳ URL ଭିତରେ ଥିବା ହୋଷ୍ଟ ସହ ମେଳନ କରିଥାଏ
 
  #</pre> <!-- ଏହି ଧାଡ଼ିଟି ଯେଉଁପରି ଅଛି ଅବିକଳ ସେହିପରି ଛାଡ଼ି ଦିଅନ୍ତୁ -->',
+	'email-blacklist' => ' #<!-- ଏହି ଧାଡିଟି ଯେମିତି ଅଛି ସେମିତି ରଖନ୍ତୁ କିଛି ବଦଳାନ୍ତୁ ନାହିଁ --> <pre>
+# ଏହି ତାଲିକାରେ ଥିବା ଇ-ମେଲ ଠିକଣାଗୁଡିକୁ ପଞ୍ଜୀକରଣ କିମ୍ବା ଇ-ମେଲ ପଠେଇବାରୁ ଅଟକ ରଖାଯିବ
+# ଏହି ତାଲିକାଟି କେବଳ ଏହି ଉଇକିରେ କାର୍ଯ୍ୟକାରୀ ହେବ ; ଜାଗତିକ ଅଟକ ତାଲିକାକୁ ମଧ୍ୟ ଦେଖନ୍ତୁ ।
+# ନଥିପତ୍ର ପାଇଁ https://www.mediawiki.org/wiki/Extension:SpamBlacklist ଦେଖନ୍ତୁ
+#
+# ସିନ୍ଟାକ୍ସଟି ହେଉଛି:
+#   * "#"ଠାରୁ ଆରମ୍ଭ କରି ଧାଡିର ଶେଷ ପର୍ଯ୍ୟନ୍ତ ସମସ୍ତ ଲେଖାଟି ହେଉଛି ଗୋଟେ ମନ୍ତବ୍ୟ
+#   * ସମସ୍ତ ଖାଲିନଥିବା ଧାଡି ହେଉଛି ଏକ ରେଜେକ୍ସ ଫ୍ରାଗମେଣ୍ଟ ଯାହାକି ଇ-ମେଲ ଠିକଣାଗୁଡିକ ଭିତରେ ଥିବା ହୋଷ୍ଟଗୁଡିକ ସହ ମିଳେଇବ ।
+
+ #</pre> <!-- ଏହି ଧାଡିଟି ଯେମିତି ଅଛି ସେମିତି ରଖନ୍ତୁ କିଛି ବଦଳାନ୍ତୁ ନାହିଁ -->',
+	'email-whitelist' => ' #<!-- ଏହି ଧାଡିଟି ଯେମିତି ଅଛି ସେମିତି ରଖନ୍ତୁ କିଛି ବଦଳାନ୍ତୁ ନାହିଁ --> <pre>
+# ଏହି ତାଲିକାରେ ଥିବା ଇ-ମେଲ ଠିକଣାଗୁଡିକୁ  ଅଟକ ରଖାଯିବ *ନାହିଁ*
+# ଯଦିଓ ସେଗୁଡିକ ବାସନ୍ଦ ତାଲିକାରେ ଅଟକ ରଖାଯାଇଥିବ ।
+#
+# ସିନ୍ଟାକ୍ସଟି ହେଉଛି:
+#  * "#"ଠାରୁ ଆରମ୍ଭ କରି ଧାଡିର ଶେଷ ପର୍ଯ୍ୟନ୍ତ ସମସ୍ତ ଲେଖାଟି ହେଉଛି ଗୋଟେ ମନ୍ତବ୍ୟ
+#  * ସମସ୍ତ ଖାଲିନଥିବା ଧାଡି ହେଉଛି ଏକ ରେଜେକ୍ସ ଫ୍ରାଗମେଣ୍ଟ ଯାହାକି ଇ-ମେଲ ଠିକଣାଗୁଡିକ ଭିତରେ ଥିବା ହୋଷ୍ଟଗୁଡିକ ସହ ମିଳେଇବ ।
+
+ #</pre> <!-- ଏହି ଧାଡିଟି ଯେମିତି ଅଛି ସେମିତି ରଖନ୍ତୁ କିଛି ବଦଳାନ୍ତୁ ନାହିଁ -->',
+	'spam-blacklisted-email' => 'ବନ୍ଦ କରାଯାଇଥିବା ଇ-ମେଲ ଠିକଣା',
+	'spam-blacklisted-email-text' => 'ଆପଣଙ୍କ ଇ-ମେଲ ଠିକଣାଟି ଅନ୍ୟମାନଙ୍କୁ ଇ-ମେଲ ପଠାଇବାରୁ ବାସନ୍ଦ କରାଯାଇଛି ।',
+	'spam-blacklisted-email-signup' => 'ଦିଆଯାଇଥିବା ଇ-ମେଲ ଠିକଣାଟି ବ୍ୟବହାରକରିବାରୁ ବାସନ୍ଦ କରାଯାଇଛି ।',
 	'spam-invalid-lines' => 'ଏହି ସ୍ପାମ ଅଟକତାଲିକା {{PLURAL:$1|ଧାଡ଼ିଟି|ଧାଡ଼ିସବୁ}} ଅଚଳ ସାଧାରଣ {{PLURAL:$1|ପରିପ୍ରକାଶ|ପରିପ୍ରକାଶ}} ଓ ସାଇତିବା ଆଗରୁ  {{PLURAL:$1|ତାହାକୁ  ସୁଧାରିବା ଲୋଡ଼ା|ସେହିସବୁକୁ ସୁଧାରିବା ଲୋଡ଼ା}}:',
 	'spam-blacklist-desc' => 'Regex-ଭିତ୍ତିକ ସ୍ପାମ-ବିରୋଧୀ ଉପକରଣ: [[MediaWiki:Spam-blacklist]] ଓ [[MediaWiki:Spam-whitelist]]',
 );
@@ -2494,29 +2595,67 @@ $messages['pt'] = array(
 /** Brazilian Portuguese (português do Brasil)
  * @author Eduardo.mps
  * @author Helder.wiki
+ * @author Tuliouel
+ * @author 555
  */
 $messages['pt-br'] = array(
-	'spam-blacklist' => ' # URLs externas que coincidam com esta lista serão bloqueadas quando forem
- # adicionadas a uma página.
- # Esta lista refere-se apenas a este wiki. Consulte também a lista-negra global.
- # Veja a documentação em https://www.mediawiki.org/wiki/Extension:SpamBlacklist
- #<!-- mantenha esta linha exatamente assim --> <pre>
-#
-# A sintaxe é a seguinte:
-#   * Tudo o que estiver após um "#" até o final de uma linha será tido como um comentário
-#   * Todas as linhas que não estiverem em branco são um fragmento de expressão regular (regex) que abrangem apenas a URL especificada
-
- #</pre> <!-- mantenha esta linha exatamente assim -->',
-	'spam-whitelist' => ' #<!-- mantenha esta linha exatamente assim --> <pre>
-# URLs externas que coincidam com esta lista *não* serão bloqueadas mesmo
-# se tiverem sido bloqueadas por entradas presentes nas listas negras.
+	'spam-blacklist' => ' #<!-- mantenha esta linha exatamente assim --> <pre>
+# URLs externas que coincidam com esta lista serão bloqueadas quando forem
+# adicionadas a uma página.
+# Esta lista refere-se apenas a este wiki. Consulte também a lista-negra global.
+# Veja a documentação em https://www.mediawiki.org/wiki/Extension:SpamBlacklist
 #
 # A sintaxe é a seguinte:
 #  * Tudo o que estiver após um "#" até o final de uma linha será tido como um comentário
-#  * Todas as linhas que não estiverem em branco são um fragmento de expressão regular (regex) que abrangem apenas a URL especificada
+#  * Todas as linhas que não estiverem em branco são um fragmento de expressão 
+# regular (regex) que abrangem apenas a URL especificada
 
  #</pre> <!-- mantenha esta linha exatamente assim -->',
-	'spam-invalid-lines' => '{{PLURAL:$1|A entrada|As entradas}} a seguir {{PLURAL:$1|é uma expressão regular|são expressões regulares}}  (regex) {{PLURAL:$1|inválida e precisa|inválidas e precisam}} ser {{PLURAL:$1|corrigida|corrigidas}} antes de salvar a página:',
+	'spam-whitelist' => ' #<!-- mantenha esta linha exatamente assim --> <pre>
+ # URLs externas que coincidam com esta lista *não* serão
+ # bloqueadas mesmo se tiverem sido bloqueadas por entradas
+ # presentes nas listas negras.
+ #
+ # A sintaxe é a seguinte:
+ #  * Tudo o que estiver após um "#" até o final de uma linha
+ # será tido como um comentário
+ #  * Todas as linhas que não estiverem em branco são um
+ # fragmento de expressão regular (regex) que abrangem apenas
+ # a URL especificada
+
+  #</pre> <!-- mantenha esta linha exatamente assim -->',
+	'email-blacklist' => ' #<!-- mantenha esta linha exatamente assim --> <pre>
+ # Endereços de e-mail que coincidam com esta lista serão
+ # impedidos de se registrar, bem como de enviar mensagens
+ # Esta lista refere-se apenas a este wiki. Consulte também a lista negra global.
+ # Veja a documentação em https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+ #<!-- mantenha esta linha exatamente assim --> <pre>
+ #
+ # A sintaxe é a seguinte:
+ #  * Tudo o que estiver após um "#" até o final de uma 
+ # linha será tido como um comentário
+ #  * Todas as linhas que não estiverem em branco são um
+ # fragmento de expressão regular (regex) que abrangem apenas
+ # o domínio do endereço de e-mail
+
+  #</pre> <!-- mantenha esta linha exatamente assim -->',
+	'email-whitelist' => ' #<!-- mantenha esta linha exatamente assim --> <pre>
+ # Endereços de e-mail que coincidam com esta lista *não*
+ # serão bloqueados mesmo que tenham sofrido bloqueio
+ # por instruções presentes nas listas negras.
+ #
+ # A sintaxe é a seguinte:
+ #  * Tudo o que estiver após um "#" até o final de uma linha
+ # será tido como um comentário
+ #  * Todas as linhas que não estiverem em branco são um
+ # fragmento de expressão regular (regex) que abrangem apenas
+ # os domínios dos endereços de e-mail
+
+  #</pre> <!-- mantenha esta linha exatamente assim -->',
+	'spam-blacklisted-email' => 'Endereço eletrônico na lista negra',
+	'spam-blacklisted-email-text' => 'O seu endereço de correio eletrônico está proibido de enviar mensagens para outros usuários.',
+	'spam-blacklisted-email-signup' => 'O endereço fornecido encontra-se na lista negra.',
+	'spam-invalid-lines' => '{{PLURAL:$1|A linha|As linhas}} a seguir {{PLURAL:$1|é uma expressão regular|são expressões regulares}} (regex) {{PLURAL:$1|inválida e precisa|inválidas e precisam}} ser {{PLURAL:$1|corrigida|corrigidas}} antes de salvar a página:',
 	'spam-blacklist-desc' => 'Ferramenta anti-"spam" baseada em Regex: [[MediaWiki:Spam-blacklist]] e [[MediaWiki:Spam-whitelist]]',
 );
 
@@ -2552,6 +2691,27 @@ $messages['roa-tara'] = array(
 #  * Ogne linèe ca non g'è vacande jè 'nu frammende de regex ca vè face le combronde cu le host jndr'à l'URL
 
   #</pre> <!-- leave this line exactly as it is -->",
+	'email-blacklist' => " #<!-- leave this line exactly as it is --> <pre>
+# Le indirizze email ca iessene jndr'à ste elenghe onna essere bloccate da 'a reggistrazzione e da mannà le email
+# Ste elenghe tène cunde sole de sta uicchi; referite pure a 'a lista gnore globbale.
+# Pe documendazione 'ndruche https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+#
+# 'A sindasse jè 'a seguende:
+#   * Ognecose ca tène 'u carattere \"#\" 'mbonde a fine d'a linèe jè 'nu commende
+#   * Ogne linèe ca non g'è vacande jè 'nu frammende de regex ca vè face le combronde cu le host jndr'à le indirizze email
+
+ #</pre> <!-- leave this line exactly as it is -->",
+	'email-whitelist' => " #<!-- leave this line exactly as it is --> <pre>
+# Le indirizze email ca iessene jndr'à ste elenghe *NON* ge onna essere bloccate pure ce lore ponne sta jndr'à le vôsce d'a lista gnore
+#
+# 'A sindasse jè 'a seguende:
+#   * Ognecose ca tène 'u carattere \"#\" 'mbonde a fine d'a linèe jè 'nu commende
+#   * Ogne linèe ca non g'è vacande jè 'nu frammende de regex ca vè face le combronde cu le host jndr'à le indirizze email
+
+ #</pre> <!-- leave this line exactly as it is -->",
+	'spam-blacklisted-email' => 'Indirizze email da ignorà',
+	'spam-blacklisted-email-text' => "L'indirizze email tune jè mo jndr'à lista gnore pe mannà email a otre utinde.",
+	'spam-blacklisted-email-signup' => "L'indirizze email ca è date pe mò ste jndr'à lista gnore.",
 	'spam-invalid-lines' => "{{PLURAL:$1|'A seguende linèe d'a blacklist de spam jè|Le seguende linèe d'a blacklist de spam sonde}} {{PLURAL:$1|espressione|espressiune}} regolare invalide e {{PLURAL:$1|abbesogne|abbesognane}} de avenè corrette apprime de reggistrà 'a pàgene:",
 	'spam-blacklist-desc' => "'U strumende andi-spam basate sus a le regex: [[MediaWiki:Spam-blacklist]] e [[MediaWiki:Spam-whitelist]]",
 );
@@ -2750,6 +2910,7 @@ $messages['scn'] = array(
 
 /** Sinhala (සිංහල)
  * @author Budhajeewa
+ * @author පසිඳු කාවින්ද
  */
 $messages['si'] = array(
 	'spam-blacklist' => ' # External URLs matching this list will be blocked when added to a page.
@@ -2771,6 +2932,7 @@ $messages['si'] = array(
 #   * Every non-blank line is a regex fragment which will only match hosts inside URLs
 
  #</pre> <!-- leave this line exactly as it is -->',
+	'spam-blacklisted-email' => 'අපලේඛනගත විද්‍යුත්-තැපැල් ලිපින',
 	'spam-invalid-lines' => 'පහත දැක්වෙන කළු ලයිස්තු {{PLURAL:$1|පේලිය|පේලි}} වැරදි regular {{PLURAL:$1|expression|expressions}} වන අතර, පිටුව සුරැකීමට පෙර නිවැරදි කළ යුතුය:',
 	'spam-blacklist-desc' => 'Regex-පාදක ප්‍රති-ස්පෑම ආවුදය: [[MediaWiki:Spam-blacklist]] සහ [[MediaWiki:Spam-whitelist]]',
 );
@@ -3140,6 +3302,9 @@ $messages['tr'] = array(
 /** Ukrainian (українська)
  * @author AS
  * @author Ahonc
+ * @author AtUkr
+ * @author Base
+ * @author Ата
  */
 $messages['uk'] = array(
 	'spam-blacklist' => '# Зовнішні посилання, що відповідають цьому списку, будуть заборонені для внесення на стоірнки.
@@ -3160,12 +3325,34 @@ $messages['uk'] = array(
 #  * Кожен непорожній рядок є фрагментом регулярного виразу, який застосовується тільки до вузла в URL
 
  #</pre> <!-- не изменяйте эту строку -->',
+	'email-blacklist' => '#<!-- не змінюйте цей рядок --> <pre>
+# Адреси електронної пошти, що відповідають цьому списку, будуть заблоковані від реєстрації або надсилання ел. пошти.
+# Цей список діє тільки для даної вікі, існує також загальний чорний список.
+# Докладніше на сторінці https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+#
+# Синтаксис:
+# * Все, починаючи з символу "#" і до кінця рядка, вважається коментарем
+# * Кожен непорожній рядок є фрагментом регулярного виразу, вживаного тільки до вузлів усередині адреси ел. пошти
+
+#</pre> <!-- не змінюйте цей рядок -->',
+	'email-whitelist' => '#<!-- не змінюйте цей рядок --> <pre>
+# Адреси електронної пошти, що відповідають цьому списку, НЕ БУДУТЬ заблоковані
+# навіть якщо вони занесені до чорного списку.
+#
+#</pre> <!-- не змінюйте цей рядок --> 
+# Синтаксис:
+# * Все, починаючи з символу "#" і до кінця рядка, вважається коментарем
+# * Кожен непорожній рядок є фрагментом регулярного виразу, вживаного тільки до вузлів усередині адреси ел. пошти',
+	'spam-blacklisted-email' => 'Адреса електронної пошти з чорного списку',
+	'spam-blacklisted-email-text' => 'Ваша адреса електронної пошти в даний час знаходиться в чорному списку, тому ви не можете надсилати повідомлення іншим користувачам.',
+	'spam-blacklisted-email-signup' => 'Вказана Вами адреса електронної пошти наразі занесена до чорного списку і не може бути використаною.',
 	'spam-invalid-lines' => '{{PLURAL:$1|Наступний рядок із чорного списку посилань містить помилковий регулярний вираз і його треба виправити|Наступні рядки із чорного списку посилань містять помилкові регулярні вирази і їх треба виправити}} перед збереженням:',
 	'spam-blacklist-desc' => 'Протиспамовий засіб, що базується на регулярних виразах: [[MediaWiki:Spam-blacklist]] та [[MediaWiki:Spam-whitelist]]',
 );
 
 /** vèneto (vèneto)
  * @author Candalua
+ * @author GatoSelvadego
  */
 $messages['vec'] = array(
 	'spam-blacklist' => ' # Le URL esterne al sito che corisponde a la lista seguente le vegnarà blocà.
@@ -3185,6 +3372,25 @@ $messages['vec'] = array(
 #  * Tute le righe mìa vode le xe framenti de espressioni regolari che se àplica al solo nome de l\'host ne le URL
 
  #</pre> <!-- no sta modificar in alcun modo sta riga -->',
+	'email-blacklist' => ' # I indirisi e-mail che corisponde a ła lista seguente i sarà blocai, nó sarà posibiłe salvar o inviar e-mail.
+ # Ła lista ła xe vałida soło che pa\' sta wiki; far riferimento anca a ła blacklist globałe.
+ # Pa\' ła documentasion se varde https://www.mediawiki.org/wiki/Extension:SpamBlacklist
+ # <!-- nó modifegar sta linea --> <pre>
+# Ła sintasi ła xe ła seguente:
+#  * Tuto chel che xe conprexo intrà un caratere "#" e ła fine de ła riga el xe un comento
+#  * Tute łe righe nó vode i xe tochi de espresion regołari che se aplica soło che al nome del host de i indirisi e-mail
+ #</pre> <!-- nó modifegar sta linea -->',
+	'email-whitelist' => ' #<!-- nó modifegar sta linea --> <pre>
+# I indirisi e-mail conprexi in sta lista *nó* i sarà blocai anca se i dovaria
+# eser stai blocai da i elementi prexenti inte ła lista nera.
+#
+ #</pre> <!-- nó modifegar sta linea -->
+# Ła sintasi ła xe ła seguente:
+#  * Tuto chel che xe conprexo intrà un caratere "#" e ła fine de ła riga el xe un comento
+#  * Tute łe righe nó vode i xe tochi de espresion regołari che se aplica soło che al nome del host de i indirisi e-mail',
+	'spam-blacklisted-email' => 'Indiriso de posta eletronega blocà',
+	'spam-blacklisted-email-text' => "El to indiriso de posta eletronega el xe atualmente inte ła lista nera par 'l invio de e-mail verso altri utenti.",
+	'spam-blacklisted-email-signup' => 'El indiriso de posta eletronega indicà el xe atualmente inte ła lista nera.',
 	'spam-invalid-lines' => "{{PLURAL:$1|La seguente riga|Le seguenti righe}} de la lista nera del spam {{PLURAL:$1|no la xe na espression regolare valida|no le xe espressioni regolari valide}}; se prega de corègiar {{PLURAL:$1|l'eror|i erori}} prima de salvar la pagina.",
 	'spam-blacklist-desc' => 'Strumento antispam basà su le espressioni regolari [[MediaWiki:Spam-blacklist]] e [[MediaWiki:Spam-whitelist]]',
 );

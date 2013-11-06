@@ -12,6 +12,7 @@
  * @author Jprmvnvijay5
  * @author Kaganer
  * @author Kiranmayee
+ * @author Malkum
  * @author Meno25
  * @author Mpradeep
  * @author Praveen Illa
@@ -287,7 +288,6 @@ $messages = array(
 'qbbrowse' => 'విహరించు',
 'qbedit' => 'సవరించు',
 'qbpageoptions' => 'ఈ పేజీ',
-'qbpageinfo' => 'సందర్భం',
 'qbmyoptions' => 'నా పేజీలు',
 'qbspecialpages' => 'ప్రత్యేక పేజీలు',
 'faq' => 'తరచూ అడిగే ప్రశ్నలు',
@@ -342,7 +342,7 @@ $messages = array(
 'talkpage' => 'ఈ పేజీని చర్చించండి',
 'talkpagelinktext' => 'చర్చ',
 'specialpage' => 'ప్రత్యేక పేజీ',
-'personaltools' => 'తన పనిముట్లు',
+'personaltools' => 'వ్యక్తిగత పనిముట్లు',
 'postcomment' => 'కొత్త విభాగం',
 'articlepage' => 'విషయపు పేజీని చూడండి',
 'talk' => 'చర్చ',
@@ -405,7 +405,7 @@ $1',
 'retrievedfrom' => '"$1" నుండి వెలికితీశారు',
 'youhavenewmessages' => 'మీకు $1 ఉన్నాయి ($2).',
 'newmessageslink' => 'కొత్త సందేశాలు',
-'newmessagesdifflink' => 'క్రితం సంచికతో గల తేడాలు',
+'newmessagesdifflink' => 'చివరి మార్పు',
 'youhavenewmessagesfromusers' => 'మీకు {{PLURAL:$3|మరో వాడుకరి|$3 వాడుకరుల}} నుండి $1 ($2).',
 'youhavenewmessagesmanyusers' => 'మీకు చాలా వాడుకరుల నుండి $1 ($2).',
 'newmessageslinkplural' => '{{PLURAL:$1|ఒక కొత్త సందేశం వచ్చింది|కొత్త సందేశాలు ఉన్నాయి}}',
@@ -542,12 +542,15 @@ $2',
 # Login and logout pages
 'logouttext' => "'''ఇప్పుడు మీరు నిష్క్రమించారు.'''
 
-మీరు {{SITENAME}}ని అజ్ఞాతంగా వాడుతూండొచ్చు, లేదా ఇదే వాడుకరిగా కానీ లేదా వేరే వాడుకరిగా కానీ [[Special:UserLogin|మళ్ళీ ప్రవేశించవచ్చు]].
+మీరు {{SITENAME}}ని అజ్ఞాతంగా వాడుతూండొచ్చు, లేదా ఇదే వాడుకరిగా కానీ లేదా వేరే వాడుకరిగా కానీ <span class='plainlinks'>[$1 మళ్ళీ ప్రవేశించవచ్చు]</span>.
 అయితే, మీ విహారిణిలోని కోశాన్ని శుభ్రపరిచే వరకు కొన్ని పేజీలు మీరింకా ప్రవేశించి ఉన్నట్లుగానే చూపించవచ్చని గమనించండి.",
-'welcomecreation' => '== స్వాగతం, $1! ==
-
-మీ ఖాతాని సృష్టించాం.
-మీ [[Special:Preferences|{{SITENAME}} అభిరుచులను]] మార్చుకోవడం మరువకండి.',
+'welcomeuser' => 'స్వాగతం, $1!',
+'welcomecreation-msg' => 'మీ ఖాతాని సృష్టించాం.
+మీ [[Special:Preferences|{{SITENAME}} అభిరుచులను]] మార్చుకోవడం మరువకండి.
+తెలుగు వికీపీడియాలో తెలుగులోనే రాయాలి. వికీలో రచనలు చేసే ముందు, కింది సూచనలను గమనించండి.
+తెలుగు {{SITENAME}}లో తెలుగులోనే రాయాలి. వికీలో రచనలు చేసే ముందు, కింది సూచనలను గమనించండి.
+*వికీని త్వరగా అర్థం చేసుకునేందుకు [[వికీపీడియా:5 నిమిషాల్లో వికీ|5 నిమిషాల్లో వికీ]] పేజీని చూడండి.
+*తెలుగులో రాసేందుకు ఇంగ్లీషు అక్షరాల ఉచ్ఛారణతో తెలుగు టైపు చేసే [[వికీపీడియా:టైపింగు సహాయం| టైపింగ్  సహాయం]] వాడవచ్చు. మరిన్ని ఉపకరణాల కొరకు [[కీ బోర్డు]] మరియు   తెరపై తెలుగు సరిగా లేకపోతే[[వికీపీడియా:Setting up your browser for Indic scripts|ఈ పేజీ]]  చూడండి.',
 'yourname' => 'వాడుకరి పేరు:',
 'yourpassword' => 'సంకేతపదం:',
 'yourpasswordagain' => 'సంకేతపదాన్ని మళ్ళీ ఇవ్వండి:',
@@ -564,10 +567,10 @@ $2',
 'logout' => 'నిష్క్రమించు',
 'userlogout' => 'నిష్క్రమించు',
 'notloggedin' => 'లోనికి ప్రవేశించి లేరు',
-'nologin' => "ఖాతా లేదా? '''$1'''.",
+'nologin' => 'ఖాతా లేదా? $1.',
 'nologinlink' => 'ఖాతాని సృష్టించుకోండి',
 'createaccount' => 'ఖాతాని సృష్టించు',
-'gotaccount' => "ఇప్పటికే మీకు ఖాతా ఉందా? '''$1'''.",
+'gotaccount' => 'ఇప్పటికే మీకు ఖాతా ఉందా? $1.',
 'gotaccountlink' => 'ప్రవేశించండి',
 'userlogin-resetlink' => 'మీ ప్రవేశ వివరాలను మరచిపోయారా?',
 'createaccountmail' => 'ఈ-మెయిలు ద్వారా',
@@ -639,7 +642,7 @@ $2',
 'loginlanguagelabel' => 'భాష: $1',
 'suspicious-userlogout' => 'సరిగా పనిచేయని విహారిణి లేదా కాషింగ్ ప్రాక్సీ వల్ల పంపబడడం చేత, నిష్క్రమించాలనే మీ అభ్యర్థనని నిరాకరించారు.',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'PHP యొక్క mail() ఫంక్షన్‍లో ఏదో తెలియని లోపం దొర్లింది',
 'user-mail-no-addy' => 'ఈ-మెయిలు చిరునామాని ఇవ్వకుండానే ఈ-మెయిలు పంపడానికి ప్రయత్నించారు.',
 
@@ -698,6 +701,7 @@ $2
 'changeemail-oldemail' => 'ప్రస్తుత ఈ-మెయిలు చిరునామా:',
 'changeemail-newemail' => 'కొత్త ఈ-మెయిలు చిరునామా:',
 'changeemail-none' => '(ఏమీలేదు)',
+'changeemail-password' => 'మీ {{SITENAME}} సంకేతపదం:',
 'changeemail-submit' => 'ఈ-మెయిల్ మార్చు',
 'changeemail-cancel' => 'రద్దుచేయి',
 
@@ -716,7 +720,7 @@ $2
 'nowiki_tip' => 'వికీ ఫార్మాటును పట్టించుకోవద్దు',
 'image_tip' => 'పొదిగిన ఫైలు',
 'media_tip' => 'దస్త్రపు లంకె',
-'sig_tip' => 'టైంస్టాంపుతో సహా మీ సంతకం',
+'sig_tip' => 'సమయంతో సహా మీ సంతకం',
 'hr_tip' => 'అడ్డగీత (అరుదుగా వాడండి)',
 
 # Edit pages
@@ -859,7 +863,6 @@ $2
 'template-protected' => '(సంరక్షితం)',
 'template-semiprotected' => '(సెమీ-రక్షణలో ఉంది)',
 'hiddencategories' => 'ఈ పేజీ {{PLURAL:$1|ఒక దాచిన వర్గంలో|$1 దాచిన వర్గాల్లో}} ఉంది:',
-'nocreatetitle' => 'పేజీని సృష్టించడాన్ని నియంత్రించాం.',
 'nocreatetext' => '{{SITENAME}}లో కొత్త పేజీలు సృష్టించడాన్ని నియంత్రించారు.
 మీరు వెనక్కి వెళ్ళి వేరే పేజీలు మార్చవచ్చు, లేదా [[Special:UserLogin|లోనికి ప్రవేశించండి లేదా ఖాతా సృష్టించుకోండి]].',
 'nocreate-loggedin' => 'కొత్త పేజీలను సృష్టించేందుకు మీకు అనుమతి లేదు.',
@@ -884,6 +887,13 @@ $2
 'edit-already-exists' => 'కొత్త పేజీని సృష్టించలేము.
 అది ఇప్పటికే ఉంది.',
 'defaultmessagetext' => 'అప్రమేయ సందేశపు పాఠ్యం',
+'invalid-content-data' => 'తప్పుడు విషయం',
+
+# Content models
+'content-model-wikitext' => 'వికీపాఠ్యం',
+'content-model-text' => 'సాదా పాఠ్యం',
+'content-model-javascript' => 'జావాస్క్రిప్ట్',
+'content-model-css' => 'CSS',
 
 # Parser/template warnings
 'expensive-parserfunction-warning' => 'హెచ్చరిక: ఈ పేజీలో ఖరీదైన పార్సరు పిలుపులు చాలా ఉన్నాయి.
@@ -1032,7 +1042,8 @@ $1",
 'revdelete-only-restricted' => '$2, $1 తేదీ గల అంశాన్ని దాచడంలో పొరపాటు: ఇతర దృశ్యత వికల్పాల్లోంచి ఒకదాన్ని ఎంచుకోకుండా అంశాలని నిర్వాహకులకు కనబడకుండా అణచివెయ్యలేరు.',
 'revdelete-reason-dropdown' => '*సాధారణ తొలగింపు కారణాలు
 ** కాపీహక్కుల ఉల్లంఘన
-** అసంబద్ధ వ్యక్తిగత సమాచారం
+** అసంబద్ధ వ్యాఖ్య లేదా వ్యక్తిగత సమాచారం
+** అసంబద్ధ వాడుకరి పేరు
 ** నిందాపూర్వక సమాచారం',
 'revdelete-otherreason' => 'ఇతర/అదనపు కారణం:',
 'revdelete-reasonotherlist' => 'ఇతర కారణం',
@@ -1220,7 +1231,7 @@ $1",
 'timezoneregion-indian' => 'హిందూ మహాసముద్రం',
 'timezoneregion-pacific' => 'పసిఫిక్ మహాసముద్రం',
 'allowemail' => 'ఇతర వాడుకరుల నుండి ఈ-మెయిళ్ళను రానివ్వు',
-'prefs-searchoptions' => 'అన్వేషణ ఎంపికలు',
+'prefs-searchoptions' => 'వెతుకులాట',
 'prefs-namespaces' => 'పేరుబరులు',
 'defaultns' => 'లేకపోతే ఈ నేంస్పేసులలో అన్వేషించు:',
 'default' => 'అప్రమేయం',
@@ -1232,11 +1243,11 @@ $1",
 'prefs-emailconfirm-label' => 'ఈ-మెయిల్ నిర్ధారణ:',
 'prefs-textboxsize' => 'దిద్దుబాటు కిటికీ పరిమాణం',
 'youremail' => 'మీ ఈ-మెయిలు*',
-'username' => 'వాడుకరి పేరు:',
+'username' => '{{GENDER:$1|వాడుకరి పేరు}}:',
 'uid' => 'వాడుకరి ID:',
 'prefs-memberingroups' => 'సభ్యులుగా ఉన్న {{PLURAL:$1|గుంపు|గుంపులు}}:',
 'prefs-registration' => 'నమోదైన సమయం:',
-'yourrealname' => 'అసలు పేరు*',
+'yourrealname' => 'అసలు పేరు:',
 'yourlanguage' => 'భాష:',
 'yourvariant' => 'విషయపు భాషా వైవిధ్యం:',
 'prefs-help-variant' => 'ఈ వికీ లోని విషయపు పేజీలను చూపించడానికి మీ అభిమత వైవిధ్యం లేదా ఆర్ధోగ్రఫీ.',
@@ -1271,7 +1282,7 @@ $1",
 'prefs-displaywatchlist' => 'ప్రదర్శన ఎంపికలు',
 'prefs-diffs' => 'తేడాలు',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'ఈ-మెయిలు చిరునామా సరిగానే ఉన్నట్టుంది',
 'email-address-validity-invalid' => 'దయచేసి సరైన ఈమెయిలు చిరునామాని ఇవ్వండి',
 
@@ -1382,11 +1393,13 @@ $1",
 'right-sendemail' => 'ఇతర వాడుకరులకు ఈ-మెయిలు పంపించగలగడం',
 'right-passwordreset' => 'సంకేతపదాన్ని పునరుద్ధరించిన ఈ-మెయిళ్ళు',
 
+# Special:Log/newusers
+'newuserlogpage' => 'కొత్త వాడుకరుల చిట్టా',
+'newuserlogpagetext' => 'ఇది వాడుకరి నమోదుల చిట్టా.',
+
 # User rights log
 'rightslog' => 'వాడుకరుల హక్కుల మార్పుల చిట్టా',
 'rightslogtext' => 'ఇది వాడుకరుల హక్కులకు జరిగిన మార్పుల చిట్టా.',
-'rightslogentry' => '$1 గారి సభ్యత్వ గుంపును $2 నుండి $3 కి మార్చారు',
-'rightsnone' => '(ఏమీలేవు)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'ఈ పేజీని చదవండి',
@@ -1764,7 +1777,7 @@ https://www.mediawiki.org/wiki/Manual:Image_Authorization చూడండి.',
 'unusedtemplateswlh' => 'ఇతర లింకులు',
 
 # Random page
-'randompage' => 'యాధృచ్ఛిక పేజీ',
+'randompage' => 'యాదృచ్ఛిక పేజీ',
 'randompage-nopages' => 'ఈ క్రింది {{PLURAL:$2|పెరుబరిలో|పెరుబరులలో}} పేజీలు ఏమి లేవు:$1',
 
 # Random redirect
@@ -1795,6 +1808,8 @@ https://www.mediawiki.org/wiki/Manual:Image_Authorization చూడండి.',
 'disambiguations' => 'అయోమయ నివృత్తి పుటలకు లింకున్న పుటలు',
 'disambiguationspage' => 'Template:అయోమయ నివృత్తి',
 'disambiguations-text' => "కింది పేజీలు '''అయోమయ నివృత్తి''' పేజీకి లింకవుతున్నాయి. కానీ అవి సంబంధిత పేజీకి నేరుగా లింకు అవాలి. <br /> [[MediaWiki:Disambiguationspage]] నుంది లింకు ఉన్న మూసను వాడే పేజీని అయోమయ నివృత్తి పేజీగా భావిస్తారు.",
+
+'pageswithprop-submit' => 'వెళ్ళు',
 
 'doubleredirects' => 'జంట దారిమార్పులు',
 'doubleredirectstext' => 'ఇతర దారిమార్పు పుటలకి తీసుకెళ్ళే దారిమార్పులని ఈ పుట చూపిస్తుంది.
@@ -1959,10 +1974,6 @@ https://www.mediawiki.org/wiki/Manual:Image_Authorization చూడండి.',
 'activeusers-hidesysops' => 'నిర్వాహకులను దాచు',
 'activeusers-noresult' => 'వాడుకరులెవరూ లేరు.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'కొత్త వాడుకరుల చిట్టా',
-'newuserlogpagetext' => 'ఇది వాడుకరి నమోదుల చిట్టా.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'వాడుకరి గుంపుల హక్కులు',
 'listgrouprights-summary' => 'కింది జాబితాలో ఈ వికీలో నిర్వచించిన వాడుకరి గుంపులు, వాటికి సంబంధించిన హక్కులు ఉన్నాయి.
@@ -1982,7 +1993,7 @@ https://www.mediawiki.org/wiki/Manual:Image_Authorization చూడండి.',
 'listgrouprights-addgroup-self-all' => 'అన్ని సమూహాలని స్వంత ఖాతాకి చేర్చుకోలగడటం',
 'listgrouprights-removegroup-self-all' => 'స్వంత ఖాతా నుండి అన్ని సమూహాలనూ తొలగించుకోగలగడం',
 
-# E-mail user
+# Email user
 'mailnologin' => 'పంపించవలసిన చిరునామా లేదు',
 'mailnologintext' => 'ఇతరులకు ఈ-మెయిలు పంపించాలంటే, మీరు [[Special:UserLogin|లాగిన్‌]] అయి ఉండాలి, మరియు మీ [[Special:Preferences|అభిరుచుల]]లో సరైన ఈ-మెయిలు చిరునామా ఇచ్చి ఉండాలి.',
 'emailuser' => 'ఈ వాడుకరికి ఈ-మెయిలుని పంపించండి',
@@ -2018,7 +2029,7 @@ https://www.mediawiki.org/wiki/Manual:Image_Authorization చూడండి.',
 'usermessage-editor' => 'వ్యవస్థ సందేశకులు',
 
 # Watchlist
-'watchlist' => 'నా వీక్షణ జాబితా',
+'watchlist' => 'వీక్షణ జాబితా',
 'mywatchlist' => 'వీక్షణ జాబితా',
 'watchlistfor2' => '$1 కొరకు $2',
 'nowatchlist' => 'మీ వీక్షణ జాబితా ఖాళీగా ఉంది.',
@@ -2054,11 +2065,7 @@ https://www.mediawiki.org/wiki/Manual:Image_Authorization చూడండి.',
 
 'enotif_mailer' => '{{SITENAME}} ప్రకటన మెయిలు పంపునది',
 'enotif_reset' => 'అన్ని పేజీలను చూసినట్లుగా గుర్తించు',
-'enotif_newpagetext' => 'ఇది ఒక కొత్త పేజీ.',
 'enotif_impersonal_salutation' => '{{SITENAME}} వాడుకరి',
-'changed' => 'మార్చారు',
-'created' => 'సృష్టించారు',
-'enotif_subject' => '{{SITENAME}}లో $PAGETITLE అనే పేజీని $PAGEEDITOR $CHANGEDORCREATED',
 'enotif_lastvisited' => 'మీ గత సందర్శన తరువాత జరిగిన మార్పుల కొరకు $1 చూడండి.',
 'enotif_lastdiff' => 'ఈ మార్పు చూసేందుకు  $1 కు వెళ్ళండి.',
 'enotif_anon_editor' => 'అజ్ఞాత వాడుకరి $1',
@@ -2088,6 +2095,8 @@ $UNWATCHURL కి వెళ్ళండి.
 
 మీ అభిప్రాయాలు చెప్పేందుకు మరియు మరింత సహాయానికై:
 {{canonicalurl:{{MediaWiki:helppage}}}}',
+'created' => 'సృష్టించారు',
+'changed' => 'మార్చారు',
 
 # Delete
 'deletepage' => 'పేజీని తొలగించు',
@@ -2259,7 +2268,7 @@ $UNWATCHURL కి వెళ్ళండి.
 'blanknamespace' => '(మొదటి)',
 
 # Contributions
-'contributions' => 'వాడుకరి రచనలు',
+'contributions' => '{{GENDER:$1|వాడుకరి}} రచనలు',
 'contributions-title' => '$1 యొక్క మార్పులు-చేర్పులు',
 'mycontris' => 'మార్పులు చేర్పులు',
 'contribsub2' => '$1 ($2) కొరకు',
@@ -2298,7 +2307,7 @@ $UNWATCHURL కి వెళ్ళండి.
 'isimage' => 'దస్త్రపు లంకె',
 'whatlinkshere-prev' => '{{PLURAL:$1|మునుపటిది|మునుపటి $1}}',
 'whatlinkshere-next' => '{{PLURAL:$1|తరువాతది|తరువాతి $1}}',
-'whatlinkshere-links' => '← లింకులు',
+'whatlinkshere-links' => '← లంకెలు',
 'whatlinkshere-hideredirs' => 'దారిమార్పులను $1',
 'whatlinkshere-hidetrans' => '$1 ట్రాన్స్‌క్లూజన్లు',
 'whatlinkshere-hidelinks' => 'లింకులను $1',
@@ -2741,6 +2750,11 @@ $UNWATCHURL కి వెళ్ళండి.
 'pageinfo-views' => 'వీక్షణల సంఖ్య',
 'pageinfo-watchers' => 'పేజీ వీక్షకుల సంఖ్య',
 'pageinfo-edits' => 'మొత్తం మార్పుల సంఖ్య',
+'pageinfo-toolboxlink' => 'పేజీ సమాచారం',
+'pageinfo-contentpage-yes' => 'అవును',
+'pageinfo-protect-cascading-yes' => 'అవును',
+'pageinfo-category-info' => 'వర్గపు సమాచారం',
+'pageinfo-category-pages' => 'పేజీల సంఖ్య',
 
 # Skin names
 'skinname-standard' => 'సంప్రదాయ',
@@ -2824,7 +2838,10 @@ $1',
 'minutes' => '{{PLURAL:$1|ఒక నిమిషం|$1 నిమిషాల}}',
 'hours' => '{{PLURAL:$1|ఒక గంట|$1 గంటల}}',
 'days' => '{{PLURAL:$1|ఒక రోజు|$1 రోజుల}}',
+'months' => '{{PLURAL:$1|ఒక నెల|$1 నెలల}}',
+'years' => '{{PLURAL:$1|ఒక సంవత్సరం|$1 సంవత్సరాల}}',
 'ago' => '$1 క్రితం',
+'just-now' => 'ఇప్పుడే',
 
 # Bad image list
 'bad_image_list' => 'కింద తెలిపిన తీరులో కలపాలి:
@@ -3224,7 +3241,7 @@ $1',
 'monthsall' => 'అన్నీ',
 'limitall' => 'అన్నీ',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'ఈ-మెయిలు చిరునామా ధృవీకరించండి',
 'confirmemail_noemail' => '[[Special:Preferences|మీ అభిరుచులలో]] ఈమెయిలు అడ్రసు పెట్టి లేదు.',
 'confirmemail_text' => '{{SITENAME}}లో ఈ-మెయిలు అంశాల్ని వాడుకునే ముందు మీ ఈ-మెయిలు చిరునామాను నిర్ధారించవలసిన అవసరం ఉంది.
@@ -3290,7 +3307,7 @@ $5
 # action=purge
 'confirm_purge_button' => 'సరే',
 'confirm-purge-top' => 'ఈ పేజీ యొక్క పాత కాపీని తొలగించమంటారా?',
-'confirm-purge-bottom' => 'పేజీ తాడనతో కోశం ఖాళీ అయి, ఇట్టీవలి కూర్పును కనబడేలా చేస్తుంది.',
+'confirm-purge-bottom' => 'సత్వరనిల్వ(cache)లోపేజీ నిర్మూలించితే, ఇటీవలి కూర్పు కనబడుతుంది.',
 
 # action=watch/unwatch
 'confirm-watch-button' => 'సరే',
@@ -3354,8 +3371,8 @@ $5
 'watchlistedit-raw-removed' => '{{PLURAL:$1|1 శీర్షికను|$1 శీర్షికలను}} తీసివేశాం:',
 
 # Watchlist editing tools
-'watchlisttools-view' => 'సంబంధిత మార్పులను చూపించు',
-'watchlisttools-edit' => 'వీక్షణ జాబితాను చూపించు, మార్చు',
+'watchlisttools-view' => 'సంబంధిత మార్పులను చూడండి',
+'watchlisttools-edit' => 'వీక్షణ జాబితాను చూడండి లేదా మార్చండి',
 'watchlisttools-raw' => 'ముడి వీక్షణ జాబితాలో మార్పులు చెయ్యి',
 
 # Signatures
@@ -3513,7 +3530,7 @@ $5
 'logentry-newusers-create' => '$1 ఒక వాడుకరి ఖాతాను సృష్టించారు',
 'logentry-newusers-create2' => '$1  వాడుకరి ఖాతా $3ను సృష్టించారు',
 'logentry-newusers-autocreate' => '$1 ఖాతాను ఆటోమెటిగ్గా సృష్టించారు',
-'newuserlog-byemail' => 'ఈ-మెయిలులో సంకేతపదం పంపించాం',
+'rightsnone' => '(ఏమీలేవు)',
 
 # Feedback
 'feedback-subject' => 'విషయం:',

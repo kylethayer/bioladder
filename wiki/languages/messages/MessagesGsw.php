@@ -96,7 +96,6 @@ $specialPageAliases = array(
 	'Recentchanges'             => array( 'Letschti_Änderige' ),
 	'Recentchangeslinked'       => array( 'Änderige_an_verlinkte_Syte' ),
 	'Revisiondelete'            => array( 'Versionsleschig' ),
-	'RevisionMove'              => array( 'Version_verschiebe' ),
 	'Search'                    => array( 'Suech' ),
 	'Shortpages'                => array( 'Churzi_Syte' ),
 	'Specialpages'              => array( 'Spezialsyte' ),
@@ -278,7 +277,6 @@ $messages = array(
 'qbbrowse' => 'Blättre',
 'qbedit' => 'Ändere',
 'qbpageoptions' => 'Sytenoptione',
-'qbpageinfo' => 'Sytedate',
 'qbmyoptions' => 'Ystellige',
 'qbspecialpages' => 'Spezialsytene',
 'faq' => 'Froge, wo vilmol gstellt wäre',
@@ -536,12 +534,9 @@ Dr Administrator, wu dr Schrybzuegriff gsperrt het, het dää Grund aagee: „$3
 # Login and logout pages
 'logouttext' => "'''Du bisch jetz abgmäldet.'''
 
-Du chasch {{SITENAME}} wyter anonym bruche, oder Du chasch di [[Special:UserLogin|wider aamälde]] mit em glyche oder eme andere Benutzername.
+Du chasch {{SITENAME}} wyter anonym bruche, oder Du chasch di <span class='plainlinks'>[$1 wider aamälde]</span> mit em glyche oder eme andere Benutzername.
 
 Ochat: s cha syy, ass bstimmti Syte eso aazeigt wäre, wie wänn Du allno aagmäldet wärsch, bis Du dr Zwischespycher vu Dyym Browser glescht hesch.",
-'welcomecreation' => '==Willcho, $1!==
-Dyy Benutzerkonto isch aaglait wore.
-Vergiss nid, dyni [[Special:Preferences|{{SITENAME}}-Yystellige]] aazpasse.',
 'yourname' => 'Dyy Benutzername',
 'yourpassword' => 'Passwort:',
 'yourpasswordagain' => 'Passwort no mol yygee:',
@@ -635,7 +630,7 @@ Wänn s Benutzerkonto us Versäh aaglait woren isch, chasch die Nochricht ignori
 'loginlanguagelabel' => 'Sproch: $1',
 'suspicious-userlogout' => 'Dyy Versuech di abzmälde isch abbroche wore, wel s uusgsäh het, wie wänn s vun eme bschedigte Browser oder eme Cacheproxy uus gsändet woren isch.',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'Nit bekannte Fähler mit dr Funktion mail() vu PHP',
 'user-mail-no-addy' => 'Es isch versuecht worde e E-Mail ohni Angab vunere E-Mail-Adräss z verschigge.',
 
@@ -873,7 +868,6 @@ As Referänz wird do dr letscht Logbuechyytrag aagee:",
 'template-semiprotected' => '(schrybgschitzt fir Benutzer, wo nit aagmäldet oder nei sin)',
 'hiddencategories' => 'Die Syte ghert zue {{PLURAL:$1|einere versteckte Kategori|$1 versteckte Kategorie}}:',
 'edittools' => '<!-- Dää Text wird unter em "Ändere"-Formular un bim "Uffelade"-Formular aagzeigt. -->',
-'nocreatetitle' => 'S Aalege vu neje Syte isch yygschränkt.',
 'nocreatetext' => "Uf {{SITENAME}} isch d Erstellig vo nöue Syten ygschränkt.
 Du chasch nur Syten ändere, wo's scho git, oder muesch di [[Special:UserLogin|amälde]].",
 'nocreate-loggedin' => 'Du bisch nid berächtigt, neji Syte aazlege.',
@@ -896,6 +890,15 @@ Si isch schyns glescht wore.',
 'edit-no-change' => 'Dyyni Bearbeitig isch ignoriert wore, wel kei Änderig am Täxt gmacht woren isch.',
 'edit-already-exists' => 'Di nej Syte het nid chenne aaglait wäre, wel s si scho git.',
 'defaultmessagetext' => 'Standardtext',
+'content-failed-to-parse' => 'Parse vum Inhalt $2 fir Modell $1 fählgschlaa: $3',
+'invalid-content-data' => 'Uugiltigi Inhaltsdate',
+'content-not-allowed-here' => 'Dr Inhalt „$1“ isch uf dr Syte [[$2]] nit erlaubt',
+
+# Content models
+'content-model-wikitext' => 'Wikitext',
+'content-model-text' => 'Klartext',
+'content-model-javascript' => 'JavaScript',
+'content-model-css' => 'CSS',
 
 # Parser/template warnings
 'expensive-parserfunction-warning' => 'Achtig: In däre Syte het s z vyyl Ufruef vu ufwändige Parserfunktione.
@@ -1291,7 +1294,7 @@ Des cha nimmi ruckgängig gmacht wäre.',
 'prefs-displaywatchlist' => 'Aazeigoptione',
 'prefs-diffs' => 'Versionsverglych',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'Siht giltig uus',
 'email-address-validity-invalid' => 'S brucht e giltigi Adräss!',
 
@@ -1402,12 +1405,13 @@ Des cha nimmi ruckgängig gmacht wäre.',
 'right-sendemail' => 'E-Mail an anderi Benutzer schicke',
 'right-passwordreset' => 'Passwort vun eme Benutzer zruggsetze',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Nejaamäldigs-Logbuech',
+'newuserlogpagetext' => 'Des isch e Logbuech fir nej aagleiti Benutzerchonte.',
+
 # User rights log
 'rightslog' => 'Benutzerrächt-Logbuech',
 'rightslogtext' => 'Des ischs Logbuech vun de Änderunge on Bnutzerrechte.',
-'rightslogentry' => 'het d Benutzerrächt fir „$1“ vu „$2“ uf „$3“ gänderet',
-'rightslogentry-autopromote' => 'd Zueornig zue dr Benutzergruppe isch automatisch vu $2 in $3 gänderet wore',
-'rightsnone' => '(keini)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'die Syte z läse',
@@ -2034,10 +2038,6 @@ Lueg au d Lischt vu dr [[Special:WantedCategories|gwinschte Kategorie]].',
 'activeusers-hidesysops' => 'Ammanne (Administratore) uusblände',
 'activeusers-noresult' => 'Kei Benutzer gfunde.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Nejaamäldigs-Logbuech',
-'newuserlogpagetext' => 'Des isch e Logbuech fir nej aagleiti Benutzerchonte.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Benutzergruppe-Rächt',
 'listgrouprights-summary' => 'Des isch e Liste vu dr Benutzergruppe, wu in däm Wiki definiert sin, un dr Rächt, wu dermit verbunde sin.
@@ -2057,7 +2057,7 @@ Zuesätzligi Informatione iber einzelni Rächt git s [[{{MediaWiki:Listgrouprigh
 'listgrouprights-addgroup-self-all' => 'Cha alli Gruppe zum eigene Benutzerkonto zuefiege',
 'listgrouprights-removegroup-self-all' => 'Cha alli Gruppe us em eigene Benutzerkonto useneh',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Du bisch nid aagmäldet oder hesch keis Mail aaggä',
 'mailnologintext' => 'Du muesch [[Special:UserLogin|aagmäldet syy]] un e bstätigti E-Mail-Adräss in Dyyne [[Special:Preferences|Yystellige]] aagee ha, fir dass epper anderem es E-Mail chasch schicke.',
 'emailuser' => 'Es Mail schrybe',
@@ -2134,11 +2134,7 @@ Wänn Du d Syte speter wider vu dr Lischt witt stryyche, deno druck eifach uf �
 
 'enotif_mailer' => '{{SITENAME}} E-Mail-Benochrichtigungsdienscht',
 'enotif_reset' => 'Alli Syte as aagluegt markiere',
-'enotif_newpagetext' => 'Des isch e neiji Syte.',
 'enotif_impersonal_salutation' => '{{SITENAME}}-Benutzer',
-'changed' => 'gänderet',
-'created' => 'aagleit',
-'enotif_subject' => 'D {{SITENAME}} Syte $PAGETITLE isch vum $PAGEEDITOR $CHANGEDORCREATED wore.',
 'enotif_lastvisited' => '$1 zeigt alli Änderige uf s Mol.',
 'enotif_lastdiff' => 'Lueg $1 no däre Änderig.',
 'enotif_anon_editor' => 'Anonyme Benutzer $1',
@@ -2168,6 +2164,8 @@ Go d Yystellige vu Dyyre Beobachtigslischte ändere, gang uf {{canonicalurl:{{#s
 Go d Syte us Dyyre Beobachtigslischte uuseneh, gang uf $UNWATCHURL
 
 Ruckmäldig un wyteri Hilf: {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'aagleit',
+'changed' => 'gänderet',
 
 # Delete
 'deletepage' => 'Syte lösche',
@@ -2314,7 +2312,9 @@ In däm Fall darf di neijscht Version nit markiert wäre oder ihre Status muess 
 'undeletedrevisions' => '{{PLURAL:$1|ei Revision|$1 Revisione}} wider zruckgholt.',
 'undeletedrevisions-files' => '{{PLURAL:$1|1 Version|$1 Versione}} un {{PLURAL:$2|1 Datei|$2 Dateie}} sin widerhärgstellt wore',
 'undeletedfiles' => '{{PLURAL:$1|1 Datei isch|$1 Dateie sin}} widerhärgstellt wore',
-'cannotundelete' => 'Widerhärstellig isch nit gange; eber ander het villicht d Syte scho widerhärgstellt.',
+'cannotundelete' => 'D Widerhärstellig isch nit gange:
+
+$1',
 'undeletedpage' => "'''„$1“''' isch widerhärgstellt wore.
 
 Im [[Special:Log/delete|Lesch-Logbuech]] findsch e Ibersicht vu dr gleschte un widerhärgstellte Syte.",
@@ -2345,7 +2345,7 @@ $1',
 'blanknamespace' => '(Haupt-)',
 
 # Contributions
-'contributions' => 'Benutzer-Byträg',
+'contributions' => '{{GENDER:$1|Benutzer-Byträg}}',
 'contributions-title' => 'Benutzerbyytreg vu „$1“',
 'mycontris' => 'Myyni Byyträg',
 'contribsub2' => 'Für $1 ($2)',
@@ -2597,6 +2597,7 @@ D Syte „[[:$1]]“ gits scho. Wottsch du si lösche, zume Platz zum verschiebe
 'immobile-target-namespace-iw' => 'E Interwiki-Link isch kei gültigs Ziil für e Syteverschiebig.',
 'immobile-source-page' => 'Die Syte cha nüt verschobe werde.',
 'immobile-target-page' => 'Uf die Ziilsyte cha nüt verschobe werde.',
+'bad-target-model' => 'Di gwinsche Ziilsyte brucht e ander Inhaltsmodell. S Inhaltsmodell $1 cha nit in s Inhaltsmodell $2 umgwandlet wäre.',
 'imagenocrossnamespace' => 'Dateie chönne nüt ussem {{ns:file}}-Namensruum use verschobe werde',
 'nonfile-cannot-move-to-file' => 'Nit-Dateie chenne nit in dr Datei-Namensruum verschobe wäre',
 'imagetypemismatch' => 'D nöii Dateierwiiterig passt nüt zu sym Typ',
@@ -2719,7 +2720,6 @@ Die uf em lokale Rächner spychere un derno do uffelade.',
 
 # JavaScriptTest
 'javascripttest' => 'JavaScript-Tescht',
-'javascripttest-disabled' => 'Die Funktion isch in däm Wiki nit aktiviert wore.',
 'javascripttest-title' => '$1-Tescht wäre durgfiert',
 'javascripttest-pagetext-noframework' => 'Die Syte isch reserviert fir JavaSkript-Tescht.',
 'javascripttest-pagetext-unknownframework' => 'Nit bekannt Framework „$1“.',
@@ -2832,9 +2832,10 @@ Die uf em lokale Rächner spychere un derno do uffelade.',
 'pageinfo-default-sort' => 'Standardsortierkriterium',
 'pageinfo-length' => 'Sytelengi (in Byte)',
 'pageinfo-article-id' => 'Syten-ID',
+'pageinfo-language' => 'Syteninhaltssproch',
 'pageinfo-robot-policy' => 'Suechmaschinestatus',
-'pageinfo-robot-index' => 'Indizierbar',
-'pageinfo-robot-noindex' => 'Nit indizierbar',
+'pageinfo-robot-index' => 'Indexierbar',
+'pageinfo-robot-noindex' => 'Nit indexierbar',
 'pageinfo-views' => 'Aazahl Sytenufruef',
 'pageinfo-watchers' => 'Aazahl vu Beobachter',
 'pageinfo-redirects-name' => 'Wyterleitige zue däre Syte',
@@ -2851,6 +2852,14 @@ Die uf em lokale Rächner spychere un derno do uffelade.',
 'pageinfo-magic-words' => '{{PLURAL:$1|Magischs Wort|Magischi Werter}} ($1)',
 'pageinfo-hidden-categories' => 'Versteckti {{PLURAL:$1|Kategori|Kategorie}} ($1)',
 'pageinfo-templates' => 'Yybundeni {{PLURAL:$1|Vorlag|Vorlage}} ($1)',
+'pageinfo-toolboxlink' => 'Informatione zue dr Syte',
+'pageinfo-redirectsto' => 'Weiterleitung nach',
+'pageinfo-redirectsto-info' => 'Information',
+'pageinfo-contentpage' => 'Zellt as Inhaltssyte',
+'pageinfo-contentpage-yes' => 'Jo',
+'pageinfo-protect-cascading' => 'Syte mit Kaskadeschutz vu do',
+'pageinfo-protect-cascading-yes' => 'Jo',
+'pageinfo-protect-cascading-from' => 'Syte mit Kaskadeschutz vu',
 
 # Patrolling
 'markaspatrolleddiff' => 'Als patrulyrt markyre',
@@ -2862,6 +2871,7 @@ Die uf em lokale Rächner spychere un derno do uffelade.',
 'markedaspatrollederror' => 'Markierig as „kontrolliert“ nit megli.',
 'markedaspatrollederrortext' => 'Du muesch e Syteänderig uswehle.',
 'markedaspatrollederror-noautopatrol' => 'S isch nit erlaubt, eigeni Bearbeitige as kontrolliert z markiere.',
+'markedaspatrollednotify' => 'Die Änderig an $1 isch as kontrolliert markiert wore.',
 
 # Patrol log
 'patrol-log-page' => 'Kontroll-Logbuech',
@@ -3353,7 +3363,7 @@ Andri wäre standardmäßig nit aazeigt.
 'monthsall' => 'alli',
 'limitall' => 'alli',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Bstätigung vo Ihre E-Poscht-Adräss',
 'confirmemail_noemail' => 'Du hesch in dyne [[Special:Preferences|persönliche Ystellige]] e kei E-Mail-Adress ygää.',
 'confirmemail_text' => 'Dermit du di erwyterete Mailfunktione chasch bruuche, muesch du die E-Mail-Adrässe, wo du hesch aaggä, la bestätige. Klick ufe Chnopf unte; das schickt dir es Mail. I däm Mail isch e Link; we du däm Link folgsch, de tuesch dadermit bestätige, das die E-Mail-Adrässe dyni isch.',
@@ -3420,6 +3430,7 @@ Dää Bstetigungscode isch giltig bis am $4.',
 # Scary transclusion
 'scarytranscludedisabled' => '[Interwiki-Yybindig isch deaktiviert]',
 'scarytranscludefailed' => '[Vorlage-Yybindig fir $1 isch gescheitert]',
+'scarytranscludefailed-httpstatus' => '[Vorlagenabruef fählgschlaa fir $1: HTTP  $2]',
 'scarytranscludetoolong' => '[URL isch z lang]',
 
 # Delete conflict
@@ -3527,6 +3538,7 @@ Du chasch au d [[Special:EditWatchlist|Standard-Bearbeitigssyte]] bruuche.',
 'version-license' => 'Lizänz',
 'version-poweredby-credits' => "Die Websyte nutzt '''[//www.mediawiki.org/wiki/MediaWiki/de MediaWiki]''', Copyright © 2001–$1 $2.",
 'version-poweredby-others' => 'anderi',
+'version-credits-summary' => 'Mir danke däne Lyt fir ihri Bytreg zue [[Special:Version|MediaWiki]].',
 'version-license-info' => 'MediaWiki isch e freji Software, d. h. s cha, no dr Bedingige vu dr GNU General Public-Lizänz, wu vu dr Free Software Foundation vereffentligt woren isch, wyterverteilt un/oder modifiziert wäre. Doderbyy cha d Version 2, oder no eigenem Ermässe, jedi nejeri Version vu dr Lizänz brucht wäre.
 
 Des Programm wird in dr Hoffnig verteilt, ass es nitzli isch, aber OHNI JEDI GARANTI un sogar ohni di impliziert Garanti vun ere MÄRTGÄNGIGKEIT oder EIGNIG FIR E BSTIMMTE ZWÄCK. Doderzue git meh Hiiwys in dr GNU General Public-Lizänz.
@@ -3665,11 +3677,14 @@ Di aagfrogt Datei wird diräkt dargstellt bzw. mit dr verchnipfte Aawändig gsta
 'logentry-move-move_redir-noredirect' => '$1 het d Syte $3 nooch $4 verschobe un het debi e Wyterleitig überschrybe, ohni sälber eini aazlege',
 'logentry-patrol-patrol' => '$1 het Version $4 vo Syte $3 als kontrolliert markiert',
 'logentry-patrol-patrol-auto' => '$1 het Version $4 vo Syte $3 automatisch als kontrolliert markiert',
-'logentry-newusers-newusers' => '$1 het en Benutzerchonto erstellt',
-'logentry-newusers-create' => '$1 het en Benutzerchonto erstellt',
-'logentry-newusers-create2' => '$1 het en Benutzerchonto $3 erstellt',
+'logentry-newusers-newusers' => 'Benutzerkonto $1 isch aagleit wore.',
+'logentry-newusers-create' => 'Benutzerkonto $1 isch aagleit wore.',
+'logentry-newusers-create2' => 'Benutzerkonto $3 isch aalgeit wore vu $1',
 'logentry-newusers-autocreate' => 'S Benutzerchonto $1 isch automatisch erstellt worde',
-'newuserlog-byemail' => 's Passwort isch per E-Mail gschickt wore',
+'logentry-rights-rights' => '$1 het d Gruppezuegherigkeit fir $3 vu $4 uf $5 gänderet',
+'logentry-rights-rights-legacy' => '$1 het d Gruppezuegherigkeit fir $3 gänderet',
+'logentry-rights-autopromote' => '$1 isch automatisch vu $4 zue $5 zuegordnet wore',
+'rightsnone' => '(keini)',
 
 # Feedback
 'feedback-bugornote' => 'Wän Du detailliert e tächnisch Probläm witt bschryybe, no mäld bitte [$1 ne Fähler].

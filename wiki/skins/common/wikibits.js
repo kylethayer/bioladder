@@ -91,10 +91,9 @@ window.importStylesheet = function( page ) {
 
 window.importStylesheetURI = function( url, media ) {
 	var l = document.createElement( 'link' );
-	l.type = 'text/css';
 	l.rel = 'stylesheet';
 	l.href = url;
-	if( media ) {
+	if ( media ) {
 		l.media = media;
 	}
 	document.getElementsByTagName('head')[0].appendChild( l );
@@ -123,8 +122,6 @@ if ( mw.config.get( 'skin' ) === 'monobook' ) {
 		importStylesheetURI( skinpath + '/Opera7Fixes.css' );
 	} else if ( opera95_bugs ) {
 		importStylesheetURI( skinpath + '/Opera9Fixes.css' );
-	} else if ( ff2_bugs ) {
-		importStylesheetURI( skinpath + '/FF2Fixes.css' );
 	}
 }
 

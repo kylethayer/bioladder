@@ -345,9 +345,6 @@ $messages = array(
 
 ທ່ານ ສາມາດສືບຕໍ່ໃຊ້ {{SITENAME}} ແບບບໍ່ສະແດງຊື່, ຫຼື ທ່ານ ສາມາດ ເຊັນເຂົ້າ ອີກ ໂດຍ ຊື່ຜູ້ໃຊ້ ເກົ່າ ຫຼື ໃໝ່ ກໍ່ໄດ້.
 ກະລຸນາ ຮັບຊາບວ່າ ບາງໜ້າ ອາດຈະສືບຕໍ່ ສະແດງ ຄືວ່າ ທ່ານ ຍັງເຊັນເຂົ້າຢູ່ ຈົນກວ່າ ທ່ານ ຂໍ້ມູນບັນທຶກຊົ່ວຄາວ ໃນ ໂປຣແກຣມທ່ອງເວັບ ຂອງ ທ່ານ ຈະຖືກລຶບ.",
-'welcomecreation' => '== ຍິນດີຕ້ອນຮັບ, $1! ==
-
-ບັນຊີ ຂອງທ່ານ ຖືກສ້າງຂຶ້ນແລ້ວ. ຢ່າລືມ ຕັ້ງຄ່າ ທ່ານ ຢູ່ {{SITENAME}}.',
 'yourname' => 'ຊື່ຜູ້ໃຊ້',
 'yourpassword' => 'ລະຫັດຜ່ານ',
 'yourpasswordagain' => 'ພິມລະຫັດຜ່ານອີກ',
@@ -538,6 +535,10 @@ $messages = array(
 # User rights
 'editinguser' => 'ຜູ້ໃຊ້ <b>$1</b> ພວມດັດແກ້ ([[User talk:$1|{{int:talkpagelinktext}}]] | [[Special:Contributions/$1|{{int:contribslink}}]])',
 
+# Special:Log/newusers
+'newuserlogpage' => 'ບັນທຶກການສ້າງບັນຊີຜູ້ໃຊ້',
+'newuserlogpagetext' => 'ນີ້ແມ່ນ ບັນທຶກການສ້າງ ບັນຊີຜູ້ໃຊ້ໃໝ່',
+
 # Recent changes
 'nchanges' => '$1 {{PLURAL:$1|ການປ່ຽນແປງ|ການປ່ຽນແປງ}}',
 'recentchanges' => 'ການດັດແກ້ຫຼ້າສຸດ',
@@ -686,11 +687,7 @@ Also see [[Special:WantedCategories|wanted categories]].',
 # Special:ListUsers
 'listusers-submit' => 'ສະແດງ',
 
-# Special:Log/newusers
-'newuserlogpage' => 'ບັນທຶກການສ້າງບັນຊີຜູ້ໃຊ້',
-'newuserlogpagetext' => 'ນີ້ແມ່ນ ບັນທຶກການສ້າງ ບັນຊີຜູ້ໃຊ້ໃໝ່',
-
-# E-mail user
+# Email user
 'emailuser' => 'ສົ່ງອີເມລ ຫາ ຜູ້ໃຊ້ນີ້',
 'emailpage' => 'ສົ່ງອີເມລ ຫາ ຜູ້ໃຊ້',
 'emailpagetext' => 'ຖ້າຜູ້ໃຊ້ນີ້ ຂຽນທີ່ຢູ່ອີເມລຢ່າງຖືກຕ້ອງຢູ່ການຕັ້ງຄ່າຂອງລາວ, ຟອມທາງລຸ່ມນີ້​ ຈະສົ່ງຂໍ້ຄວາມໜຶ່ງຫາທີ່ຢູ່ອີເມລນັ້ນ.
@@ -724,10 +721,9 @@ Also see [[Special:WantedCategories|wanted categories]].',
 'watching' => 'ພວມຕິດຕາມ...',
 'unwatching' => 'ພວມເຊົາຕິດຕາມ...',
 
-'enotif_newpagetext' => 'ນີ້ແມ່ນໜ້າໃໝ່.',
-'changed' => 'ປ່ຽນແລ້ວ',
-'created' => 'ສ້າງແລ້ວ',
 'enotif_lastvisited' => 'ເບິ່ງ $1 ເພື່ອ ທຸກໆການປ່ຽນແປງ ຕັ້ງແຕ່ເທື່ອສຸດທ້າຍ ທີ່ ທ່ານເຂົ້າຫາ.',
+'created' => 'ສ້າງແລ້ວ',
+'changed' => 'ປ່ຽນແລ້ວ',
 
 # Delete
 'confirm' => 'ຢືນຢັນ',
@@ -921,7 +917,7 @@ Also see [[Special:WantedCategories|wanted categories]].',
 'namespacesall' => 'ທັງໝົດ',
 'monthsall' => 'ທັງໝົດ',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'ຢືນຢັນ ທີ່ຢູ່ ອີເມລ',
 'confirmemail_pending' => 'ລະຫັດຢືນຢັນ ໄດ້ຖືກສົ່ງໄປ ທີ່ຢູ່ ອີເມລ ຂອງ ທ່ານ; ຖ້າ ທ່ານ ຫາກໍ່ສ້າງບັນຊີ
 , ທ່ານ ຄວນຈະລໍຖ້າໜ້ອຍໜຶ່ງ ກ່ອນຈະ ພະຍາຍາມ

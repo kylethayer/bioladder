@@ -232,7 +232,6 @@ $messages = array(
 'qbbrowse' => 'Kacelta',
 'qbedit' => 'Redaktiruida',
 'qbpageoptions' => 'Necen lehtpolen järgendused',
-'qbpageinfo' => 'Andmused lehtpoles',
 'qbmyoptions' => 'Minun järgendused',
 'qbspecialpages' => 'Specialižed lehtpoled',
 'faq' => 'PPK',
@@ -472,11 +471,8 @@ Sü om "\'\'$2\'\'".',
 # Login and logout pages
 'logouttext' => "'''Tö olet lähtnuded sistemaspäi.'''
 
-Sab jatkta rad {{SITENAME}}-saital anonimižikš, vai [[Special:UserLogin|kirjutagatoiš udes]] sil-žo vai toižel kävutajan nimel.
+Sab jatkta rad {{SITENAME}}-saital anonimižikš, vai <span class='plainlinks'>[$1 kirjutagatoiš udes]</span> sil-žo vai toižel kävutajan nimel.
 Otkat sil'mnägubale, miše erasid lehtpolid ozutaškatas mugažo, kut i edel teiden lähtendad sistemaspäi. Miše vajehtada niiden nägu, puhtastagat teiden kaclimen keš.",
-'welcomecreation' => '== Tulgat tervhen, $1! ==
-Teiden registracii om loptud.
-Algat unohtagoi [[Special:Preferences|järgeta personaližikš]] sait.',
 'yourname' => 'Kävutajan nimi:',
 'yourpassword' => 'Peitsana:',
 'yourpasswordagain' => 'Kirjutagat peitsana udes:',
@@ -550,7 +546,7 @@ Olgat hüväd, varastagat pordon aigad edel ut naprindad.',
 'login-abort-generic' => 'Teiden naprind tulda sistemha om satusetoi - Azotadud',
 'loginlanguagelabel' => 'Kel’: $1',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'Tundmatoi petuz PHP:n mail()-funkcijas',
 
 # Change password dialog
@@ -735,7 +731,6 @@ Alemba om anttud jäl'gmäine aiglehtesen kirjutez:",
 'template-semiprotected' => '(kaitud anonimoišpäi da uziš kävutajišpäi)',
 'hiddencategories' => "Nece lehtpol' om {{PLURAL:$1|1 peittud kategorijaspäi|$1 peittud kategorijoišpäi}}:",
 'edittools' => '<!-- Tänna sijatud tekst ozutadas redaktiruindan da jügutoitandan formiden al. -->',
-'nocreatetitle' => 'Lehtpoliden sädand om kaidetud',
 'nocreatetext' => "{{SITENAME}}-saitas uziden lehtpoliden sädand om kaidetud.
 Tö voit pörttas tagaze i redaktiruida toine lehtpol', vai [[Special:UserLogin|kirjutagatoiš sistemha, vai säkat registracii]].",
 'nocreate-loggedin' => 'Teile ei sa säta uzid lehtpolid.',
@@ -1099,7 +1094,7 @@ Ku tö kirjutat sen, nece nimi kävutadas, miše ozutada lehtpolen toižetajad.'
 'prefs-displaywatchlist' => 'Nägun opcijad',
 'prefs-diffs' => 'Erod',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'Verkpočtan adres nägub korrektižeks.',
 'email-address-validity-invalid' => 'Antkat verkpočtan korrektine adres',
 
@@ -1202,11 +1197,13 @@ Ku tö kirjutat sen, nece nimi kävutadas, miše ozutada lehtpolen toižetajad.'
 'right-sendemail' => 'Oigeta e-počtad toižile kävutajile',
 'right-passwordreset' => 'Kacta e-kirjeižid peitsanan toižetandanke',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Kävutajiden registracijan aigkirj',
+'newuserlogpagetext' => 'Tantoi registriruidud kävutajiden nimikirjutez.',
+
 # User rights log
 'rightslog' => 'Kävutajan oiktusiden aigkirj',
 'rightslogtext' => 'Nece om kävutajan oiktusiden toižetusen aigkirj.',
-'rightslogentry' => 'toižetin $1-kävutajan ühtnend gruppiš - oli $2, linneb $3',
-'rightsnone' => '(ei ole)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => "lugeda necidä lehtpol't",
@@ -1693,10 +1690,6 @@ Kc. mugažo [[Special:WantedCategories|ectud kategorijoiden nimikirjutez]].',
 'activeusers-hidesysops' => 'Peitta administratorid',
 'activeusers-noresult' => 'Kävutajad ei olgoi löutud.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Kävutajiden registracijan aigkirj',
-'newuserlogpagetext' => 'Tantoi registriruidud kävutajiden nimikirjutez.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Kävutajiden gruppiden oiktused',
 'listgrouprights-group' => 'Grupp',
@@ -1711,7 +1704,7 @@ Kc. mugažo [[Special:WantedCategories|ectud kategorijoiden nimikirjutez]].',
 'listgrouprights-addgroup-self-all' => 'Sab ližata kaik gruppad ičeze sistemkirjutandha',
 'listgrouprights-removegroup-self-all' => 'Sab heitta poiš kaik gruppad ičeze sistemkirjutandaspäi',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Ei ole adresan oigendamižen täht',
 'emailuser' => 'Oigeta e-kirjeine necile kävutajale',
 'emailpage' => 'Kirjeine kävutajale',
@@ -1770,11 +1763,7 @@ Kc. mugažo [[Special:WantedCategories|ectud kategorijoiden nimikirjutez]].',
 
 'enotif_mailer' => "{{SITENAME}}-saitan lehtpol' om toižetadud - tedotuz",
 'enotif_reset' => 'Znamoita kaik lehtpoled kut kactud',
-'enotif_newpagetext' => 'Nece om uz’ lehtpol’',
 'enotif_impersonal_salutation' => '{{SITENAME}}-saitan kävutai',
-'changed' => 'om toižetadud',
-'created' => 'om sätud',
-'enotif_subject' => '$PAGEEDITOR om $CHANGEDORCREATED $PAGETITLE',
 'enotif_lastvisited' => "Kc. $1, miše nähta kaik teiden jäl'gmäižen vizitan jäl'ghe tehtud toižetused.",
 'enotif_lastdiff' => 'Kc. $1, miše kacelta toižetusid.',
 'enotif_anon_editor' => 'anonimine kävutai $1',
@@ -1809,6 +1798,8 @@ $UNWATCHURL
 
 Pid\'oitelend da joksii abu:
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'om sätud',
+'changed' => 'om toižetadud',
 
 # Delete
 'deletepage' => "Čuta lehtpol' poiš",
@@ -1969,7 +1960,7 @@ $1',
 'blanknamespace' => '(Pälehtpoled)',
 
 # Contributions
-'contributions' => 'Kävutajan tond',
+'contributions' => '{{GENDER:$1|Kävutajan}} tond',
 'contributions-title' => '$1-kävutajan tond',
 'mycontris' => 'Minun tond',
 'contribsub2' => '$1-kävutajan ($2) tond',
@@ -2281,7 +2272,6 @@ Ei ole pordaigašt failhodrad.',
 
 # JavaScriptTest
 'javascripttest' => 'JavaScriptan kodvmine',
-'javascripttest-disabled' => 'Nece funkcii ei ole kävutamas neciš vikiš.',
 
 # Tooltip help for the actions
 'tooltip-pt-userpage' => "Teiden kävutajan lehtpol'",
@@ -2463,8 +2453,6 @@ Jäl'ghižed kosketused siš-žo rives oma arvostadud kut erindad (lehtpoled, ku
 
 /*
 Short names for language variants used for language conversion links.
-To disable showing a particular link, set it to 'disable', e.g.
-'variantname-zh-sg' => 'disable',
 Variants for Chinese language
 */
 'variantname-zh-hans' => 'hans',
@@ -2604,6 +2592,7 @@ Ku fail redaktiruidihe sändan polhe, erased parametrad voidas erineda nügüdl�
 'exif-gpsareainformation' => 'GPS-agjan nimi',
 'exif-gpsdatestamp' => 'GPS-dat',
 'exif-gpsdifferential' => 'GPS-differencialine kohenduz',
+'exif-jpegfilecomment' => 'Kommentarii JPEG-failha',
 'exif-keywords' => 'Avadimsanad',
 'exif-worldregiondest' => "Ozutadud mail'man region",
 'exif-countrydest' => 'Ozutadud ma',
@@ -2816,7 +2805,7 @@ Ku fail redaktiruidihe sändan polhe, erased parametrad voidas erineda nügüdl�
 'monthsall' => 'kaik',
 'limitall' => 'kaik',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Vahvištoitta e-počtan adres',
 'confirmemail_send' => 'Oigekat vahvištoitandkod',
 'confirmemail_sent' => 'E-počtan adresan vahvištoitandkod om oigetud.',
@@ -2860,6 +2849,10 @@ Necen vahvištoitandkodan kävutamižen lopstrok om $4.',
 # action=purge
 'confirm_purge_button' => 'OK',
 'confirm-purge-top' => 'Puhtastada necen lehtpolen keš?',
+
+# action=watch/unwatch
+'confirm-watch-button' => 'OK',
+'confirm-unwatch-button' => 'OK',
 
 # Multipage image navigation
 'imgmultipageprev' => "← edeline lehtpol'",
@@ -2963,6 +2956,7 @@ Kävutagat normaline ezikacund.',
 'version-software' => 'Seižutadud programmišt',
 'version-software-product' => 'Produkt',
 'version-software-version' => 'Versii',
+'version-entrypoints-header-url' => 'URL',
 
 # Special:FilePath
 'filepath' => 'Te failannoks',
@@ -3061,7 +3055,7 @@ Kävutagat normaline ezikacund.',
 # New logging system
 'revdelete-restricted' => 'kaidendused administratoriden täht',
 'revdelete-unrestricted' => 'kaidendused heittud administratoriden täht',
-'newuserlog-byemail' => 'peisana om oigetud e-počtadme',
+'rightsnone' => '(ei ole)',
 
 # Feedback
 'feedback-subject' => 'Tem:',
@@ -3085,5 +3079,14 @@ Kävutagat normaline ezikacund.',
 'api-error-unknown-code' => 'Tundmatoi petuz: "$1"',
 'api-error-unknown-warning' => 'Tadmatoi varutuz: $1',
 'api-error-unknownerror' => 'Tundmatoi petuz: "$1"',
+
+# Durations
+'duration-seconds' => '$1 {{PLURAL:$1|sekund|sekunad}}',
+'duration-minutes' => '$1 {{PLURAL:$1|minut|minutad}}',
+'duration-hours' => '$1 {{PLURAL:$1|čas|časud}}',
+'duration-days' => '$1 {{PLURAL:$1|päiv|päiväd}}',
+'duration-weeks' => "$1 {{PLURAL:$1|nedal'|nedalid}}",
+'duration-years' => "$1 {{PLURAL:$1|voz'|vot}}",
+'duration-decades' => '$1 {{PLURAL:$1|dekad|dekadad}}',
 
 );

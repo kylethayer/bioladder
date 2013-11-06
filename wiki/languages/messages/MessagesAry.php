@@ -163,7 +163,6 @@ $messages = array(
 'qbbrowse' => 'ṫsffeh',
 'qbedit' => 'Ĝedel',
 'qbpageoptions' => "Had 'ṣ-ṣefḫa",
-'qbpageinfo' => 'L-Meḍmon',
 'qbmyoptions' => "'Ṣ-Ṣefḫaṫ dyawli",
 'qbspecialpages' => 'Ṣefḫaṫ ĥaṣṣin',
 'faq' => 'asaila kaytaawdo bzaf',
@@ -418,12 +417,9 @@ ossabab lli ĝtah hwwa "\'\'$2\'\'".',
 # Login and logout pages
 'logouttext' => "''' nta daba kharj.'''
 
-ila bghiti tqdr tstamr tstaml {{SITENAME}}  kamjhol , olla ila bghiti [[Special:UserLogin|tdkhl aawtani]] bnafs smiya ola bsmiya khra.
+ila bghiti tqdr tstamr tstaml {{SITENAME}}  kamjhol , olla ila bghiti <span class='plainlinks'>[$1 tdkhl aawtani]</span> bnafs smiya ola bsmiya khra.
 
 tqdr tchof baad sfahi bhal ila msjl hta tfrgh lcache dyalk",
-'welcomecreation' => '== mrhba bik, $1! ==
-lcont dyalk raha mojoda
-matnsach tbddl[[Special:Preferences|{{SITENAME}} tfdilat dyal]].',
 'yourname' => 'smiṫ l-mosṫĥdim:',
 'yourpassword' => 'Saroṫ:',
 'yourpasswordagain' => 'aaawd ktb lmot de passe dyalk',
@@ -521,7 +517,7 @@ ma ṫḍreb ḫsab l-had l-mesaj ila ṫṣĝyb had l-ḫisab ĝen tariq l-ĥat
 'loginlanguagelabel' => 'Loġa: $1',
 'suspicious-userlogout' => 't-talab dialk baċ ṫdĥol mrfoḍ ḫqqaċ tayḍhṛ billa rah ṫsift mn moṫaṣffiḫ mĝtob wlla caching proxy.',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => "ĥata' ma mĝrof-ċ fl-mail() function taĝ l-PHP.",
 'user-mail-no-addy' => 'ḫawlṫi ṫsift email bla ĝonwan l-email.',
 
@@ -760,7 +756,6 @@ l-idari lli qffelha ĝta had ṫfsir: $1",
 'template-semiprotected' => '(ḫimaya ma kamlaċ)',
 'hiddencategories' => '{{PLURAL:$1|L-Katégori l-mĥebbya li kaṫmlek|L-Katégoriyaṫ l-mĥebbyin li kaymelko}} had ṣ-ṣefḫa :',
 'edittools' => '<!-- nass ghayban hna t7t t3dil ot7t istimarat raf3 sowar. -->',
-'nocreatetitle' => "inċa' ṣfaḫi mḫdod",
 'nocreate-loggedin' => 'ma ĝndek-ċ l-heqq ṫsayb ṣ-ṣfaḫi jdad.',
 'sectioneditnotsupported-title' => 'ṫĝdil l-aqsam ma kayn-ċ hna',
 'sectioneditnotsupported-text' => 'ṫṫĝdil l-aqsam ma kayn-ċ f-had ṣfḫa.',
@@ -1091,7 +1086,7 @@ Laḫed ana imken ikono l-indexaṫ dial {{SITENAME}} qdam o ma bqaoċ ṣalḫi
 'prefs-displaywatchlist' => 'khiyarat laard',
 'prefs-diffs' => 'foroqat',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'tayban billa l-email rah ṣalḫ',
 'email-address-validity-invalid' => 'kṫb ĝonwan email ṣḫiḫ',
 
@@ -1191,11 +1186,13 @@ Laḫed ana imken ikono l-indexaṫ dial {{SITENAME}} qdam o ma bqaoċ ṣalḫi
 'right-override-export-depth' => 'tsdir sfahi obinha sfahi lmawsola hta lomq 5',
 'right-sendemail' => 'sift email lmostkhdimin lkhrin',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Ṫariĥ dyal l-ḫsabaṫ j-jdad',
+'newuserlogpagetext' => "hada sijill d-inċa'aṫ l-moṣṫĥdimin.",
+
 # User rights log
 'rightslog' => 'Ĝamaliyaṫ ḫoqoq l-mosṫeĥdim',
 'rightslogtext' => 'hada sijil btaghyirat f salahiyat lmostkhdimin',
-'rightslogentry' => 'ghyr salahiyat $1 mn $2 l $3',
-'rightsnone' => '(walo)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => "Ĥṫareĝ had 'ṣ-ṣefḫa",
@@ -1613,10 +1610,6 @@ daba ka ṫḫwwal l-[[$2]].',
 'activeusers-hidesysops' => 'Khbbi lidariyin',
 'activeusers-noresult' => 'ta mostakhdim matlgach.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Ṫariĥ dyal l-ḫsabaṫ j-jdad',
-'newuserlogpagetext' => "hada sijill d-inċa'aṫ l-moṣṫĥdimin.",
-
 # Special:ListGroupRights
 'listgrouprights' => 'salahiyat mjmoat lmostkhdimin',
 'listgrouprights-key' => '* <span class="listgrouprights-granted">ḫoqoq mĝtiyya</span>
@@ -1632,7 +1625,7 @@ daba ka ṫḫwwal l-[[$2]].',
 'listgrouprights-addgroup-self' => 'zid ll-ḫisab ṫaĝi {{PLURAL:$2|mjmoĝṫ|mjmoĝaṫ}}: $1',
 'listgrouprights-removegroup-self' => 'hyyed mn l-ḫisab ṫaĝi {{PLURAL:$2|mjmoĝṫ|mjmoĝaṫ}}: $1',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Ma kayenċ l-ĝonwan dyal l-morasil',
 'emailuser' => 'Ṣifet imayl le had l-mosṫeĥdim',
 'emailpage' => 'sift email lhad lmostkhdim',
@@ -1695,14 +1688,12 @@ L-Kṫaba dyal had ṣ-ṣefḫa ġaṫban '''ġliḍa''' fe [[Special:RecentCha
 
 'enotif_mailer' => '{{SITENAME}} nidam lbaridi',
 'enotif_reset' => 'Qiyyed ṣ-ṣefḫaṫ bḫal la zerṫihom kamlin',
-'enotif_newpagetext' => 'ṣfḫa jdida di.',
 'enotif_impersonal_salutation' => 'Mosṫeḫdim {{SITENAME}}',
-'changed' => 'Beddel',
-'created' => "tnch'at",
-'enotif_subject' => 'Ṣ-Ṣefḫa $PAGETITLE dyal {{SITENAME}} $CHANGEDORCREATEDha $PAGEEDITOR',
 'enotif_lastvisited' => 'Sir ċof $1 baċ ṫċof ṫ-ṫeġyiraṫ kamlin men ziyarṫek l-leĥĥraniya.',
 'enotif_lastdiff' => 'Ċof $1 baċ ṫċof had ṫ-ṫeġyiraṫ.',
 'enotif_anon_editor' => 'mosṫeĥdim ma mċejjelċ $1',
+'created' => "tnch'at",
+'changed' => 'Beddel',
 
 # Delete
 'deletepage' => "Mḫi had 'ṣ-ṣefḫa",
@@ -2176,8 +2167,6 @@ L-lyanaṫ l-ĥrin l-li fe nefs ṣ-ṣter ka-nĝṫabrohom bḫal sṫiṫna'a�
 
 /*
 Short names for language variants used for language conversion links.
-To disable showing a particular link, set it to 'disable', e.g.
-'variantname-zh-sg' => 'disable',
 Variants for Chinese language
 */
 'variantname-zh-hans' => 'Kṫaba',
@@ -2522,7 +2511,7 @@ Ila ṫbeddel l-fiċyé men ḫalṫo l-'aṣliya, kaynin ċi ṫafaṣil ma mna
 'monthsall' => 'kolhom',
 'limitall' => 'kolċi',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => "konfirmasyon dyal l'email",
 'confirmemail_send' => 'sift code lkonfirmation',
 'confirmemail_sent' => 'tam irssal rissala dyal lkonfirmation.',
@@ -2720,6 +2709,6 @@ jrreb l-ĝṛḍ l-ĝadi.',
 # New logging system
 'revdelete-restricted' => 'tḅḅq ḍ-ḍawaḅit ll-idariyyin',
 'revdelete-unrestricted' => 'ḫyyd ḍ-ḍawaḅit ll-idariyyin',
-'newuserlog-byemail' => "lmot de passe raha tsiftat f l'email",
+'rightsnone' => '(walo)',
 
 );

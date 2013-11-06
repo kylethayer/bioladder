@@ -248,7 +248,6 @@ $messages = array(
 'qbbrowse' => 'Padön',
 'qbedit' => 'Redakön',
 'qbpageoptions' => 'Pad at',
-'qbpageinfo' => 'Yumed',
 'qbmyoptions' => 'Pads obik',
 'qbspecialpages' => 'Pads patik',
 'faq' => 'Säks suvo pasäköls',
@@ -358,6 +357,9 @@ $messages = array(
 'youhavenewmessages' => 'Su pad ola binons $1 ($2).',
 'newmessageslink' => 'nuns nulik',
 'newmessagesdifflink' => 'votükam lätik',
+'youhavenewmessagesfromusers' => 'Labol $1 de {{PLURAL:$3|geban votik|gebans $3}} ($2).',
+'youhavenewmessagesmanyusers' => 'Labol $1 de gebans mödik ($2).',
+'newmessageslinkplural' => '{{PLURAL:$1|nuni nulik|nunis nulik}}',
 'youhavenewmessagesmulti' => 'Labol nunis nulik su $1',
 'editsection' => 'redakön',
 'editold' => 'redakön',
@@ -474,11 +476,8 @@ Kod binon: ''$2''.",
 # Login and logout pages
 'logouttext' => "'''Esenunädol oli.'''
 
-Kanol laigebön {{SITENAME}} nennemiko, u kanol [[Special:UserLogin|nunädön oli dönu]] me gebananem ot u gebenanem votik.
+Kanol laigebön {{SITENAME}} nennemiko, u kanol <span class='plainlinks'>[$1 nunädön oli dönu]</span> me gebananem ot u gebenanem votik.
 Küpälolös, das pads anik ba nog pojenons äsva no esenunädol oli, jüs uklinükol memi no laidüpik bevüresodanaföma olik.",
-'welcomecreation' => '== Benokömö, o $1! ==
-Kal olik pejafon.
-No glömolöd ad votükön [[Special:Preferences|buükamis olik in {{SITENAME}}]].',
 'yourname' => 'Gebananem:',
 'yourpassword' => 'Letavöd:',
 'yourpasswordagain' => 'Klavolös dönu letavödi:',
@@ -723,7 +722,6 @@ Geban, kel efärmükon oni, egevon kodi at: $1",
 'template-protected' => '(pejelon)',
 'template-semiprotected' => '(dilo pejelon)',
 'hiddencategories' => 'Pad at duton lü {{PLURAL:$1|klad peklänedöl 1|klads peklänedöl $1}}:',
-'nocreatetitle' => 'Padijafam pemiedükon',
 'nocreatetext' => '{{SITENAME}} emiedükon mögi ad jafön padis nulik.
 Kanol redakön padi dabinöl, u [[Special:UserLogin|nunädön oli u jafön kali]].',
 'nocreate-loggedin' => 'No dalol jafön padis nulik.',
@@ -1143,11 +1141,13 @@ Dalol i dälön votikanes kosikön ko ol yufü gebana- u bespikapad olik nes sä
 'right-siteadmin' => 'Lökofärmükön e maifükön nünodemi',
 'right-sendemail' => 'Sedön penedis leäktronik lü gebans votik',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Lised gebanijafamas',
+'newuserlogpagetext' => 'Is palisedons jafams gebanas nulik.',
+
 # User rights log
 'rightslog' => 'Jenotalised gebanagitätas',
 'rightslogtext' => 'Is palisedons votükams gebanagitätas.',
-'rightslogentry' => 'grupalimanam gebana: $1 pevotükon de $2 ad $3',
-'rightsnone' => '(nonik)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'reidön padi at',
@@ -1611,10 +1611,6 @@ Protoks pestütöl: <code>$1</code>',
 'activeusers-hidesysops' => 'Klänedolöd guvanis',
 'activeusers-noresult' => 'Geban nonik petuvon.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Lised gebanijafamas',
-'newuserlogpagetext' => 'Is palisedons jafams gebanas nulik.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Gitäts gebanagrupa',
 'listgrouprights-summary' => 'Is palisedons gebanagrups in vük at dabinöls, sa gitäts tefik onsik.
@@ -1628,7 +1624,7 @@ Ba dabinons [[{{MediaWiki:Listgrouprights-helppage}}|nüns pluik]] tefü gebanag
 'listgrouprights-addgroup-all' => 'Kanon läükön grupis valik',
 'listgrouprights-removegroup-all' => 'Kanon moükön grupis valik',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Ladet nonik ad sedön',
 'mailnologintext' => 'Mutol [[Special:UserLogin|nunädön oli]] e labön ladeti leäktronik lonöföl pö [[Special:Preferences|buükams olik]] ad dalön sedön poti leäktronik gebanes votik.',
 'emailuser' => 'Penön gebane at',
@@ -1693,11 +1689,7 @@ If vilol poso moükön padi de galädalised olik, välolös lä on knopi: „neg
 
 'enotif_mailer' => 'Nunamasit ela {{SITENAME}}',
 'enotif_reset' => 'Malön padis pevisitöl valik',
-'enotif_newpagetext' => 'Atos binon pad nulik.',
 'enotif_impersonal_salutation' => 'Geban {{SITENAME}}-a',
-'changed' => 'pevotüköl',
-'created' => 'pejafon',
-'enotif_subject' => 'In {{SITENAME}}, pad: $PAGETITLE $CHANGEDORCREATED fa el $PAGEEDITOR',
 'enotif_lastvisited' => 'Logolös eli $1 ad tuvön lisedi votükamas valik pos visit lätik ola.',
 'enotif_lastdiff' => 'Logolös eli $1 ad tuvön votükami at.',
 'enotif_anon_editor' => 'geban nennemik: $1',
@@ -1725,6 +1717,8 @@ Ad votükön parametami galädaliseda olik, loglös
 
 Küpets e yuf pluik:
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'pejafon',
+'changed' => 'pevotüköl',
 
 # Delete
 'deletepage' => 'Moükolöd padi',
@@ -2626,7 +2620,7 @@ Nünabinets votik poklänedons.
 'monthsall' => 'valik',
 'limitall' => 'valikis',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Fümedolös ladeti leäktronik',
 'confirmemail_noemail' => 'No labol ladeti leäktronik lonöföl in [[Special:Preferences|gebanabuükams olik]].',
 'confirmemail_text' => 'Vük at flagon, das ofümedol ladeti leäktronik ola büä odälon ole ad gebön poti leäktronik.
@@ -2818,7 +2812,7 @@ Magods pajonons ma fomät gudikün, ragivasots votik pamaifükons stedöfo kobü
 # New logging system
 'revdelete-restricted' => 'miedükams pelonöfükons pro guvans',
 'revdelete-unrestricted' => 'miedükams pro guvans pemoükons',
-'newuserlog-byemail' => 'letavöd pesedon me pot leäktronik',
+'rightsnone' => '(nonik)',
 
 # Search suggestions
 'searchsuggest-search' => 'Suk',

@@ -7,6 +7,7 @@
  * @ingroup Language
  * @file
  *
+ * @author Audriusa
  * @author Auwris
  * @author Break Through Pain
  * @author Dark Eagle
@@ -315,6 +316,7 @@ $messages = array(
 'newwindow' => '(atsidaro naujame lange)',
 'cancel' => 'Atšaukti',
 'moredotdotdot' => 'Daugiau...',
+'morenotlisted' => 'Daugiau nėra',
 'mypage' => 'Naudotojo puslapis',
 'mytalk' => 'Mano aptarimas',
 'anontalk' => 'Šio IP aptarimas',
@@ -326,7 +328,6 @@ $messages = array(
 'qbbrowse' => 'Naršymas',
 'qbedit' => 'Taisyti',
 'qbpageoptions' => 'Šis puslapis',
-'qbpageinfo' => 'Kontekstas',
 'qbmyoptions' => 'Mano puslapiai',
 'qbspecialpages' => 'Specialieji puslapiai',
 'faq' => 'DUK',
@@ -339,7 +340,7 @@ $messages = array(
 'vector-action-protect' => 'Užrakinti',
 'vector-action-undelete' => 'Atkurti',
 'vector-action-unprotect' => 'Keisti apsaugą',
-'vector-simplesearch-preference' => 'Įjungti išplėstinius paieškos pasiūlymus (tik „Vector“ išvaizda)',
+'vector-simplesearch-preference' => 'Supaprastinta paieška (tik „Vector“ išvaizda)',
 'vector-view-create' => 'Kurti',
 'vector-view-edit' => 'Redaguoti',
 'vector-view-history' => 'Istorija',
@@ -349,6 +350,7 @@ $messages = array(
 'namespaces' => 'Vardų sritys',
 'variants' => 'Variantai',
 
+'navigation-heading' => 'Naršymo meniu',
 'errorpagetitle' => 'Klaida',
 'returnto' => 'Grįžti į $1.',
 'tagline' => 'Iš {{SITENAME}}.',
@@ -500,9 +502,9 @@ Egzistuojančių specialiųjų puslapių sąrašą galite rasti [[Special:Specia
 # General errors
 'error' => 'Klaida',
 'databaseerror' => 'Duomenų bazės klaida',
-'dberrortext' => 'Įvyko duomenų bazės užklausos sintaksės klaida.
-Tai gali reikšti klaidą programinėje įrangoje.
-Paskutinė mėginta duomenų bazės užklausa buvo:
+'dberrortext' => 'Neteisinga duomenų bazės užklausos sintaksė.
+Galima klaida programinėje įrangoje.
+Paskutinė mėginta užklausa:
 <blockquote><tt>$1</tt></blockquote>
 iš funkcijos: „<tt>$2</tt>“.
 Duomenų bazė grąžino klaidą „<tt>$3: $4</tt>“.',
@@ -588,11 +590,11 @@ Ją užrakinęs administratorius pateikė šį paaiškinimą: "$3".',
 # Login and logout pages
 'logouttext' => "'''Dabar jūs esate atsijungęs.'''
 
-Galite toliau naudoti {{SITENAME}} anonimiškai arba [[Special:UserLogin|prisijunkite]] iš naujo tuo pačiu ar kitu naudotoju.
+Galite toliau naudoti {{SITENAME}} anonimiškai arba <span class='plainlinks'>[$1 prisijunkite]</span> iš naujo tuo pačiu ar kitu naudotoju.
 Pastaba: kai kuriuose puslapiuose ir toliau gali rodyti, kad esate prisijungęs iki tol, kol išvalysite savo naršyklės podėlį.",
-'welcomecreation' => '== Sveiki, $1! ==
-
-Jūsų paskyra buvo sukurta. Nepamirškite pakeisti savo [[Special:Preferences|{{SITENAME}} nustatymų]].',
+'welcomeuser' => 'Sveiki,  $1 !',
+'welcomecreation-msg' => 'Jūsų paskyra buvo sukurta.
+Nepamirškite pakeisti savo [[Special:Preferences|{{SITENAME}} nustatymų]].',
 'yourname' => 'Naudotojo vardas:',
 'yourpassword' => 'Slaptažodis:',
 'yourpasswordagain' => 'Pakartokite slaptažodį:',
@@ -615,7 +617,7 @@ Jūsų paskyra buvo sukurta. Nepamirškite pakeisti savo [[Special:Preferences|{
 'gotaccount' => "Jau turite paskyrą? '''$1'''.",
 'gotaccountlink' => 'Prisijunkite',
 'userlogin-resetlink' => 'Pamiršote savo prisijungimo duomenis?',
-'createaccountmail' => 'el. paštu',
+'createaccountmail' => 'Naudokite laikiną atsitiktinį slaptažodį ir nusiųskite jį į elektroninį paštą, nurodytą žemiau.',
 'createaccountreason' => 'Priežastis:',
 'badretype' => 'Įvesti slaptažodžiai nesutampa.',
 'userexists' => 'Įvestasis naudotojo vardas jau naudojamas.
@@ -660,6 +662,7 @@ Prašome prisijungti vėl, kai jūs jį gausite.',
 'eauthentsent' => 'Patvirtinimo laiškas buvo nusiųstas į paskirtąjį el. pašto adresą.
 Prieš išsiunčiant kitą laišką į jūsų dėžutę, jūs turite vykdyti nurodymus laiške, kad patvirtintumėte, kad dėžutė tikrai yra jūsų.',
 'throttled-mailpassword' => 'Slaptažodžio priminimas jau buvo išsiųstas, per {{PLURAL:$1|$1 paskutinę valandą|$1 paskutines valandas|$1 paskutinių valandų}}.
+
 Norint apsisaugoti nuo piktnaudžiavimo, slaptažodžio priminimas gali būti išsiųstas tik kas {{PLURAL:$1|$1 valandą|$1 valandas|$1 valandų}}.',
 'mailerror' => 'Klaida siunčiant paštą: $1',
 'acct_creation_throttle_hit' => 'Šio projekto lankytojai, naudojantys jūsų IP adresą, sukūrė {{PLURAL:$1|$1 paskyrą|$1 paskyras|$1 paskyrų}} per paskutiniąją dieną, o tai yra didžiausias leidžiamas kiekis per šį laiko tarpą.
@@ -687,9 +690,10 @@ Palaukite prieš bandant vėl.',
 'loginlanguagelabel' => 'Kalba: $1',
 'suspicious-userlogout' => 'Jūsų prašymas atsijungti buvo atmestas, nes, atrodo, jį klaidingai išsiuntė naršyklė arba spartinantysis tarpinis serveris.',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'Nežinoma klaida PHP mail() funkcijoje',
 'user-mail-no-addy' => 'Bandyta išsiųsti elektroninį laišką be el. pašto adreso.',
+'user-mail-no-body' => 'Mėginta siųsti tuščia ar pernelyg trumpą E-pašto žinutė.',
 
 # Change password dialog
 'resetpass' => 'Keisti slaptažodį',
@@ -711,7 +715,7 @@ Jūs galbūt jau sėkmingai pakeitėte savo slaptažodį ar gavote naują laikin
 
 # Special:PasswordReset
 'passwordreset' => 'Atstatyti slaptažodį',
-'passwordreset-text' => 'Užpildykite šią formą, norėdami gauti el priminimas jūsų sąskaitos informaciją.',
+'passwordreset-text' => 'Užpildykite šią formą, norėdami atkurti savo slaptažodį.',
 'passwordreset-legend' => 'Atstatyti slaptažodį',
 'passwordreset-disabled' => 'Slaptažodžių atstatymai šiame wikyje išjungti.',
 'passwordreset-pretext' => '{{PLURAL:$1| | Langelyje parašykite vieną duomenų vienetų žemiau}}',
@@ -721,8 +725,15 @@ Jūs galbūt jau sėkmingai pakeitėte savo slaptažodį ar gavote naują laikin
 'passwordreset-capture-help' => 'Jei jūs čia pažymėsite, tai e-mail laiškas (su laikinuoju slaptažodžiu) bus parodytas jums prieš išsiunčiant jį naudotojui.',
 'passwordreset-email' => 'E-pašto adresas:',
 'passwordreset-emailtitle' => 'Paskyros informacija apie {{sitename}}',
-'passwordreset-emailtext-ip' => 'Kažkas (tikriausiai jūs, IP adresu $1 ) paprašė informacijos priminimas jūsų! N! sąskaitą {{sitename}} ( $4 ). Šis vartotojas {{PLURAL:$3| sąskaita | sąskaitas}} N!! N!, susijusių su šiuo e-pašto adresą!: N!! $2 ! N! N! {{PLURAL:$3| Šis laikinas slaptažodis | Šie laikini slaptažodžiai}} baigsis {{PLURAL:$5| vieną dieną | $5 dienų}} slaptažodis.! N! Jūs turėtumėte prisijungti ir pasirinkti naują. Jei kažkas padarė tai! N! prašymu, arba jūs prisiminėte savo pirminį slaptažodį, ir jums nebereikia! N! nori ją pakeisti, galite ignoruoti šį pranešimą ir toliau naudotis savo senuoju! N! slaptažodį.',
-'passwordreset-emailtext-user' => 'Vartotojo $1 d. {{sitename}} prašoma informacija priminimas jūsų sąskaitos {{sitename}}! N! ( $4 ). Šis vartotojas {{PLURAL:$3| sąskaita | sąskaitas}}, susijusių su šiuo e-pašto adresą:! N! N! $2 ! N! N! {{PLURAL:$3| Šis laikinas slaptažodis | Šie laikini slaptažodžiai }} baigsis {{PLURAL:$5| vieną dieną | $5 dienų}} slaptažodis.! N! Jūs turėtumėte prisijungti ir pasirinkti naują. Jei kažkas padarė tai! N! prašymu, arba jūs prisiminėte savo pirminį slaptažodį, ir jums nebereikia! N! nori ją pakeisti, galite ignoruoti šį pranešimą ir toliau naudotis savo senuoju! N! slaptažodį.',
+'passwordreset-emailtext-ip' => 'Kažkas (tikriausiai jūs, IP adresu $1) paprašė priminti jūsų slaptažodį svetainėje {{SITENAME}} ($4). Šio naudotojo {PLURAL:$3|paskyra|paskyros}} yra susietos su šiuo elektroninio pašto adresu $2
+
+{{PLURAL:$3|Šis laikinas slaptažodis |Šie laikini slaptažodžiai}} baigsis po {{PLURAL:$5|vienos dienos| $5 dienų}}. 
+
+Jūs turėtumėte prisijungti ir pasirinkti naują slaptažodį. Jei kažkas kitas padarė šį prašymą arba jūs prisiminėte savo pirminį slaptažodį, ir jums nebereikia jo pakeisti, galite ignoruoti šį pranešimą ir toliau naudotis savo senuoju slaptažodžiu.',
+'passwordreset-emailtext-user' => 'Naudotojas $1 svetainėje {{SITENAME}} sukūrė užklausą slaptažodžio priminimui svetainėje {{SITENAME}}
+($4). Šio naudotojo {{PLURAL:$3|paskyra|paskyros}} susieto su šiuo elektroniniu paštu $2. 
+
+{{PLURAL:$3|Šis laikinas slaptažodis|Šie laikini slaptažodžiai}} baigs galioti po {{PLURAL:$5|vienos dienos|$5 dienų}}. Jūs turėtumėte prisijungti ir pasirinkti naują slaptažodį. Jei kažkas padarė tai be jūsų žinios arba jūs prisiminėte savo pirminį slaptažodį, ir jūs nebenorite jo pakeisti, galite ignoruoti šį pranešimą ir toliau naudotis savo senuoju slaptažodžiu.',
 'passwordreset-emailelement' => 'Naudotojo vardas: $1
 Laikinas slaptažodis: $2',
 'passwordreset-emailsent' => 'Priminimo laiškas buvo išsiųstas.',
@@ -737,6 +748,7 @@ Laikinas slaptažodis: $2',
 'changeemail-oldemail' => 'Dabartinis el. pašto adresas:',
 'changeemail-newemail' => 'Naujas el. pašto adresas:',
 'changeemail-none' => '(nėra)',
+'changeemail-password' => 'Jūsų {{SITENAME}} slaptažodis:',
 'changeemail-submit' => 'Keisti el. pašto adresą',
 'changeemail-cancel' => 'Atšaukti',
 
@@ -908,7 +920,6 @@ Naujausias įrašas žurnale yra pateiktas žemiau:",
 'template-semiprotected' => '(pusiau apsaugotas)',
 'hiddencategories' => 'Šis puslapis priklauso $1 {{PLURAL:$1|paslėptai kategorijai|paslėptoms kategorijoms|paslėptų kategorijų}}:',
 'edittools' => '<!-- Šis tekstas bus rodomas po redagavimo ir įkėlimo formomis. -->',
-'nocreatetitle' => 'Puslapių kūrimas apribotas',
 'nocreatetext' => '{{SITENAME}} apribojo galimybę kurti naujus puslapius.
 Jūs galite grįžti ir redaguoti jau esantį puslapį, arba [[Special:UserLogin|prisijungti arba sukurti paskyrą]].',
 'nocreate-loggedin' => 'Jūs neturite teisės kurti puslapius.',
@@ -933,6 +944,14 @@ Greičiausiai jis yra ištrintas.',
 'edit-already-exists' => 'Negalima sukurti naujo puslapio.
 Jis jau egzistuoja.',
 'defaultmessagetext' => 'Numatytasis pranešimo tekstas',
+'invalid-content-data' => 'Neleistinas turinys.',
+'content-not-allowed-here' => 'Turinys "$1" puslapyje [[$2]] nėra leistinas.',
+
+# Content models
+'content-model-wikitext' => 'wikitekstas',
+'content-model-text' => 'paprastasis tekstas',
+'content-model-javascript' => 'JavaScript',
+'content-model-css' => 'CSS',
 
 # Parser/template warnings
 'expensive-parserfunction-warning' => 'Įspėjimas: Šiame puslapyje yra per daug užtrunkančių analizatoriaus funkcijų šaukinių.
@@ -1083,7 +1102,8 @@ Prašome patikrinti sąrašus.',
 'revdelete-only-restricted' => 'Klaida slepiant $1 $2 elementą: jūs negalite paslėpti elementų nuo administratorių peržiūros nepasirenkant vieno iš kitų matomumo nustatymų.',
 'revdelete-reason-dropdown' => '*Dažnos trynimo priežastys
 ** Autorinių teisių pažeidimas
-** Netinkama asmeninė informacija
+** Netinkamas komentaras ar asmeninė informacija
+** Netinkamas naudotojo vardas
 ** Informacija, kuri gali būti šmeižikiška',
 'revdelete-otherreason' => 'Kita/papildoma priežastis:',
 'revdelete-reasonotherlist' => 'Kita priežastis',
@@ -1326,7 +1346,7 @@ Jei jūs jį įvesite, jis bus naudojamas pažymėti jūsų darbą.',
 'prefs-displaywatchlist' => 'Rodymo nuostatos',
 'prefs-diffs' => 'Skirtumai',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'Panašu, kad E-pašto adresas yra teisingas',
 'email-address-validity-invalid' => 'Įveskite korektišką e-pašto adresą',
 
@@ -1439,12 +1459,13 @@ teisės",
 'right-sendemail' => 'Siųsti el. laišką kitiems naudotojams',
 'right-passwordreset' => 'Peržiūrėti slaptažodžio pakeitimo e-mail laiškus',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Prisiregistravę naudotojai',
+'newuserlogpagetext' => 'Tai naudotojų kūrimo sąrašas.',
+
 # User rights log
 'rightslog' => 'Naudotojų teisių pakeitimai',
 'rightslogtext' => 'Pateikiamas naudotojų teisių pakeitimų sąrašas.',
-'rightslogentry' => 'pakeista $1 grupės narystė iš $2 į $3',
-'rightslogentry-autopromote' => 'buvo automatiškai paaukštintas iš $2 į $3',
-'rightsnone' => '(jokių)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'skaityti šį puslapį',
@@ -1668,6 +1689,7 @@ Prašome susisiekti su [[Special:ListUsers/sysop|sistemos administratoriumi]].',
 'backend-fail-notsame' => 'Jau egzistuoja neidentiškas failas $1.',
 'backend-fail-invalidpath' => '$1 yra neteisinga saugojimo nuoroda.',
 'backend-fail-delete' => 'Negalima panaikinti failo $1.',
+'backend-fail-describe' => 'Nepavyko pakeisti failo metaduomenis "$1".',
 'backend-fail-alreadyexists' => 'Failas $1 jau egzistuoja.',
 'backend-fail-store' => 'Negalima išsaugoti failo $1 kaip $2.',
 'backend-fail-copy' => 'Negalima nukopijuoti failo $1 į $2.',
@@ -1800,6 +1822,7 @@ Informacija iš [$2 failo aprašymo puslapio] yra pateikiama žemiau.',
 'shared-repo-from' => 'iš $1',
 'shared-repo' => 'bendrosios failų saugyklos',
 'shared-repo-name-wikimediacommons' => 'Vikiteka',
+'upload-disallowed-here' => 'Jūs negalite perrašyti šio failo.',
 
 # File reversion
 'filerevert' => 'Sugrąžinti $1',
@@ -1906,6 +1929,7 @@ Kiekvienoje eilutėje yra nuorodos į pirmąjį ir antrąjį peradresavimą, tai
 # Miscellaneous special pages
 'nbytes' => '$1 {{PLURAL:$1|baitas|baitai|baitų}}',
 'ncategories' => '$1 {{PLURAL:$1|kategorija|kategorijos|kategorijų}}',
+'ninterwikis' => '$1 {{PLURAL:$1|interviki nuoroda|interviki nuorodos}}',
 'nlinks' => '$1 {{PLURAL:$1|nuoroda|nuorodos|nuorodų}}',
 'nmembers' => '$1 {{PLURAL:$1|narys|nariai|narių}}',
 'nrevisions' => '$1 {{PLURAL:$1|keitimas|keitimai|keitimų}}',
@@ -1934,6 +1958,7 @@ Kiekvienoje eilutėje yra nuorodos į pirmąjį ir antrąjį peradresavimą, tai
 'mostlinkedtemplates' => 'Daugiausiai nurodomi šablonai',
 'mostcategories' => 'Puslapiai su daugiausiai kategorijų',
 'mostimages' => 'Daugiausiai nurodomi failai',
+'mostinterwikis' => 'Puslapiai, turintys daugiausiai tarpkalbinių nuorodų',
 'mostrevisions' => 'Puslapiai su daugiausiai keitimų',
 'prefixindex' => 'Visi puslapiai pagal pavadinimo pradžią',
 'prefixindex-namespace' => 'Visi puslapiai prasidedantys ($1 vardų sritis)',
@@ -2052,10 +2077,6 @@ Palaikomi protokolai: <code>$1</code> (nei vieno iš jų nenurodykite paieškoje
 'activeusers-hidesysops' => 'Slėpti administratorius',
 'activeusers-noresult' => 'Nerasta jokių naudotojų.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Prisiregistravę naudotojai',
-'newuserlogpagetext' => 'Tai naudotojų kūrimo sąrašas.',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Naudotojų grupių teisės',
 'listgrouprights-summary' => 'Žemiau pateiktas naudotojų grupių, apibrėžtų šioje wiki, ir su jomis susijusių teisių sąrašas.
@@ -2075,10 +2096,12 @@ Palaikomi protokolai: <code>$1</code> (nei vieno iš jų nenurodykite paieškoje
 'listgrouprights-addgroup-self-all' => 'Priskirti visas grupes prie paskyros',
 'listgrouprights-removegroup-self-all' => 'Pašalinti visas grupes iš savo paskyros',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Nėra adreso',
 'mailnologintext' => 'Jums reikia būti [[Special:UserLogin|prisijungusiam]] ir turi būti įvestas teisingas el. pašto adresas jūsų [[Special:Preferences|nustatymuose]], kad siųstumėte el. laiškus kitiems nautotojams.',
 'emailuser' => 'Rašyti laišką šiam naudotojui',
+'emailuser-title-target' => 'Siųsti E-pašto žinutę {{GENDER:$1|user}}',
+'emailuser-title-notarget' => 'El. pašto vartotojas',
 'emailpage' => 'Siųsti el. laišką naudotojui',
 'emailpagetext' => 'Jūs gali pasinaudoti šia forma norėdami nusiųsti el. laišką šiam naudotojui.
 El. pašto adresas, kurį įvedėte [[Special:Preferences|savo naudotojo nustatymuose]], bus rodomas kaip el. pašto siuntėjo adresas, tam, kad gavėjas galėtų jums iškart atsakyti.',
@@ -2149,11 +2172,17 @@ taip pat bus '''paryškinti''' [[Special:RecentChanges|naujausių keitimų sąra
 
 'enotif_mailer' => '{{SITENAME}} Pranešimų sistema',
 'enotif_reset' => 'Pažymėti visus puslapius kaip aplankytus',
-'enotif_newpagetext' => 'Tai naujas puslapis.',
 'enotif_impersonal_salutation' => '{{SITENAME}} naudotojau',
-'changed' => 'pakeitė',
-'created' => 'sukurė',
-'enotif_subject' => '{{SITENAME}} projekte $PAGEEDITOR $CHANGEDORCREATED $PAGETITLE',
+'enotif_subject_deleted' => '{{GENDER:$2|Naudotojas}} ištrynė puslapį $1, priklausantį projektui {{SITENAME}}',
+'enotif_subject_created' => '{{GENDER:$2|Naudotojas}} sukūrė puslapį $1, priklausantį projektui {{SITENAME}}',
+'enotif_subject_moved' => '{{GENDER:$2|Naudotojas}} pervardino puslapį $1, priklausantį projektui {{SITENAME}}',
+'enotif_subject_restored' => '{{GENDER:$2|Naudotojas}} atstatė puslapį $1, priklausantį projektui {{SITENAME}}',
+'enotif_subject_changed' => '{{GENDER:$2|Naudotojas}} redagavo puslapį $1, priklausantį projektui {{SITENAME}}',
+'enotif_body_intro_deleted' => '$PAGEEDITDATE {{GENDER:$2|Naudotojas}} ištrynė puslapį $1, priklausantį projektui {{SITENAME}}, žr.                     $3.',
+'enotif_body_intro_created' => '$PAGEEDITDATE {{GENDER:$2|Naudotojas}} sukūrė puslapį $1, priklausantį projektui {{SITENAME}}. Dabartinė versija matoma $3.',
+'enotif_body_intro_moved' => '$PAGEEDITDATE {{GENDER:$2|Naudotojas}} pervardino puslapį $1, priklausantį projektui {{SITENAME}}. Dabartinė versija matoma $3.',
+'enotif_body_intro_restored' => '$PAGEEDITDATE {{GENDER:$2|Naudotojas}} atstatė puslapį $1, priklausantį projektui {{SITENAME}}. Dabartinė versija matoma $3.',
+'enotif_body_intro_changed' => '$PAGEEDITDATE {{GENDER:$2|Naudotojas}} redagavo puslapį $1, priklausantį projektui {{SITENAME}}. Dabartinė versija matoma $3.',
 'enotif_lastvisited' => 'Užeikite į $1, jei norite matyti pakeitimus nuo paskutiniojo apsilankymo.',
 'enotif_lastdiff' => 'Užeikite į $1, jei norite pamatyti šį pakeitimą.',
 'enotif_anon_editor' => 'anoniminis naudotojas $1',
@@ -2187,6 +2216,8 @@ $UNWATCHURL
 
 Atsiliepimai ir pagalba:
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'sukurė',
+'changed' => 'pakeitė',
 
 # Delete
 'deletepage' => 'Trinti puslapį',
@@ -2255,6 +2286,8 @@ Dabar veikiančių puslapių apsaugų sąrašą rasite [[Special:ProtectedPages|
 'prot_1movedto2' => '[[$1]] pervadintas į [[$2]]',
 'protect-badnamespace-title' => 'Neapsaugota vardų sritis',
 'protect-badnamespace-text' => 'Puslapiai šioje vardų srityje negali būti apsaugoti.',
+'protect-norestrictiontypes-text' => 'Šis puslapis negali būti apsaugotas nes neturi galimų apribojimų tipų.',
+'protect-norestrictiontypes-title' => 'Neapsaugomas puslapis',
 'protect-legend' => 'Užrakinimo patvirtinimas',
 'protectcomment' => 'Priežastis:',
 'protectexpiry' => 'Baigia galioti:',
@@ -2776,7 +2809,6 @@ Išsaugokite jį savo kompiuteryje ir įkelkite jį čia.',
 
 # JavaScriptTest
 'javascripttest' => 'JavaScript testavimas',
-'javascripttest-disabled' => 'Ši funkcija šiame wiki projekte neįjungta.',
 'javascripttest-title' => 'Vykdomas $1 testavimas',
 'javascripttest-pagetext-noframework' => 'Šis puslapis yra skirtas vykdyti JavaScript testavimus.',
 'javascripttest-pagetext-unknownframework' => 'Nežinoma "$1" testavimo struktūra.',
@@ -2889,11 +2921,42 @@ Leidžia pridėti atmetimo priežastį komentaruose',
 
 # Info page
 'pageinfo-title' => '„$1“ informacija',
-'pageinfo-header-edits' => 'Pakeitimai',
+'pageinfo-not-current' => 'Atsiprašome, neįmanoma pateikti šios senų versijų informacijos.',
+'pageinfo-header-basic' => 'Pagrindinė informacija',
+'pageinfo-header-edits' => 'Redagavimo istorija',
+'pageinfo-header-restrictions' => 'Puslapio apsaugos lygmuo',
+'pageinfo-header-properties' => 'Puslapio savybės',
+'pageinfo-display-title' => 'Rodyti pavadinimą',
+'pageinfo-default-sort' => 'Numatytasis rūšiavimo raktas',
+'pageinfo-length' => 'Puslapio ilgis (baitais)',
+'pageinfo-article-id' => 'Puslapio ID',
+'pageinfo-language' => 'Puslapio turinio kalba',
+'pageinfo-robot-policy' => 'Paieškos variklio būsena',
+'pageinfo-robot-index' => 'Indeksuotas',
+'pageinfo-robot-noindex' => 'Neindeksuotas',
 'pageinfo-views' => 'Peržiūrų skaičius',
-'pageinfo-watchers' => 'Stebėtojų skaičius',
+'pageinfo-watchers' => 'Puslapio stebėtojų skaičius',
+'pageinfo-redirects-name' => 'Nukreipimai į šį puslapį',
+'pageinfo-subpages-name' => 'Šio puslapio papuslapiai',
+'pageinfo-subpages-value' => '$1 ($2 {{PLURAL:$2|peradresavimas|peradresavimai}}; $3 {{PLURAL:$3|neperadresavimas|peradresavimai}})',
+'pageinfo-firstuser' => 'Puslapio kūrėjas',
+'pageinfo-firsttime' => 'Puslapio sukūrimo data',
+'pageinfo-lastuser' => 'Paskutinis redaktorius',
+'pageinfo-lasttime' => 'Paskutinio keitimo data',
 'pageinfo-edits' => 'Keitimų skaičius',
 'pageinfo-authors' => 'Skirtingų autorių skaičius',
+'pageinfo-recent-edits' => 'Paskutinųjų keitimų skaičius (per $1 laikotarpį)',
+'pageinfo-recent-authors' => 'Pastarųjų skirtingų redaguotojų skaičius',
+'pageinfo-toolboxlink' => 'Puslapio informacija',
+'pageinfo-redirectsto' => 'Nukreipimai į',
+'pageinfo-redirectsto-info' => 'informacija',
+'pageinfo-contentpage' => 'Priskirtas turinio puslapiams',
+'pageinfo-contentpage-yes' => 'Taip',
+'pageinfo-protect-cascading-yes' => 'Taip',
+'pageinfo-category-info' => 'Informacija apie kategoriją',
+'pageinfo-category-pages' => 'Puslapių skaičius',
+'pageinfo-category-subcats' => 'Dukterinių kategorijų skaičius',
+'pageinfo-category-files' => 'Failų skaičius',
 
 # Skin names
 'skinname-standard' => 'Klasikinė',
@@ -2916,6 +2979,8 @@ Leidžia pridėti atmetimo priežastį komentaruose',
 'markedaspatrollederror' => 'Negalima pažymėti, kad patikrinta',
 'markedaspatrollederrortext' => 'Jums reikia nurodyti versiją, kurią pažymėti kaip patikrintą.',
 'markedaspatrollederror-noautopatrol' => 'Jums neleidžiama pažymėti savo paties keitimų kaip patikrintų.',
+'markedaspatrollednotify' => '$1 keitimas pažymėtas patikrintu.',
+'markedaspatrollederrornotify' => 'Nepavyko pažymėti kaip patikrinto.',
 
 # Patrol log
 'patrol-log-page' => 'Patikrinimų sąrašas',
@@ -2948,6 +3013,7 @@ Jį paleidus jūsų sistema gali būti pažeista.",
 'file-info-size-pages' => '$1 × $2 taškų, failo dydis: $3, MIME tipas: $4, $5 {{PLURAL:$5|page|pages}}',
 'file-nohires' => 'Geresnė raiška negalima.',
 'svg-long-desc' => 'SVG failas, formaliai $1 × $2 taškų, failo dydis: $3',
+'svg-long-error' => 'Neleistinas SVG failas: $1',
 'show-big-image' => 'Pilna raiška',
 'show-big-image-preview' => 'Sumažintos iliustracijos dydis: $1 .',
 'show-big-image-other' => '{{PLURAL:$2|Kita rezoliucija|Kitos $2 rezoliucijos|Kitų $2 rezoliucijų}}: $1 .',
@@ -2976,6 +3042,7 @@ Jį paleidus jūsų sistema gali būti pažeista.",
 'hours' => '{{PLURAL:$1|$1 valandą|$1 valandas|$1 valandų}}',
 'days' => '{{PLURAL:$1|$1 dieną|$1 dienas|$1 dienų}}',
 'ago' => 'prieš $1',
+'just-now' => 'tik dabar',
 
 # Bad image list
 'bad_image_list' => 'Formatas yra toks:
@@ -3406,7 +3473,7 @@ Visos kitos nuorodos toje pačioje eilutėje yra laikomos išimtimis, t. y. pusl
 'monthsall' => 'visi',
 'limitall' => 'visi',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'Patvirtinkite el. pašto adresą',
 'confirmemail_noemail' => 'Jūs neturite nurodę teisingo el. pašto adreso [[Special:Preferences|savo nustatymuose]].',
 'confirmemail_text' => 'Šiame projekte būtina patvirtinti el. pašto adresą prieš naudojant el. pašto funkcijas. Spustelkite žemiau esantį mygtuką,
@@ -3588,6 +3655,7 @@ Jūs taip pat galite [[Special:EditWatchlist|naudoti standartinį redaktorių]].
 'version-license' => 'Licencija',
 'version-poweredby-credits' => "Šis projektas naudoja '''[//www.mediawiki.org/ MediaWiki]''', autorystės teisės © 2001-$1 $2.",
 'version-poweredby-others' => 'kiti',
+'version-credits-summary' => 'Už indėlį kuriant [[Special:Version|MediaWiki]] dėkojame',
 'version-license-info' => 'MediaWiki yra nemokama programinė įranga; galite ją platinti ir/arba modifikuoti pagal GNU General Public License, kurią publikuoja Free Software Foundation; taikoma 2-oji licenzijos versija arba (Jūsų pasirinkimu) bet kuri vėlesnė versija. 
 
 MediaWiki yra platinama su viltimi, kad ji bus naudinga, bet BE JOKIOS GARANTIJOS; be jokios numanomos PARDAVIMO arba TINKAMUMO TAM TIKRAM TIKSLUI garantijos. Daugiau informacijos galite sužinoti GNU General Public License. 
@@ -3730,8 +3798,12 @@ Paveikslėliai yra rodomi pilna raiška, kiti failų tipai paleidžiami tiesiogi
 'logentry-newusers-newusers' => '$1 sukūrė naudotojo paskyrą',
 'logentry-newusers-create' => '$1 sukūrė naudotojo paskyrą',
 'logentry-newusers-create2' => '$1 sukūrė naudotojo paskyrą $3',
+'logentry-newusers-byemail' => 'Naudotojas $1 sukūrė paskyrą $3, slaptažodis išsiųstas E-paštu.',
 'logentry-newusers-autocreate' => 'Paskyra $1 buvo sukurta automatiškai',
-'newuserlog-byemail' => 'slaptažodis nusiųstas elektroniniu paštu',
+'logentry-rights-rights' => '$1 pakeista narystė grupėje $3 iš $4 į $5',
+'logentry-rights-rights-legacy' => '$1 pakeista narystė grupėje $3',
+'logentry-rights-autopromote' => '$1 buvo automatiškai pervestas iš $4 į $5',
+'rightsnone' => '(jokių)',
 
 # Feedback
 'feedback-bugornote' => 'Jei jūs esate pasirengę aprašyti techninę problemą išsamiau, [$1 praneškite apie programinę klaidą].
@@ -3751,6 +3823,7 @@ Kitu atveju, galite naudotis žemiau esančia paprastesne forma. Jūsų komentar
 
 # Search suggestions
 'searchsuggest-search' => 'Ieškoti',
+'searchsuggest-containing' => 'turintys',
 
 # API errors
 'api-error-badaccess-groups' => 'Jums neleidžiama įkelti failus į šią wiki.',

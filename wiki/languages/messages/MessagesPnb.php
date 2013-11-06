@@ -166,7 +166,6 @@ $messages = array(
 'qbbrowse' => 'لبو',
 'qbedit' => 'لکھو',
 'qbpageoptions' => 'اے صفہ',
-'qbpageinfo' => 'محول',
 'qbmyoptions' => 'میرے صفے',
 'qbspecialpages' => 'خاص صفے',
 'faq' => 'FAQ',
@@ -411,12 +410,9 @@ $messages = array(
 
 # Login and logout pages
 'logouttext' => "'''تسی لاگ آؤٹ ہوگۓ او.'''
-تسی   {{SITENAME}} نوں گمنامی چ ورت سکدے او یا تسی [[Special:UserLogin|لاگ ان دوبارہ]] ہوجاؤ اوسے ناں توں یا وکھرے ورتن والے توں۔ اے گل چیتے رکھنا جے کج صفیاں تے تسی لاگ ان دسے جاؤگے جدوں تک تسی اپنے براؤزر دے کاشے نوں صاف ناں کرلو۔
-You can continue to use {{SITENAME}} anonymously, or you can [[Special:UserLogin|log in again]] as the same or as a different user.
+تسی   {{SITENAME}} نوں گمنامی چ ورت سکدے او یا تسی <span class='plainlinks'>[$1 لاگ ان دوبارہ]</span> ہوجاؤ اوسے ناں توں یا وکھرے ورتن والے توں۔ اے گل چیتے رکھنا جے کج صفیاں تے تسی لاگ ان دسے جاؤگے جدوں تک تسی اپنے براؤزر دے کاشے نوں صاف ناں کرلو۔
+You can continue to use {{SITENAME}} anonymously, or you can <span class='plainlinks'>[$1 log in again]</span> as the same or as a different user.
 Note that some pages may continue to be displayed as if you were still logged in, until you clear your browser cache.",
-'welcomecreation' => '== جی آیاں نوں, $1! ==
-تواڈا کھاتا بن گیا اے۔
-اپنیاں [[Special:Preferences|{{SITENAME}} تانگاں]] بدلنا نا پلنا۔',
 'yourname' => 'ورتن والہ:',
 'yourpassword' => 'کنجی:',
 'yourpasswordagain' => 'کنجی دوبارہ لکھو:',
@@ -507,7 +503,7 @@ Note that some pages may continue to be displayed as if you were still logged in
 'loginlanguagelabel' => 'بولی: $1',
 'suspicious-userlogout' => 'تھواڈی لاگ آؤٹ ہوں دی کوشش رک گئی اینج لگدا اے  جیویں اے ٹٹے براؤزر یا کیشنگ پراکسی توں پیجیا گیا سی۔',
 
-# E-mail sending
+# Email sending
 'php-mail-error-unknown' => 'PHP میل دے کم چ کوئی انجانی غلطی۔',
 'user-mail-no-addy' => 'ای-میل پتے بنا ای-میل کلن دی کوشش۔',
 
@@ -739,7 +735,6 @@ Custom .css تے .js pages use a lowercase title, e.g. {{ns:user}}:Foo/vector.cs
 'template-protected' => '(بچایا گیا)',
 'template-semiprotected' => '(کج بچایا ہویا)',
 'hiddencategories' => 'اے صفہ {{PLURAL:$1|1 چھپی گٹھ|$1 چپھی گٹھیاں}} دا رکن اے:',
-'nocreatetitle' => 'صفحہ بنانے دی حد اے',
 'nocreatetext' => '{{SITENAME}} نے نۓ صفحے بنانے تے پابندی لائی اے۔<br />
 تسی واپس جا کے پہلاں توں موجود صفحیاں تے لکھ سکدے او یا فیر [[Special:UserLogin|اندر آؤ یا نواں کھاتہ کھولو۔]]',
 'nocreate-loggedin' => 'توانوں نواں صفحہ بنانے دی اجازت نئیں۔',
@@ -1155,7 +1150,7 @@ $1",
 'prefs-displaywatchlist' => 'چنوتیاں دسو',
 'prefs-diffs' => 'ڈفز',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'ای_میل پتہ ٹھیک لگدا اے۔',
 'email-address-validity-invalid' => 'چلن والا ای-میل پتہ دسو',
 
@@ -1266,12 +1261,13 @@ $1",
 'right-sendemail' => 'دوجے ورتن والیاں نوں ای-میل کرو',
 'right-passwordreset' => 'کنجی بدلی ای-میلاں نوں وکھاؤ',
 
+# Special:Log/newusers
+'newuserlogpage' => 'ورتاوا بنان آلی لاگ',
+'newuserlogpagetext' => 'اے ورتن والا بنان دی لاگ اے۔',
+
 # User rights log
 'rightslog' => 'ورتن والے دے حقاں دی لاگ',
 'rightslogtext' => 'ورتن حقاں چ تبدیلیاں دی اے لاگ اے۔',
-'rightslogentry' => 'ٹولی ممرشپ $1 لئی $2 توں $3 تک بدلو۔',
-'rightslogentry-autopromote' => '$2 توں اپنے آپ $3 تک ودایا گیا۔',
-'rightsnone' => '(کوئی وی نئیں)',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-read' => 'اس صفحے نوں پڑھو',
@@ -1894,10 +1890,6 @@ $1",
 'activeusers-hidesysops' => 'مکھۓ لکاؤ',
 'activeusers-noresult' => 'کوئی ورتن والا نئیں لبیا۔',
 
-# Special:Log/newusers
-'newuserlogpage' => 'ورتاوا بنان آلی لاگ',
-'newuserlogpagetext' => 'اے ورتن والا بنان دی لاگ اے۔',
-
 # Special:ListGroupRights
 'listgrouprights' => 'ورتن ٹرلی حق',
 'listgrouprights-summary' => 'تھلے اک لسٹ اے ورتن ٹولیاں دی ای وکی تے، اپنے رلدے حقاں نال۔ 
@@ -1918,7 +1910,7 @@ $1",
 'listgrouprights-addgroup-self-all' => 'ساریاں ٹولیاں کٹھیاں کرو کھاتہ لئی',
 'listgrouprights-removegroup-self-all' => 'ایس کھاتے توں ساریاں ٹولیاں ہٹاؤ',
 
-# E-mail user
+# Email user
 'mailnologin' => 'ناں پیح پتہ',
 'mailnologintext' => 'تسیں لازمی [[Special:UserLogin|لاگان]] ہوو تے اک پکا ای-میل پتہ تواڈی [[Special:Preferences|تانگ]] چ ہووے تاں جے دوجے ورتن والے توانوں ای-میل کرسکن۔',
 'emailuser' => 'اس ورتن والے نو ای میل کرو',
@@ -1991,11 +1983,7 @@ $1",
 
 'enotif_mailer' => '{{سائٹ ناں}} نوٹینیکیشن میلر',
 'enotif_reset' => 'سارے ویکھے گۓ صفحیاں تے نشان لاؤ',
-'enotif_newpagetext' => 'اے نواں صفہ اے۔',
 'enotif_impersonal_salutation' => '{{SITENAME}} ورتن والا',
-'changed' => 'بدلیا',
-'created' => 'بن گیا',
-'enotif_subject' => '{{سائیٹتھاں}} صفہ $صفہ سرخی  $تبدیلی بنائی  $صفہ لکھاری',
 'enotif_lastvisited' => '$1 تبدیلیاں ویکھو اپنے آخری واری آن مکروں',
 'enotif_lastdiff' => '$1 ویکھو ایس تبدیلی نون ویکھن لئی۔',
 'enotif_anon_editor' => 'گم نام ورتن آلا $1',
@@ -2031,6 +2019,8 @@ $UNWATCHURL
 
 فیڈبیک تے ہور مدد لئی:
 {{canonicalurl:{{MediaWiki:Helppage}}}}',
+'created' => 'بن گیا',
+'changed' => 'بدلیا',
 
 # Delete
 'deletepage' => 'صفہ مٹاؤ',
@@ -2614,7 +2604,6 @@ $1',
 
 # JavaScriptTest
 'javascripttest' => 'JavaScript ٹیسٹنگ',
-'javascripttest-disabled' => 'ایس وکی تے ایہ کم نئیں چلدا۔',
 'javascripttest-title' => 'ٹیسٹ  $1 چلدا اے۔',
 'javascripttest-pagetext-noframework' => 'ایہ صفہ JavaScript  ٹیسٹاں لئی بچایا گیا اے۔',
 'javascripttest-pagetext-unknownframework' => '"$1" انجانا ٹیسٹنگ فریمورک۔',
@@ -3222,7 +3211,7 @@ $1',
 'monthsall' => 'سارے',
 'limitall' => 'سارے',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'ای میل پتہ پکا کرو',
 'confirmemail_noemail' => 'تواڈے کول اک پکا ای-میل پتہ نئیں اے جیہڑا [[Special:Preferences|ورتن تانگاں]]',
 'confirmemail_text' => '{{سائیٹناں}}  دی ایہ لوڑ اے جے تسیں اپنا ای-میل پتہ پکا کرواؤ ای-میل فیچر ورتن توں پہلے۔ تھلے دتے گۓ بٹن تے پکی کرن چٹھی پیجو اپنے پتے تے منگوان لئی کلک کرو۔
@@ -3542,7 +3531,7 @@ the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 
 'logentry-newusers-create' => '$1 {{جنس:$2|بنایا}} اک ورتن والا کھاتہ',
 'logentry-newusers-create2' => '$1 {{جنس:$2|بنایا}} {{جنس:$4|اک ورتن کھاتہ}} $3',
 'logentry-newusers-autocreate' => 'کھاتہ $1 اپنے آپ ای {{جنس:$2|بنایا گیا}} بنایا گیا۔',
-'newuserlog-byemail' => 'کنجی ای-میل راہ پیج دتی گئی۔',
+'rightsnone' => '(کوئی وی نئیں)',
 
 # Feedback
 'feedback-bugornote' => 'اگر تسیں اک تکنیکی مسلے نوں  پوری طراں دسن لئی تیار او تے فیر مہربانی کرکے [$1 بگ بارے دسو]۔  ںئیں تے تسیں تھلے دتا گیا فارم ورتو۔ تواڈی گل صفہ "[$3 $2]" تے جڑے گی،  تواڈے ورتن والے ناں تے براؤزر جیہڑا تسیں ورت رۓ او۔',

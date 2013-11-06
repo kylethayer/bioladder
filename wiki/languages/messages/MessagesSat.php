@@ -163,7 +163,6 @@ $messages = array(
 'qbbrowse' => 'Sendra',
 'qbedit' => 'Tońge',
 'qbpageoptions' => 'Noa sakam',
-'qbpageinfo' => 'Sakam reaḱ thuti',
 'qbmyoptions' => 'In̕anḱ sakamko',
 'qbspecialpages' => 'Asokay teaḱ sakamko',
 'faq' => 'Baḍae kupuliko',
@@ -397,9 +396,6 @@ $2',
 'virus-unknownscanner' => 'Baṅ urum anṭvayras:',
 
 # Login and logout pages
-'welcomecreation' => '== Johar $1! ==
-Amaḱ ekaunṭ do tearena.
-Amaḱ [[Special:Preferance {{SITENAME}} pạsindko]] thir dohoe lạgit́te alom hiṛińa.',
 'yourname' => 'Beoboharicaḱ ńutum',
 'yourpassword' => 'Uku namber',
 'yourpasswordagain' => 'Arhõ oku namber olme',
@@ -475,7 +471,7 @@ Arhõ kurumuṭue lahare dayakate thoṛagan tạṅgiemẽ.',
 'login-abort-generic' => 'Amaḱ bhitri boloḱ do baṅ hoylena - batena.',
 'loginlanguagelabel' => 'katha: $1',
 
-# E-mail sending
+# Email sending
 'user-mail-no-addy' => 'Jahan e-mail ṭhikana bạgi kate e-mail kul kurumuṭu hoena.',
 
 # Change password dialog
@@ -601,7 +597,6 @@ Amaḱ bodolaḱ kodo nit habićte bań rukhíạakana!",
 'template-protected' => 'Rukhiạ',
 'template-semiprotected' => '(Kạṭic-rukhiyạ)',
 'hiddencategories' => 'Noa sakam do {{PLURAL:$1 1 ukuakan bhag $1 uku akan bhagkorenaḱ}} gaõtarenge:',
-'nocreatetitle' => 'Sakam tear do akoṭgea',
 'nocreate-loggedin' => 'Nãwã sakam tear lạgit́te am do ạidạri em baṅ hoeakana.',
 'sectioneditnotsupported-title' => 'Pahaṭa sompadona do bae hataoeda',
 'sectioneditnotsupported-text' => 'Noa sompadona sakamre pahaṭa sompadona do bae hataoeda',
@@ -776,7 +771,7 @@ Unuduḱ: '''({{int:cur}})''' = nahaḱ nãwã aroeko saõte tulạo, '''({{int:
 'prefs-help-email-others' => 'Am são e-mail hotete jogajog dohoy lạgitte mitṭen joṛao se amaḱ katha roṛaḱ sakam bachao jońme.
 Amaḱ e-mail ṭhikạna do bań cabaḱa tinre onko do ko beohara',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'E-mail ṭhikạna do jewetge ńamena',
 'email-address-validity-invalid' => 'Amaḱ jewet e-mail ṭhkạna emmẽ',
 
@@ -799,6 +794,9 @@ Amaḱ e-mail ṭhikạna do bań cabaḱa tinre onko do ko beohara',
 'right-movefile' => 'Rẽtko ocogmẽ',
 'right-upload' => 'Rẽtko rakabmẽ',
 'right-delete' => 'Sakamko get giḍiymẽ',
+
+# Special:Log/newusers
+'newuserlogpage' => 'Laṛcaṛićaḱ tear cạbi',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-edit' => 'noa sakam joṛao',
@@ -939,9 +937,6 @@ Noa reaḱ pasnao katha [$2 rẽt pasnao sakam] latare emena',
 'listusers-submit' => 'Udugmẽ',
 'listusers-blocked' => '(Esetgea)',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Laṛcaṛićaḱ tear cạbi',
-
 # Special:ListGroupRights
 'listgrouprights-group' => 'Gaõta',
 'listgrouprights-rights' => 'Ạidạriko',
@@ -950,7 +945,7 @@ Noa reaḱ pasnao katha [$2 rẽt pasnao sakam] latare emena',
 'listgrouprights-addgroup-all' => 'Joto gaõtare ko soṅgekom',
 'listgrouprights-removegroup-all' => 'Joto gaõtaren ko ocoḱgiḍikom',
 
-# E-mail user
+# Email user
 'emailuser' => 'Nui beoharić e-mail emayme',
 'emailpage' => 'E-mail beoharić',
 'noemailtitle' => 'E-mail ṭhikạna do banuḱa',

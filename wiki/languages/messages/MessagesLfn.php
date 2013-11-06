@@ -152,7 +152,6 @@ $messages = array(
 'qbbrowse' => 'Surfa',
 'qbedit' => 'Edita',
 'qbpageoptions' => 'Esta paje',
-'qbpageinfo' => 'Situa',
 'qbmyoptions' => 'Me pajes',
 'qbspecialpages' => 'Pajes spesial',
 
@@ -663,7 +662,7 @@ Also see [[Special:WantedCategories|wanted categories]].',
 'listgrouprights-group' => 'Grupo',
 'listgrouprights-members' => '(lista de membros)',
 
-# E-mail user
+# Email user
 'emailuser' => 'Envia un eposta a esta usor',
 'emailfrom' => 'De',
 'emailto' => 'Per',
@@ -688,7 +687,6 @@ Si tu vole sutrae la paje de tu lista de pajes oservada en la futur, clica a \"n
 'watching' => 'Oserva...',
 'unwatching' => 'No oserva...',
 
-'enotif_newpagetext' => 'Esta es un paje nova',
 'created' => 'Creada',
 
 # Delete

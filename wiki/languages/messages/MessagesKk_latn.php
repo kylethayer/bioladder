@@ -483,7 +483,6 @@ $messages = array(
 'qbbrowse' => 'Şolw',
 'qbedit' => 'Öñdew',
 'qbpageoptions' => 'Bul bet',
-'qbpageinfo' => 'Aýnala',
 'qbmyoptions' => 'Betterim',
 'qbspecialpages' => 'Arnaýı better',
 'faq' => 'Jïi qoýılğan sawaldar',
@@ -690,9 +689,6 @@ Keltirilgen sebebi: ''$2''.",
 
 Jüýege kirmesten {{SITENAME}} jobasın paýdalanwın jalğastıra alasız, nemese däl sol ne özge qatıswşı bop qaýta krwiñiz mümkin.
 Añğartpa: Keýbir better şolğışıñızdıñ bürkemesin tazartqanşa deýin äli de kirp qalğanıñızdaý körinwi mümkin.",
-'welcomecreation' => '== Qoş keldiñiz, $1! ==
-Jaña tirkelgiñiz jasaldı.
-{{SITENAME}} baptalımdarıñızdı özgertwin umıtpañız.',
 'yourname' => 'Qatıswşı atıñız:',
 'yourpassword' => 'Qupïya söziñiz:',
 'yourpasswordagain' => 'Qupïya sözdi qaýtalañız:',
@@ -925,7 +921,6 @@ Keýin qoldanw üşin mätändi qýıp alıp jäne qoýıp, mätin faýlına saq
 'template-protected' => '(qorğalğan)',
 'template-semiprotected' => '(jartılaý qorğalğan)',
 'hiddencategories' => 'Bul bet $1 jasırın sanattıñ müşesi:',
-'nocreatetitle' => 'Betti bastaw şektelgen',
 'nocreatetext' => '{{SITENAME}} jobasında jaña bet bastawı şektelgen.
 Keri qaýtıp bar betti öñdewiñizge boladı, nemese [[{{#special:Userlogin}}|kirwiñizge ne tirkelwiñizge]] boladı.',
 'nocreate-loggedin' => '{{SITENAME}} jobasında jaña bet bastaw ruqsatıñız joq.',
@@ -1271,11 +1266,13 @@ Eger bunı jetistirwdi tañdasañız, bul tüzetwiñizdiñ awtorlığın anıqta
 'right-userrights-interwiki' => 'Basqa üïkïlerdegi qatıswşılardıñ quqıqtarın öñdew',
 'right-siteadmin' => 'Derekqordı qulıptaw jäne qulıptawın öşirw',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Tirkelw jwrnalı',
+'newuserlogpagetext' => 'Bul qatıswşı tirkelgi jasaw jwrnalı',
+
 # User rights log
 'rightslog' => 'Qatıswşı quqıqtarı jwrnalı',
 'rightslogtext' => 'Bul qatıswşı quqıqtarın özgertw jwrnalı.',
-'rightslogentry' => '$1 kirgen toptarın $2 degennen $3 degenge özgertti',
-'rightsnone' => '(eşqandaý)',
 
 # Recent changes
 'nchanges' => '$1 özgeris',
@@ -1650,10 +1647,6 @@ Also see [[Special:WantedCategories|wanted categories]].',
 'listusers-submit' => 'Körset',
 'listusers-noresult' => 'Qatıswşı tabılğan joq.',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Tirkelw jwrnalı',
-'newuserlogpagetext' => 'Bul qatıswşı tirkelgi jasaw jwrnalı',
-
 # Special:ListGroupRights
 'listgrouprights' => 'Qatıswşı tobı quqıqtarı',
 'listgrouprights-summary' => 'Kelesi tizimde bul wïkïde tağaýındalğan qatıswşı quqıqtarı (baýlanıstı qatınaw quqıqtarımen birge) körsetiledi.
@@ -1663,7 +1656,7 @@ Jeke quqıqtar twralı köbirek aqparattı [[{{MediaWiki:Listgrouprights-helppag
 'listgrouprights-helppage' => '{{ns:help}}:Top quqıqtarı',
 'listgrouprights-members' => '(müşe tizimi)',
 
-# E-mail user
+# Email user
 'mailnologin' => 'Eş mekenjaý jöneltilgen joq',
 'mailnologintext' => 'Basqa qatıswşığa xat jöneltw üşin [[Special:UserLogin|kirwiñiz]] kerek, jäne [[Special:Preferences|baptawıñızda]] jaramdı e-poşta jaýı bolwı jön.',
 'emailuser' => 'Qatıswşığa xat jazw',
@@ -1717,11 +1710,7 @@ Bul bettiñ jäne baýlanıstı talqılaw betiniñ keleşektegi özgeristeri mı
 
 'enotif_mailer' => '{{SITENAME}} eskertw xat jiberw qızmeti',
 'enotif_reset' => 'Barlıq bet kelip-ketildi dep belgile',
-'enotif_newpagetext' => 'Mınaw jaña bet.',
 'enotif_impersonal_salutation' => '{{SITENAME}} qatıswşısı',
-'changed' => 'özgertti',
-'created' => 'bastadı',
-'enotif_subject' => '{{SITENAME}} jobasında $PAGEEDITOR $PAGETITLE atawlı betti $CHANGEDORCREATED',
 'enotif_lastvisited' => 'Soñğı kelip-ketwiñizden beri bolğan özgerister üşin $1 degendi qarañız.',
 'enotif_lastdiff' => 'Osı özgeris üşin $1 degendi qarañız.',
 'enotif_anon_editor' => 'tirkelgisiz qatıswşı $1',
@@ -1749,6 +1738,8 @@ Baqılaw tizimiñizdiñ baptawlırın özgertw üşin, mında kelip-ketiñiz:
 
 Sın-pikir berw jäne bılaýğı järdem alw üşin:
 {{canonicalurl:{{{{ns:mediawiki}}:Helppage}}}}',
+'created' => 'bastadı',
+'changed' => 'özgertti',
 
 # Delete
 'deletepage' => 'Betti joyw',
@@ -2636,7 +2627,7 @@ Basqaları ädepkiden jasırıladı.
 'namespacesall' => 'barlığı',
 'monthsall' => 'barlığı',
 
-# E-mail address confirmation
+# Email address confirmation
 'confirmemail' => 'E-poşta mekenjaýın quptaw',
 'confirmemail_noemail' => '[[{{#special:Preferences}}|Paýdalanwşılıq baptalımdarıñızda]] jaramdı e-poşta mekenjaýın qoýmapsız.',
 'confirmemail_text' => '{{SITENAME}} e-poşta mümkindikterin paýdalanw üşin aldınan e-poşta mekenjaýıñızdıñ jaramdılığın tekserip şığwıñız kerek.
@@ -2864,5 +2855,6 @@ Swretter tolıq ajıratılımdığımen körsetiledi, basqa faýl türlerine qat
 # New logging system
 'revdelete-restricted' => 'äkimşilerge tïımdar qoldadı',
 'revdelete-unrestricted' => 'äkimşilerden tïımdardı alastadı',
+'rightsnone' => '(eşqandaý)',
 
 );

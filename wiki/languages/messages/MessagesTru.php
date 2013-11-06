@@ -457,12 +457,15 @@ Legend: '''({{int:cur}})''' = difference with latest revision, '''({{int:last}})
 'prefs-help-email-others' => 'Kibux mijğolat 3am Hadome ğer biFaṭo duMamlo u luglozam dumat Işmux.',
 'prefs-signature' => 'Imḍa',
 
-# User preference: e-mail validation using jQuery
+# User preference: email validation using jQuery
 'email-address-validity-valid' => 'uEmail-Adresayḍux m³adlo yo.',
 
 # Groups
 'group-user' => 'Hadome',
 'group-all' => '(kulle)',
+
+# Special:Log/newusers
+'newuserlogpage' => 'User creation log',
 
 # Associated actions - in the sentence "You do not have permission to X"
 'action-edit' => 'Mşaḥlaf iFaṭaṭe',
@@ -585,16 +588,13 @@ The description on its [$2 file description page] there is shown below.',
 # Special:ListUsers
 'listusers-submit' => 'Maḥway',
 
-# Special:Log/newusers
-'newuserlogpage' => 'User creation log',
-
 # Special:ListGroupRights
 'listgrouprights-group' => 'Gudo',
 'listgrouprights-rights' => 'Ḥaqat',
 'listgrouprights-helppage' => 'Help: Ḥaqat diGudo',
 'listgrouprights-members' => '(Lista daHadome)',
 
-# E-mail user
+# Email user
 'emailuser' => 'Kṭaw Email luHadomano.',
 'emailusername' => 'Işme duHadomo:',
 'emailfrom' => 'Men:',

@@ -374,6 +374,9 @@ Ku gwada tare da amfani da \"all:\" don bincikar duka shafunan (har da shafunan 
 
 'grouppage-sysop' => '{{ns:project}}:Masu hukunci',
 
+# Special:Log/newusers
+'newuserlogpage' => 'Rajistan sabbin akwantoci',
+
 # User rights log
 'rightslog' => "Rajistan bayar da izini ga ma'aikata",
 
@@ -483,13 +486,10 @@ Ku gwada tare da amfani da \"all:\" don bincikar duka shafunan (har da shafunan 
 # Special:ListUsers
 'listusers-submit' => 'Nuna',
 
-# Special:Log/newusers
-'newuserlogpage' => 'Rajistan sabbin akwantoci',
-
 # Special:ListGroupRights
 'listgrouprights-members' => '(jerin mambobi)',
 
-# E-mail user
+# Email user
 'emailuser' => "Aika wa wannan ma'aikaci imel",
 
 # Watchlist
