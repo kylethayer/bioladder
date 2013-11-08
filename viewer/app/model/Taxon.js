@@ -134,7 +134,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
             me.set('areSimplifiedDescendantsLoading', true);
             searchObj = Ext.create('BioLadderOrg.model.TaxonSearch');
             searchObj.runSearch({
-                conditions: {'Has Simplified Ancestor': me.get('name')},
+                conditions: {'Has Parent Taxon': me.get('name')},
                 success: function (taxa) {
                     me.set('simplifiedDescendants', taxa);
                     me.set('areSimplifiedDescendantsLoading', false);
@@ -189,7 +189,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                 url += '[[' + property + '::' + args.conditions[property] + ']]';
             }
         }
-        requestFields =  ['Has Simplified Ancestor', 'Has Wikipedia Image', 'Has Wikipedia Page', 'Has Popular Descendants'];
+        requestFields =  ['Has Parent Taxon', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page', 'Has Popular Descendants'];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -234,11 +234,11 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                     }
                     printouts = results[taxonName].printouts;
                     if (printouts) {
-                        if (printouts['Has Simplified Ancestor'] && printouts['Has Simplified Ancestor'].length > 0) {
-                            taxonFields.simplifiedAncestor = printouts['Has Simplified Ancestor'][0].fulltext;
+                        if (printouts['Has Parent Taxon'] && printouts['Has Parent Taxon'].length > 0) {
+                            taxonFields.simplifiedAncestor = printouts['Has Parent Taxon'][0].fulltext;
                         }
-                        if (printouts['Has Wikipedia Image'] && printouts['Has Wikipedia Image'].length > 0) {
-                            taxonFields.wikipediaImage = printouts['Has Wikipedia Image'][0];
+                        if (printouts['Has Taxon Wikipedia Image'] && printouts['Has Taxon Wikipedia Image'].length > 0) {
+                            taxonFields.wikipediaImage = printouts['Has Taxon Wikipedia Image'][0];
                         }
                         if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
                             taxonFields.wikipediaPage = printouts['Has Wikipedia Page'][0];

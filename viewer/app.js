@@ -20,6 +20,18 @@ Ext.application({
     views: [
         'Main'
     ],
+    
+    controllers: [
+        'Main'
+    ],
+    
+    models: [
+        'Taxon'
+    ],
+    
+    stores: [
+        'Taxa'
+    ],
 
     icon: {
         '57': 'resources/icons/Icon.png',
