@@ -52,7 +52,7 @@ To modify the css, you will need the ruby gem Compass. Install
 Ruby from here: http://www.ruby-lang.org/en/downloads/
 and then install compass by running: gem install compass
 To compile the Sass file run
-compass watch viewer/resources/sass
+compass compile viewer/resources/sass
 To have compass monitor the Sass files as you edit it, run:
 compass watch viewer/resources/sass
 
