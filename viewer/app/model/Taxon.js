@@ -22,6 +22,24 @@ Ext.define('BioLadderOrg.model.Taxon', {
 
     config: {
         fields: [
+            { name: 'description', type: 'string' },
+            {
+                name: 'exampleMember',
+                type: 'auto',
+                convert: function (exampleMember, record) {
+                    if (exampleMember && typeof exampleMember === 'string') {
+                        //make sure the name is a legitimate name
+                        if (!/^[-_\w\s]+$/.test(exampleMember)) {
+                            window.console.error('Example Member name must be normal characters:', ancestor);
+                            return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
+                        }
+                        //convert it into an exampleMember object
+                        return Ext.getStore('Taxa').findOrCreateTaxon(exampleMember);
+                    }
+                    return exampleMember;
+                }
+            },
+            { name: 'exampleMemberText', type: 'string' },
             {
                 name: 'name',
                 type: 'string',
@@ -32,8 +50,9 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     }
                     return name;
                 }
-                
-            }, {
+            }, 
+            { name: 'otherNames', type: 'string' },
+            {
                 name: 'parentTaxon',
                 type: 'auto',
                 convert: function (parentTaxon, record) {
@@ -68,7 +87,8 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return popularSubTaxa;
                 }
             },
-            {name: 'subTaxa', type: 'auto'},
+            { name: 'scientificName', type: 'string' },
+            { name: 'subTaxa', type: 'auto' },
             {
                 name: 'wikipediaImage',
                 type: 'string',
@@ -151,17 +171,6 @@ Ext.define('BioLadderOrg.model.Taxon', {
         }
     },
 
-    whenSubTaxaLoaded: function (callback) {
-        var me = this;
-        if (me.get('areSubTaxaLoaded')) {
-            callback(me);
-            return;
-        }
-        //make sure a new array is created so we don't mess with the default array
-        me.set('subTaxaLoadedCallbacks', [callback].concat(me.get('subTaxaLoadedCallbacks')));
-        me.ensureFullyLoaded();
-    },
-
     whenLoaded: function (callback) {
         var me = this;
         if (me.get('isLoaded')) {
@@ -170,6 +179,17 @@ Ext.define('BioLadderOrg.model.Taxon', {
         }
         //make sure a new array is created so we don't mess with the default array
         me.set('loadedCallbacks', [callback].concat(me.get('loadedCallbacks')));
+        me.ensureFullyLoaded();
+    },
+
+    whenSubTaxaLoaded: function (callback) {
+        var me = this;
+        if (me.get('areSubTaxaLoaded')) {
+            callback(me);
+            return;
+        }
+        //make sure a new array is created so we don't mess with the default array
+        me.set('subTaxaLoadedCallbacks', [callback].concat(me.get('subTaxaLoadedCallbacks')));
         me.ensureFullyLoaded();
     }
 });
@@ -189,7 +209,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                 url += '[[' + property + '::' + args.conditions[property] + ']]';
             }
         }
-        requestFields =  ['Has Parent Taxon', 'Has Popular Descendants', 'Has Example Member', 'Has Example Member Text',
+        requestFields =  ['Has Parent Taxon', 'Has Popular Subtaxa', 'Has Example Member', 'Has Example Member Text',
             'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page' ];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
@@ -235,22 +255,42 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                     }
                     printouts = results[taxonName].printouts;
                     if (printouts) {
+                        //relations
                         if (printouts['Has Parent Taxon'] && printouts['Has Parent Taxon'].length > 0) {
                             taxonFields.parentTaxon = printouts['Has Parent Taxon'][0].fulltext;
                         }
+                        if (printouts['Has Example Member'] && printouts['Has Example Member'].length > 0) {
+                            taxonFields.exampleMember = printouts['Has Example Member'][0].fulltext;
+                        }
+                        if (printouts['Has Example Member Text'] && printouts['Has Example Member Text'].length > 0) {
+                            taxonFields.exampleMemberText = printouts['Has Example Member Text'][0];
+                        }
+                        if (printouts['Has Popular Subtaxa'] && printouts['Has Popular Subtaxa'].length > 0) {
+                            popularSubTaxa = [];
+                            for(var i = 0; i < printouts['Has Popular Subtaxa'].length; i++){
+                              popularSubTaxa[i] = printouts['Has Popular Subtaxa'][i].fulltext;
+                            }
+                            taxonFields.popularSubTaxa = popularSubTaxa;
+                        }
+                        //information
                         if (printouts['Has Taxon Wikipedia Image'] && printouts['Has Taxon Wikipedia Image'].length > 0) {
                             taxonFields.wikipediaImage = printouts['Has Taxon Wikipedia Image'][0];
+                        }
+                        if (printouts['Has Scientific Name'] && printouts['Has Scientific Name'].length > 0) {
+                            taxonFields.scientificName = printouts['Has Scientific Name'][0];
+                        }
+                        if (printouts['Has Other Names'] && printouts['Has Other Names'].length > 0) {
+                            taxonFields.otherNames = printouts['Has Other Names'][0];
+                        }
+                        if (printouts['Has Description'] && printouts['Has Description'].length > 0) {
+                            taxonFields.description = printouts['Has Description'][0];
                         }
                         if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
                             taxonFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
                         }
-                        if (printouts['Has Popular Descendants'] && printouts['Has Popular Descendants'].length > 0) {
-                            popularSubTaxa = [];
-                            for(var i = 0; i < printouts['Has Popular Descendants'].length; i++){
-                              popularSubTaxa[i] = printouts['Has Popular Descendants'][i].fulltext;
-                            }
-                            taxonFields.popularSubTaxa = popularSubTaxa;
-                        }
+                        
+ 
+                        
                     }
                     //check if Taxon already exists, if so add details to it, if not, create it and add to store
                     taxon = Ext.getStore('Taxa').findOrCreateTaxon(taxonFields.name);

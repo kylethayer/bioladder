@@ -22,7 +22,8 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
     extend: 'Ext.Panel',
 
     requires: [
-        'Ext.Label'
+        'Ext.Label',
+        'Ext.String'
     ],
 
     config: {
@@ -56,6 +57,35 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
                 itemId: 'wikipediaImage'
             }, {
                 xtype: 'container',
+                //hidden: true,
+                items: [{
+                    xtype: 'component',
+                    html: '',
+                    itemId: 'exampleMemberText'
+                }, {
+                    xtype: 'component',
+                    baseCls: 'wikipedia-image',
+                    itemId: 'exampleMemberImage'
+                }, {
+                    xtype: 'component',
+                    html: '',
+                    itemId: 'exampleMemberName'
+                }],
+                itemId: 'exampleMemberContainer'
+            }, {
+                xtype: 'component',
+                html: '',
+                itemId: 'scientificName'
+            }, {
+                xtype: 'component',
+                html: '',
+                itemId: 'otherNames'
+            }, {
+                xtype: 'component',
+                html: '',
+                itemId: 'description'
+            }, {
+                xtype: 'container',
                 items: [{
                     xtype: 'button',
                     baseCls: 'link-btn',
@@ -81,6 +111,10 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
         //reset view elements
         this.down('#wikipediaImage').setHtml('');
         this.down('#wikipediaBtn').setHidden(true);
+        this.down('#scientificName').setHtml('');
+        this.down('#otherNames').setHtml('');
+        this.down('#description').setHtml('');
+        this.down('#exampleMemberContainer').setHidden(true);
 
         //set name and rest of fields when loaded
         me.down('#taxonLabel').setHtml(newTaxon.get('name'));
@@ -100,13 +134,43 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
     },
 
     onTaxonLoaded: function (newTaxon) {
-        if (newTaxon === this.getTaxon()) {
+        if (newTaxon === this.getTaxon()) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
             var me = this;
             if (newTaxon.get('wikipediaImage')) {
                 this.down('#wikipediaImage').setHtml('<img src="' + newTaxon.get('wikipediaImage') + '"/>');
             }
             if (newTaxon.get('wikipediaPage')) {
                 this.down('#wikipediaBtn').setHidden(false);
+            }
+            if (newTaxon.get('scientificName')) {
+                this.down('#scientificName').setHtml('<b>Scientific Name:</b> ' + Ext.String.htmlEncode(newTaxon.get('scientificName')));
+            }
+            if (newTaxon.get('otherNames')) {
+                this.down('#otherNames').setHtml('<b>Other Names:</b> ' + Ext.String.htmlEncode(newTaxon.get('otherNames')));
+            }
+            if (newTaxon.get('description')) {
+                this.down('#description').setHtml('<b>Description:</b> ' + Ext.String.htmlEncode(newTaxon.get('description')));
+            }
+            if(newTaxon.get('exampleMember')) {
+                var exampleMember = newTaxon.get('exampleMember');
+                this.down('#exampleMemberContainer').setHidden(false);
+                me.down('#exampleMemberName').setHtml(exampleMember.get('name'));
+                me.down('#exampleMemberText').setHtml(newTaxon.get('exampleMemberText'));
+                this.down('#exampleMemberImage').setHtml('Loading...');
+                exampleMember.whenLoaded(function (exampleMember) {
+                    me.onExampleMemberLoaded(exampleMember);
+                });
+            }
+            
+        }
+    },
+    
+    onExampleMemberLoaded: function (exampleMember) {
+        if (exampleMember === this.getTaxon().get('exampleMember')) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
+            if(exampleMember.get('wikipediaImage')){
+                this.down('#exampleMemberImage').setHtml('<img src="' + exampleMember.get('wikipediaImage') + '"/>');
+            }else{
+                this.down('#exampleMemberImage').setHtml('');
             }
         }
     },
