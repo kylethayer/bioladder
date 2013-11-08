@@ -43,10 +43,10 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         items: [{
             xtype: 'container',
             layout: 'hbox',
-            itemId: 'simplifiedAncestorLabel',
+            itemId: 'parentTaxonLabel',
             items:[{
                 xtype: 'label',
-                html: 'Simplified Ancestor'
+                html: 'Parent Taxon'
             }, {
                 xtype: 'button',
                 baseCls: 'no-underline-link-btn',
@@ -55,11 +55,11 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             }]
         }, {
             xtype: 'label',
-            html: 'loading simplified ancestor...',
-            itemId: 'simplifiedAncestorsListLoadingLabel'
+            html: 'loading parent taxon...',
+            itemId: 'parentTaxonsListLoadingLabel'
         }, {
             xtype: 'container',
-            itemId: 'simplifiedAncestorContainer',
+            itemId: 'parentTaxonContainer',
             layout: {
                 type: 'vbox',
                 align: 'middle'
@@ -76,10 +76,10 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         }, {
             xtype: 'container',
             layout: 'hbox',
-            itemId: 'simplifiedDescendantsLabel',
+            itemId: 'subTaxaLabel',
             items: [{
                 xtype: 'label',
-                html: 'Simplified Descendants'
+                html: 'Sub-Taxa'
             }, {
                 xtype: 'button',
                 baseCls: 'no-underline-link-btn',
@@ -88,11 +88,11 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             }]
         }, {
             xtype: 'label',
-            html: 'loading simplified descendants...',
-            itemId: 'simplifiedDescendantsListLoadingLabel'
+            html: 'loading sub-taxa...',
+            itemId: 'subTaxaListLoadingLabel'
         }, {
             xtype: 'container',
-            itemId: 'simplifiedDescendantsContainer',
+            itemId: 'subTaxaContainer',
             layout: 'hbox'
         }, {
             xtype: 'component',
@@ -135,49 +135,49 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         currentTaxonPanel.setCollapsed(false);
         me.down('#taxonContainer').add(currentTaxonPanel);
 
-        //display simplifiedAncestors
-        me.down('#simplifiedAncestorContainer').removeAll(false);
-        me.down('#simplifiedAncestorsListLoadingLabel').setHidden(false);
-        me.down('#simplifiedAncestorLabel').setHidden(true);
+        //display parentTaxons
+        me.down('#parentTaxonContainer').removeAll(false);
+        me.down('#parentTaxonsListLoadingLabel').setHidden(false);
+        me.down('#parentTaxonLabel').setHidden(true);
         taxon.whenLoaded(function (loadedTaxon) {
-            var simplifiedAncestor, simplifiedAncestorTaxonPanel;
+            var parentTaxon, parentTaxonPanel;
             if (loadedTaxon === me.getTaxon()) {
                 Ext.Viewport.setMasked(false);
-                simplifiedAncestor = loadedTaxon.get('simplifiedAncestor');
-                me.down('#simplifiedAncestorsListLoadingLabel').setHidden(true);
-                if (simplifiedAncestor) {
-                    me.down('#simplifiedAncestorLabel').setHidden(false);
-                    simplifiedAncestor.ensureFullyLoaded();
-                    simplifiedAncestorTaxonPanel = me.findOrCreateTaxonPanel(simplifiedAncestor);
-                    simplifiedAncestorTaxonPanel.setCollapsed(true);
-                    me.down('#simplifiedAncestorContainer').removeAll(false);
-                    me.down('#simplifiedAncestorContainer').add(simplifiedAncestorTaxonPanel);
+                parentTaxon = loadedTaxon.get('parentTaxon');
+                me.down('#parentTaxonsListLoadingLabel').setHidden(true);
+                if (parentTaxon) {
+                    me.down('#parentTaxonLabel').setHidden(false);
+                    parentTaxon.ensureFullyLoaded();
+                    parentTaxonPanel = me.findOrCreateTaxonPanel(parentTaxon);
+                    parentTaxonPanel.setCollapsed(true);
+                    me.down('#parentTaxonContainer').removeAll(false);
+                    me.down('#parentTaxonContainer').add(parentTaxonPanel);
                     if(firstTimeLoad){ //show instructions first time
-                        me.down('#simplifiedAncestorContainer').add({
+                        me.down('#parentTaxonContainer').add({
                             xtype: 'label',
                             html: '^ click above ^',
                         });
-                        me.down('#simplifiedAncestorContainer').add({xtype: 'component', height: 10});
+                        me.down('#parentTaxonContainer').add({xtype: 'component', height: 10});
                         firstTimeLoad = false;
                     }
                 }
             }
         });
 
-        //display simplifiedDescendants
-        me.down('#simplifiedDescendantsListLoadingLabel').setHidden(false);
-        me.down('#simplifiedDescendantsContainer').removeAll(false);
-        me.down('#simplifiedDescendantsLabel').setHidden(true);
-        taxon.whenSimplifiedDescendantsLoaded(function (loadedTaxon) {
+        //display subTaxa
+        me.down('#subTaxaListLoadingLabel').setHidden(false);
+        me.down('#subTaxaContainer').removeAll(false);
+        me.down('#subTaxaLabel').setHidden(true);
+        taxon.whenSubTaxaLoaded(function (loadedTaxon) {
             var i, descendantTaxonPanel;
             if (loadedTaxon === me.getTaxon()) {
-                me.down('#simplifiedDescendantsListLoadingLabel').setHidden(true);
-                me.down('#simplifiedDescendantsContainer').removeAll(false);
-                if (loadedTaxon.get('simplifiedDescendants').length > 0) {
-                    me.down('#simplifiedDescendantsLabel').setHidden(false);
-                    for (i = 0; i < loadedTaxon.get('simplifiedDescendants').length; i++) {
+                me.down('#subTaxaListLoadingLabel').setHidden(true);
+                me.down('#subTaxaContainer').removeAll(false);
+                if (loadedTaxon.get('subTaxa').length > 0) {
+                    me.down('#subTaxaLabel').setHidden(false);
+                    for (i = 0; i < loadedTaxon.get('subTaxa').length; i++) {
                         var descContainer = Ext.widget('container', {
-                            itemId: 'descCont_' +loadedTaxon.get('simplifiedDescendants')[i].get('name'),
+                            itemId: 'descCont_' +loadedTaxon.get('subTaxa')[i].get('name'),
                             layout: {type: 'vbox', align: 'center'}
                         });
 
@@ -190,27 +190,27 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                             ]
                         });
                         
-                        loadedTaxon.get('simplifiedDescendants')[i].ensureFullyLoaded();
-                        descendantTaxonPanel = me.findOrCreateTaxonPanel(loadedTaxon.get('simplifiedDescendants')[i]);
+                        loadedTaxon.get('subTaxa')[i].ensureFullyLoaded();
+                        descendantTaxonPanel = me.findOrCreateTaxonPanel(loadedTaxon.get('subTaxa')[i]);
                         descendantTaxonPanel.setCollapsed(true);
                         descContainer.add(descendantTaxonPanel);
                         descContainer.add(popDescContainer);
                         
                         //Display popular descendants when they are loaded
-                        me.addPopularDescendantsWhenLoaded(popDescContainer, loadedTaxon.get('simplifiedDescendants')[i]);
+                        me.addPopularDescendantsWhenLoaded(popDescContainer, loadedTaxon.get('subTaxa')[i]);
                         
                         //Make sure one more level of descendants are loaded so popular descendants show up
-                        loadedTaxon.get('simplifiedDescendants')[i].whenSimplifiedDescendantsLoaded(function (loadedDescTaxon) {
-                            if(loadedDescTaxon.get('simplifiedDescendants')){
-                                for(var j = 0; j < loadedDescTaxon.get('simplifiedDescendants').length; j++){
-                                    loadedDescTaxon.get('simplifiedDescendants')[j].ensureFullyLoaded();
+                        loadedTaxon.get('subTaxa')[i].whenSubTaxaLoaded(function (loadedDescTaxon) {
+                            if(loadedDescTaxon.get('subTaxa')){
+                                for(var j = 0; j < loadedDescTaxon.get('subTaxa').length; j++){
+                                    loadedDescTaxon.get('subTaxa')[j].ensureFullyLoaded();
                                 }
                             }
                         });
                         
-                        me.down('#simplifiedDescendantsContainer').add(descContainer);
+                        me.down('#subTaxaContainer').add(descContainer);
                         
-                        me.down('#simplifiedDescendantsContainer').add({xtype: 'component',width: 10});
+                        me.down('#subTaxaContainer').add({xtype: 'component',width: 10});
                     }
                 }
             }
@@ -234,14 +234,14 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     
     addPopularDescendantsWhenLoaded: function(popDescContainer, taxon){
         var me = this;
-        taxon.whenSimplifiedDescendantsLoaded(function (loadedDescTaxon) {
+        taxon.whenSubTaxaLoaded(function (loadedDescTaxon) {
             popDescContainer.removeAll(true);
-            if(loadedDescTaxon.get('popularDescendants') && loadedDescTaxon.get('popularDescendants').length > 0) {
+            if(loadedDescTaxon.get('popularSubTaxa') && loadedDescTaxon.get('popularSubTaxa').length > 0) {
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
-                var popularDescendants = loadedDescTaxon.get('popularDescendants');
+                var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
                 var xTranslate = -75;
-                if(popularDescendants.length == 1){
+                if(popularSubTaxa.length == 1){
                     xTranslate = -92;
                 }
                 var popDescPanelsContainer =  Ext.widget('container', {
@@ -253,17 +253,17 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                         ' -o-transform: rotate(-90deg) translateX('+xTranslate+'px);' //opera
                 });
                 var firstDesc = true;
-                for(i = 0; i < popularDescendants.length; i++){
+                for(i = 0; i < popularSubTaxa.length; i++){
                     if(!firstDesc){
                         popDescPanelsContainer.add({xtype: 'component',width: 10, height: 10});
                     }
                     firstDesc = false;
-                    var panel = me.findOrCreateTaxonPanel(popularDescendants[i]);
+                    var panel = me.findOrCreateTaxonPanel(popularSubTaxa[i]);
                     panel.setCollapsed(true);
                     popDescPanelsContainer.add(panel);
                 }
                 popDescContainer.add(popDescPanelsContainer);
-                if(popularDescendants.length > 0){//This is a hack to add more space since I had to use a hack to rotate the popular descendants.
+                if(popularSubTaxa.length > 0){//This is a hack to add more space since I had to use a hack to rotate the popular descendants.
                     popDescContainer.add({xtype: 'component', height: 180});
                 }
             }

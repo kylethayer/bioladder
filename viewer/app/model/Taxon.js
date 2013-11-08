@@ -23,19 +23,19 @@ Ext.define('BioLadderOrg.model.Taxon', {
     config: {
         fields: [
             {
-                name: 'simplifiedAncestor',
+                name: 'parentTaxon',
                 type: 'auto',
-                convert: function (simplifiedAncestor, record) {
-                    if (simplifiedAncestor && typeof simplifiedAncestor === 'string') {
+                convert: function (parentTaxon, record) {
+                    if (parentTaxon && typeof parentTaxon === 'string') {
                         //make sure the name is a legitimate name
-                        if (!/^[-_\w\s]+$/.test(simplifiedAncestor)) {
-                            window.console.error('Simplified Ancestor name must be normal characters:', ancestor);
+                        if (!/^[-_\w\s]+$/.test(parentTaxon)) {
+                            window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
-                        //convert it into an simplifiedAncestor object
-                        return Ext.getStore('Taxa').findOrCreateTaxon(simplifiedAncestor);
+                        //convert it into an parentTaxon object
+                        return Ext.getStore('Taxa').findOrCreateTaxon(parentTaxon);
                     }
-                    return simplifiedAncestor;
+                    return parentTaxon;
                 }
             }, {
                 name: 'name',
@@ -48,25 +48,25 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return name;
                 }
             },
-            {name: 'simplifiedDescendants', type: 'auto'},
+            {name: 'subTaxa', type: 'auto'},
             {  
-                name: 'popularDescendants',
+                name: 'popularSubTaxa',
                 type: 'auto',
-                convert: function (popularDescendants, record) {
-                    if(popularDescendants != null && popularDescendants.length > 0){
-                        for(var i = 0; i < popularDescendants.length; i++){
-                            if (popularDescendants[i] && typeof popularDescendants[i] === 'string') {
+                convert: function (popularSubTaxa, record) {
+                    if(popularSubTaxa != null && popularSubTaxa.length > 0){
+                        for(var i = 0; i < popularSubTaxa.length; i++){
+                            if (popularSubTaxa[i] && typeof popularSubTaxa[i] === 'string') {
                                 //make sure the name is a legitimate name
-                                if (!/^[\w\s]+$/.test(popularDescendants[i])) {
-                                    window.console.error('Popular Descendant name must be normal characters:', popularDescendants[i]);
-                                    popularDescendants[i] = Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
+                                if (!/^[\w\s]+$/.test(popularSubTaxa[i])) {
+                                    window.console.error('Popular Subtaxa name must be normal characters:', popularSubTaxa[i]);
+                                    popularSubTaxa[i] = Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                                 }
-                                //convert it into an simplifiedAncestor object
-                                popularDescendants[i] = Ext.getStore('Taxa').findOrCreateTaxon(popularDescendants[i]);
+                                //convert it into an parentTaxon object
+                                popularSubTaxa[i] = Ext.getStore('Taxa').findOrCreateTaxon(popularSubTaxa[i]);
                             }
                         }
                     }
-                    return popularDescendants;
+                    return popularSubTaxa;
                 }
             },
             {
@@ -98,16 +98,16 @@ Ext.define('BioLadderOrg.model.Taxon', {
             {name: 'isLoaded',  type: 'bool', defaultValue: false},
             {name: 'isLoading',  type: 'bool', defaultValue: false},
             {name: 'loadedCallbacks',  type: 'auto', defaultValue: []},
-            {name: 'areSimplifiedDescendantsLoaded',  type: 'bool', defaultValue: false},
-            {name: 'areSimplifiedDescendantsLoading',  type: 'bool', defaultValue: false},
-            {name: 'simplifiedDescendantsLoadedCallbacks',  type: 'auto', defaultValue: []}
+            {name: 'areSubTaxaLoaded',  type: 'bool', defaultValue: false},
+            {name: 'areSubTaxaLoading',  type: 'bool', defaultValue: false},
+            {name: 'subTaxaLoadedCallbacks',  type: 'auto', defaultValue: []}
         ],
         isLoaded: false,
         isLoading: false,
         loadedCallbacks: [],
-        areSimplifiedDescendantsLoaded: false,
-        areSimplifiedDescendantsLoading: false,
-        simplifiedDescendantsLoadedCallbacks: []
+        areSubTaxaLoaded: false,
+        areSubTaxaLoading: false,
+        subTaxaLoadedCallbacks: []
     },
 
     ensureFullyLoaded: function () {
@@ -130,19 +130,19 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 }
             });
         }
-        if (!me.get('areSimplifiedDescendantsLoaded') && !me.get('areSimplifiedDescendantsLoading')) {
-            me.set('areSimplifiedDescendantsLoading', true);
+        if (!me.get('areSubTaxaLoaded') && !me.get('areSubTaxaLoading')) {
+            me.set('areSubTaxaLoading', true);
             searchObj = Ext.create('BioLadderOrg.model.TaxonSearch');
             searchObj.runSearch({
                 conditions: {'Has Parent Taxon': me.get('name')},
                 success: function (taxa) {
-                    me.set('simplifiedDescendants', taxa);
-                    me.set('areSimplifiedDescendantsLoading', false);
-                    me.set('areSimplifiedDescendantsLoaded', true);
-                    for (index in me.get('simplifiedDescendantsLoadedCallbacks')) {
-                        me.get('simplifiedDescendantsLoadedCallbacks')[index](me);
+                    me.set('subTaxa', taxa);
+                    me.set('areSubTaxaLoading', false);
+                    me.set('areSubTaxaLoaded', true);
+                    for (index in me.get('subTaxaLoadedCallbacks')) {
+                        me.get('subTaxaLoadedCallbacks')[index](me);
                     }
-                    me.set('simplifiedDescendantsLoadedCallbacks', []);
+                    me.set('subTaxaLoadedCallbacks', []);
                 },
                 failure: function (){
                     Ext.Msg.alert("Load Failed", "Failed to load descendants of an organism, you may need to refresh the page");
@@ -151,14 +151,14 @@ Ext.define('BioLadderOrg.model.Taxon', {
         }
     },
 
-    whenSimplifiedDescendantsLoaded: function (callback) {
+    whenSubTaxaLoaded: function (callback) {
         var me = this;
-        if (me.get('areSimplifiedDescendantsLoaded')) {
+        if (me.get('areSubTaxaLoaded')) {
             callback(me);
             return;
         }
         //make sure a new array is created so we don't mess with the default array
-        me.set('simplifiedDescendantsLoadedCallbacks', [callback].concat(me.get('simplifiedDescendantsLoadedCallbacks')));
+        me.set('subTaxaLoadedCallbacks', [callback].concat(me.get('subTaxaLoadedCallbacks')));
         me.ensureFullyLoaded();
     },
 
@@ -189,7 +189,8 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                 url += '[[' + property + '::' + args.conditions[property] + ']]';
             }
         }
-        requestFields =  ['Has Parent Taxon', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page', 'Has Popular Descendants'];
+        requestFields =  ['Has Parent Taxon', 'Has Popular Descendants', 'Has Example Member', 'Has Example Member Text',
+            'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page' ];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -235,7 +236,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                     printouts = results[taxonName].printouts;
                     if (printouts) {
                         if (printouts['Has Parent Taxon'] && printouts['Has Parent Taxon'].length > 0) {
-                            taxonFields.simplifiedAncestor = printouts['Has Parent Taxon'][0].fulltext;
+                            taxonFields.parentTaxon = printouts['Has Parent Taxon'][0].fulltext;
                         }
                         if (printouts['Has Taxon Wikipedia Image'] && printouts['Has Taxon Wikipedia Image'].length > 0) {
                             taxonFields.wikipediaImage = printouts['Has Taxon Wikipedia Image'][0];
@@ -244,11 +245,11 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                             taxonFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
                         }
                         if (printouts['Has Popular Descendants'] && printouts['Has Popular Descendants'].length > 0) {
-                            popularDescendants = [];
+                            popularSubTaxa = [];
                             for(var i = 0; i < printouts['Has Popular Descendants'].length; i++){
-                              popularDescendants[i] = printouts['Has Popular Descendants'][i].fulltext;
+                              popularSubTaxa[i] = printouts['Has Popular Descendants'][i].fulltext;
                             }
-                            taxonFields.popularDescendants = popularDescendants;
+                            taxonFields.popularSubTaxa = popularSubTaxa;
                         }
                     }
                     //check if Taxon already exists, if so add details to it, if not, create it and add to store
