@@ -1,22 +1,3 @@
-/**
- *  Copyright (C) 2013 BioLadder.Org
- *
- *  This file is part of the BioLadder.Org project (http://bioladder.org/)
- *
- *  BioLadder.Org is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
- 
 /*
     This file is generated and updated by Sencha Cmd. You can edit this file as
     needed for your application, but these edits will have to be merged by
@@ -29,16 +10,6 @@
     will need to resolve manually.
 */
 
-// DO NOT DELETE - this directive is required for Sencha Cmd packages to work.
-//@require @packageOverrides
-
-//<debug>
-Ext.Loader.setPath({
-    'Ext': 'touch/src',
-    'BioLadderOrg': 'app'
-});
-//</debug>
-
 Ext.application({
     name: 'BioLadderOrg',
 
@@ -46,23 +17,7 @@ Ext.application({
         'Ext.MessageBox'
     ],
 
-    models:[
-        'Taxon'
-    ],
-
     views: [
-        'AboutSimplifiedAncestryPanel',
-        'TaxaContainer',
-        'TaxonPanel',
-        'HowToHelpPanel',
-        'Main'
-    ],
-
-    stores: [
-        'Taxa'
-    ],
-
-    controllers: [
         'Main'
     ],
 
@@ -84,7 +39,7 @@ Ext.application({
         '1496x2048': 'resources/startup/1496x2048.png'
     },
 
-    launch: function () {
+    launch: function() {
         // Destroy the #appLoadingIndicator element
         Ext.fly('appLoadingIndicator').destroy();
 
@@ -92,11 +47,11 @@ Ext.application({
         Ext.Viewport.add(Ext.create('BioLadderOrg.view.Main'));
     },
 
-    onUpdated: function () {
+    onUpdated: function() {
         Ext.Msg.confirm(
             "Application Update",
             "This application has just successfully been updated to the latest version. Reload now?",
-            function (buttonId) {
+            function(buttonId) {
                 if (buttonId === 'yes') {
                     window.location.reload();
                 }
