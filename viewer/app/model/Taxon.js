@@ -23,6 +23,17 @@ Ext.define('BioLadderOrg.model.Taxon', {
     config: {
         fields: [
             {
+                name: 'name',
+                type: 'string',
+                convert: function (name, record) { //make sure the name is a legitimate name
+                    if (typeof name !== 'string' || !/^[-_\w\s]+$/.test(name)) {
+                        window.console.error('Name must be normal characters:', name);
+                        return 'Could not parse name';
+                    }
+                    return name;
+                }
+                
+            }, {
                 name: 'parentTaxon',
                 type: 'auto',
                 convert: function (parentTaxon, record) {
@@ -37,19 +48,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     }
                     return parentTaxon;
                 }
-            }, {
-                name: 'name',
-                type: 'string',
-                convert: function (name, record) { //make sure the name is a legitimate name
-                    if (typeof name !== 'string' || !/^[-_\w\s]+$/.test(name)) {
-                        window.console.error('Name must be normal characters:', name);
-                        return 'Could not parse name';
-                    }
-                    return name;
-                }
-            },
-            {name: 'subTaxa', type: 'auto'},
-            {  
+            }, {  
                 name: 'popularSubTaxa',
                 type: 'auto',
                 convert: function (popularSubTaxa, record) {
@@ -69,6 +68,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return popularSubTaxa;
                 }
             },
+            {name: 'subTaxa', type: 'auto'},
             {
                 name: 'wikipediaImage',
                 type: 'string',
