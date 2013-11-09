@@ -26,22 +26,22 @@
     return true;
   }
   
-  if(preg_match("/\|Popular Descendants Out Of Date=self and parent/", $text, $matches)){
+  if(preg_match("/\|Popular Subtaxa Out Of Date=self and parent/", $text, $matches)){
     return true;
   }
   
-  if(preg_match("/\|Popular Descendants Out Of Date=self/", $text, $matches)){
-    $text = preg_replace("(\|Popular Descendants Out Of Date=self)", "|Popular Descendants Out Of Date=self and parent", $text);
+  if(preg_match("/\|Popular Subtaxa Out Of Date=self/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=self)", "|Popular Subtaxa Out Of Date=self and parent", $text);
     return true;
   }
   
-  if(preg_match("/\|Popular Descendants Out Of Date=parent/", $text, $matches)){
-    $text = preg_replace("(\|Popular Descendants Out Of Date=parent)", "|Popular Descendants Out Of Date=self and parent", $text);
+  if(preg_match("/\|Popular Subtaxa Out Of Date=parent/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=parent)", "|Popular Subtaxa Out Of Date=self and parent", $text);
     return true;
   }
   
-  if(preg_match("/{{Entry/", $text, $matches)){
-    $text = preg_replace("({{Entry)", "{{Entry\n|Popular Descendants Out Of Date=self and parent", $text);
+  if(preg_match("/{{Taxon/", $text, $matches)){
+    $text = preg_replace("({{Taxon)", "{{Taxon\n|Popular Subtaxa Out Of Date=self and parent", $text);
   }
   
   return true;

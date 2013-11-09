@@ -20,12 +20,15 @@
 
 require 'rubygems'
 require 'media_wiki'
+require 'YAML'
 #see https://github.com/jpatokal/mediawiki-gateway
 
 #mw = MediaWiki::Gateway.new('http://bioladder.org/wiki/api.php')
+
 puts "logging in"
-$mw = MediaWiki::Gateway.new('http://localhost/wiki/api.php')
-$mw.login('PopularDescendantsBot', 'asdf7234jklsrt-32lsdgp')
+credentials = YAML.load_file('LoginCredentials.yaml')
+$mw = MediaWiki::Gateway.new(credentials['URL'])
+$mw.login(credentials['UserName'], credentials['Password'])
 
 def $mw.bot_edit(title, content, options={})
   form_data = {'action' => 'edit', 'title' => title, 'text' => content, 'summary' => (options[:summary] || ""), 'token' => get_token('edit', title)}
@@ -36,18 +39,18 @@ end
 
 #xml.elements["query"].elements["results"].first.name
 
-#entry = mw.get("api.php?action=ask&query=[[Are Popular Descendants Out Of Date::true]]|?Has Simplified Ancestor|?Has Wikipedia Image|?Has Wikipedia Page|limit=1&format=json")
+#entry = mw.get("api.php?action=ask&query=[[Are Popular Subtaxa Out Of Date::true]]|?Has Parent Taxon|?Has Wikipedia Image|?Has Wikipedia Page|limit=1&format=json")
 
-#Note: Make an edit plugin to set Descendants Out of Date to False on non-minor edits
+#Note: Make an edit plugin to set Subtaxa Out of Date to False on non-minor edits
 
-#select by Are Popular Descendants Out Of Date=false (include '?Has Simplified Ancestor', '?Popular Descendants', '?Has Popularity')
+#select by Are Popular Subtaxa Out Of Date=false (include '?Has Parent Taxon', '?Popular Subtaxa', '?Has Popularity')
 #NOTE: Make this modify the parent then put the parent out of date (the out of date means parent needs to be processed)
 #For each one (up to 50?) 
-  # Do another ask to get Descendants ('?Popular Descendants', '?Has Popularity')
-  # combine the Popular Descendants and popularity of the descendants to generate a new list
+  # Do another ask to get Subtaxa ('?Popular Subtaxa', '?Has Popularity')
+  # combine the Popular Subtaxa and popularity of the descendants to generate a new list
   # load the page and if that is different than the current one,
     # change:
-      # the Popular Descendants, 
+      # the Popular Subtaxa, 
       # mark self as out of date
       # mark the Ancestor as out of date
   #else
@@ -59,9 +62,9 @@ WeightAgainstBranchFraction = 0.6
 #BUG: Change in popularity is not carried up if it doesn't change the immediate parent!!! Need to embed the popularities somehow!!!
   
   
-def processPopularDescendantsForEntry(simplifiedAncestorName)
-  puts "processPopularDescendantsForEntry #{simplifiedAncestorName}..."
-  queryResults = $mw.semantic_query("[[Has Simplified Ancestor::#{simplifiedAncestorName}]]", ['?Has Popular Descendants', '?Has Popularity'])
+def processPopularSubtaxaForTaxon(parentTaxonName)
+  puts "processPopularSubtaxaForTaxon #{parentTaxonName}..."
+  queryResults = $mw.semantic_query("[[Has Parent Taxon::#{parentTaxonName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
   descendants = queryResults.elements["query"].elements["results"].to_a
   #For each of the results gather the popular descendants and such
   popularityEntries = []
@@ -79,9 +82,9 @@ def processPopularDescendantsForEntry(simplifiedAncestorName)
         })
     end
     
-    #Get PopularDescendants w/ popularity and add to hash under current branch
-    subPopularDescendants = descendant.elements["printouts"].elements["Has_Popular_Descendants"].to_a
-    subPopularDescendants.each do |subDescendant|
+    #Get PopularSubtaxa w/ popularity and add to hash under current branch
+    subPopularSubtaxa = descendant.elements["printouts"].elements["Has_Popular_Subtaxa"].to_a
+    subPopularSubtaxa.each do |subDescendant|
       subDescendantName = subDescendant.attribute('fulltext').value
       subQueryResults = $mw.semantic_query("[[#{subDescendantName}]]", ['?Has Popularity'])
       subDescendantResult = subQueryResults.elements["query"].elements["results"].first
@@ -99,11 +102,11 @@ def processPopularDescendantsForEntry(simplifiedAncestorName)
   end
   
   popularityEntries = popularityEntries.sort_by{|a| [a[:popularity], a[:name]]}
-  newPopularDescendants = []
+  newPopularSubtaxa = []
   
   newPopular = popularityEntries.last
   if(newPopular)
-    newPopularDescendants.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
+    newPopularSubtaxa.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
   end
   popularityEntries.delete(newPopular)
   
@@ -116,40 +119,40 @@ def processPopularDescendantsForEntry(simplifiedAncestorName)
   popularityEntries = popularityEntries.sort_by{|a| [a[:popularity], a[:name]]}
   newPopular = popularityEntries.last
   if(newPopular)
-    newPopularDescendants.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
+    newPopularSubtaxa.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
   end
   
-  newPopularDescendantsString = newPopularDescendants.map{|pd| "#{pd[:name]}]](#{pd[:popularity]})"}.join(",")
+  newPopularSubtaxaString = newPopularSubtaxa.map{|pd| "#{pd[:name]}]](#{pd[:popularity]})"}.join(",")
   
-  ancestorEntryText = $mw.get(simplifiedAncestorName)
+  ancestorTaxonText = $mw.get(parentTaxonName)
   
-  currentPopularDescendantsMatch = /\|Popular Descendants=([^\n^\r^\|^}]*)/.match(ancestorEntryText)
-  if(currentPopularDescendantsMatch)
-    if(newPopularDescendantsString == currentPopularDescendantsMatch[1])
-        ancestorEntryText.sub!(/\|Popular Descendants Out Of Date[^\n^\r^\|^}]*/, '')
-        $mw.bot_edit(simplifiedAncestorName, ancestorEntryText, {})
+  currentPopularSubtaxaMatch = /\|Popular Subtaxa=([^\n^\r^\|^}]*)/.match(ancestorTaxonText)
+  if(currentPopularSubtaxaMatch)
+    if(newPopularSubtaxaString == currentPopularSubtaxaMatch[1])
+        ancestorTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '')
+        $mw.bot_edit(parentTaxonName, ancestorTaxonText, {})
       return
     end
   end
-  #Update this entry with the new popular entries
-  if(currentPopularDescendantsMatch)
-    puts "updating PopularDescendants #{newPopularDescendantsString}"
-    ancestorEntryText.sub!(/\|Popular Descendants=[^\n^\r^\|^}]*/, '|Popular Descendants=' + newPopularDescendantsString)
+  #Update this Taxon with the new popular entries
+  if(currentPopularSubtaxaMatch)
+    puts "updating PopularSubtaxa #{newPopularSubtaxaString}"
+    ancestorTaxonText.sub!(/\|Popular Subtaxa=[^\n^\r^\|^}]*/, '|Popular Subtaxa=' + newPopularSubtaxaString)
   else
-    puts "adding PopularDescendants #{newPopularDescendantsString}"
-    ancestorEntryText.sub!(/\{\{Entry/, "{{Entry\n|Popular Descendants=" +newPopularDescendantsString)
+    puts "adding PopularSubtaxa #{newPopularSubtaxaString}"
+    ancestorTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa=" +newPopularSubtaxaString)
   end
   
-  if(/\|Popular Descendants Out Of Date[^\n^\r^\|^}]*/.match(ancestorEntryText))
-    ancestorEntryText.sub!(/\|Popular Descendants Out Of Date[^\n^\r^\|^}]*/, '|Popular Descendants Out Of Date=parent')
+  if(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/.match(ancestorTaxonText))
+    ancestorTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=parent')
   else
-    ancestorEntryText.sub!(/\{\{Entry/, "{{Entry\n|Popular Descendants Out Of Date=parent")
+    ancestorTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa Out Of Date=parent")
   end
   puts ""
-  puts "saving #{simplifiedAncestorName}..."
-  puts ancestorEntryText
+  puts "saving #{parentTaxonName}..."
+  puts ancestorTaxonText
   puts ""
-  $mw.bot_edit(simplifiedAncestorName, ancestorEntryText, {})
+  $mw.bot_edit(parentTaxonName, ancestorTaxonText, {})
 end
 
 #https://github.com/jpatokal/mediawiki-gateway/blob/master/lib/media_wiki/gateway.rb
@@ -158,27 +161,27 @@ end
 
 
 
-def processEntry(entry)
+def processTaxon(entry)
   entryName = entry.name
-  outOfDate = entry.elements["printouts"].elements["Are_Popular_Descendants_Out_Of_Date"].first.first
+  outOfDate = entry.elements["printouts"].elements["Are_Popular_Subtaxa_Out_Of_Date"].first.first
 
   
   if(outOfDate == 'self' or outOfDate == 'self and parent')
-    processPopularDescendantsForEntry(entryName)
+    processPopularSubtaxaForTaxon(entryName)
   end
   
   if(outOfDate == 'parent' or outOfDate == 'self and parent')
-    simplifiedAncestor = entry.elements["printouts"].elements["Has_Simplified_Ancestor"].first
-    if(simplifiedAncestor)
-      simplifiedAncestorName = simplifiedAncestor.attribute('fulltext').value
+    parentTaxon = entry.elements["printouts"].elements["Has_Parent_Taxon"].first
+    if(parentTaxon)
+      parentTaxonName = parentTaxon.attribute('fulltext').value
   
-      #now find all descendants of the simplifiedAncestor and their ('?Popular Descendants', '?Has Popularity')
-      processPopularDescendantsForEntry(simplifiedAncestorName)
+      #now find all descendants of the parentTaxon and their ('?Popular Subtaxa', '?Has Popularity')
+      processPopularSubtaxaForTaxon(parentTaxonName)
     end
   end
   pageText = $mw.get(entryName)
     
-  pageText.sub!(/\|Popular Descendants Out Of Date[^\n^\r^\|^}]*/, '')
+  pageText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '')
   
   puts ""
   puts "saving #{entryName}..."
@@ -189,20 +192,20 @@ def processEntry(entry)
 end
 
   
-def getNextOutOfDateEntry
+def getNextOutOfDateTaxon
   queryResults = $mw.semantic_query(
-    '[[Are Popular Descendants Out Of Date::+]]', 
-    ['?Are Popular Descendants Out Of Date','?Has Simplified Ancestor', '?Popular Descendants', '?Has Popularity', 'limit=1']
+    '[[Are Popular Subtaxa Out Of Date::+]]', 
+    ['?Are Popular Subtaxa Out Of Date','?Has Parent Taxon', '?Popular Subtaxa', '?Has Popularity', 'limit=1']
   )
   return queryResults.elements["query"].elements["results"].first
 end
 
 maxEntriesToProcess = 25
 (1..maxEntriesToProcess).each do |i|
-  entry = getNextOutOfDateEntry()
+  entry = getNextOutOfDateTaxon()
   if(entry)
     puts "#{i}, #{entry.name}"
-    processEntry(entry)
+    processTaxon(entry)
   else
     puts "completed"
     break
