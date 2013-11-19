@@ -20,7 +20,7 @@
 
 require 'rubygems'
 require 'media_wiki'
-require 'YAML'
+require 'yaml'
 #see https://github.com/jpatokal/mediawiki-gateway
 
 #mw = MediaWiki::Gateway.new('http://bioladder.org/wiki/api.php')

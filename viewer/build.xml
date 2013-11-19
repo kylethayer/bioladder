@@ -76,7 +76,7 @@
     <target name="addGoogleAnalytics" depends="checkGoogleAnalyticsAvailable" if="hasGoogleAnaylticsCode">
         <!-- Add google analytics code to index.html -->
         <loadfile property="googleAnaylticsCode" srcFile="googleAnalyticsInclude.html"/>
-        <replaceregexp file="build/BioLadderOrg/production/index.html"
+        <replaceregexp file="build/production/BioLadderOrg/index.html"
                match="&lt;/head>"
                replace="${googleAnaylticsCode}&lt;/head>"
                byline="true"

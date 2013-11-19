@@ -40,8 +40,8 @@
     return true;
   }
   
-  if(preg_match("/{{Taxon/", $text, $matches)){
-    $text = preg_replace("({{Taxon)", "{{Taxon\n|Popular Subtaxa Out Of Date=self and parent", $text);
+  if(preg_match("/^{{Taxon/", $text, $matches)){
+    $text = preg_replace("(^{{Taxon)", "{{Taxon\n|Popular Subtaxa Out Of Date=self and parent", $text);
   }
   
   return true;
