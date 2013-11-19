@@ -109,33 +109,37 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
     updateTaxon: function (newTaxon, oldTaxon) {
         var me = this;
         //reset view elements
-        this.down('#wikipediaImage').setHtml('');
-        this.down('#wikipediaBtn').setHidden(true);
-        this.down('#scientificName').setHtml('');
-        this.down('#otherNames').setHtml('');
-        this.down('#description').setHtml('');
-        this.down('#exampleMemberContainer').setHidden(true);
+        me.down('#wikipediaImage').setHtml('');
+        me.down('#wikipediaBtn').setHidden(true);
+        me.down('#scientificName').setHtml('');
+        me.down('#otherNames').setHtml('');
+        me.down('#description').setHtml('');
+        me.down('#exampleMemberContainer').setHidden(true);
 
         //set name and rest of fields when loaded
-        me.down('#taxonLabel').setHtml(newTaxon.get('name'));
+        me.updateTitle();
         newTaxon.whenLoaded(function (newTaxon) {
             me.onTaxonLoaded(newTaxon);
         });
     },
 
     updateCollapsed: function (newCollapsed) {
+        var me = this;
         if (newCollapsed) {
-            this.setWidth(200);
-            this.down('#collapsibleContent').setHidden(true);
+            me.setWidth(200);
+            me.down('#collapsibleContent').setHidden(true);
         } else {
-            this.setWidth(300);
-            this.down('#collapsibleContent').setHidden(false);
+            me.setWidth(400);
+            me.down('#collapsibleContent').setHidden(false);
         }
+        me.updateTitle();
     },
 
     onTaxonLoaded: function (newTaxon) {
         if (newTaxon === this.getTaxon()) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
             var me = this;
+            me.updateTitle();
+        
             if (newTaxon.get('wikipediaImage')) {
                 this.down('#wikipediaImage').setHtml('<img src="' + newTaxon.get('wikipediaImage') + '"/>');
             }
@@ -197,6 +201,15 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
         var taxon = this.getTaxon();
         if (taxon) {
             this.fireEvent('navigatetotaxon', taxon);
+        }
+    },
+    
+    updateTitle: function() {
+        var me = this;
+        if(me.getCollapsed() || !me.getTaxon().get('taxonomicRank')){
+            me.down('#taxonLabel').setHtml(me.getTaxon().get('name'));
+        } else {
+            me.down('#taxonLabel').setHtml(me.getTaxon().get('name') + ' (' + Ext.String.htmlEncode(me.getTaxon().get('taxonomicRank')) + ')');
         }
     }
 });

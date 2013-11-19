@@ -101,6 +101,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return wikipediaImage;
                 }
             },
+            {name: 'taxonomicRank', type: 'string'},
             {name: 'wikiPage', type: 'string'},
             {
                 name: 'wikipediaPage',
@@ -210,7 +211,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
             }
         }
         requestFields =  ['Has Parent Taxon', 'Has Popular Subtaxa', 'Has Example Member', 'Has Example Member Text',
-            'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page' ];
+            'Has Taxonomic Rank', 'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page' ];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -273,6 +274,9 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                             taxonFields.popularSubTaxa = popularSubTaxa;
                         }
                         //information
+                        if (printouts['Has Taxonomic Rank'] && printouts['Has Taxonomic Rank'].length > 0) {
+                            taxonFields.taxonomicRank = printouts['Has Taxonomic Rank'][0];
+                        }
                         if (printouts['Has Taxon Wikipedia Image'] && printouts['Has Taxon Wikipedia Image'].length > 0) {
                             taxonFields.wikipediaImage = printouts['Has Taxon Wikipedia Image'][0];
                         }
