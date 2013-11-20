@@ -240,9 +240,12 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
                 popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
                 var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
-                var xTranslate = -75;
-                if(popularSubTaxa.length == 1){
-                    xTranslate = -92;
+                var xTranslate = -92;
+                if(popularSubTaxa.length == 2){
+                    xTranslate = -75;
+                }
+                if(popularSubTaxa.length == 3){
+                    xTranslate = -60;
                 }
                 var popDescPanelsContainer =  Ext.widget('container', {
                     //this panel is rotated so it doesn't imply that one popular descendant is ranked above another

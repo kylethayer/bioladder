@@ -57,7 +57,7 @@ end
     # mark it as not out of date
   #NOTE: SAVES ARE MINOR SO WE DON'T GO INTO INFINITE LOOP
   
-WeightAgainstBranchFraction = 0.6
+WeightAgainstBranchFraction = 0.7
 
 #BUG: Change in popularity is not carried up if it doesn't change the immediate parent!!! Need to embed the popularities somehow!!!
   
@@ -101,25 +101,24 @@ def processPopularSubtaxaForTaxon(parentTaxonName)
     end
   end
   
-  popularityEntries = popularityEntries.sort_by{|a| [a[:popularity], a[:name]]}
+
   newPopularSubtaxa = []
   
-  newPopular = popularityEntries.last
-  if(newPopular)
-    newPopularSubtaxa.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
-  end
-  popularityEntries.delete(newPopular)
-  
-  popularityEntries.each do |popularityHash|
-    if(popularityHash[:branch] == newPopular[:branch])
-      popularityHash[:popularity] = popularityHash[:popularity] * WeightAgainstBranchFraction
+  (1..3).each do |i|
+    #get most popular entry
+    popularityEntries = popularityEntries.sort_by{|a| [a[:popularity], a[:name]]}
+    newPopular = popularityEntries.last
+    if(newPopular)
+      newPopularSubtaxa.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
     end
-  end
+    popularityEntries.delete(newPopular)
   
-  popularityEntries = popularityEntries.sort_by{|a| [a[:popularity], a[:name]]}
-  newPopular = popularityEntries.last
-  if(newPopular)
-    newPopularSubtaxa.push({:name => newPopular[:name], :popularity => newPopular[:orignal_popularity]})
+    # weigh against the remaining in that same branch
+    popularityEntries.each do |popularityHash|
+      if(popularityHash[:branch] == newPopular[:branch])
+        popularityHash[:popularity] = popularityHash[:popularity] * WeightAgainstBranchFraction
+      end
+    end
   end
   
   newPopularSubtaxaString = newPopularSubtaxa.map{|pd| "#{pd[:name]}]](#{pd[:popularity]})"}.join(",")
