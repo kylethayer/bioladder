@@ -25,12 +25,12 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
 
     requires: [
         'Ext.Label',
-        'BioLadderOrg.view.TaxonPanel'
+        'BioLadderOrg.view.TaxonBox.TaxonBox'
     ],
 
     config: {
         control: {
-            'taxonpanel': {
+            'taxonbox': {
                 navigatetotaxon: 'onNavigateToTaxon'
             },
             '#aboutSimplifiedAncestryBtn': {
@@ -105,11 +105,11 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         },
         height: '100%',
         width: '100%',
-        scrollable: 'both'
+        //scrollable: 'both' //dissabled until I can get the scrollable taxon box not to scroll this as well
     },
 
     initialize: function () {
-        this.__TaxonPanels = [];
+        this.__TaxonBoxes = [];
     },
 
     onNavigateToTaxon: function (taxon) {
@@ -122,7 +122,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         Ext.Viewport.setMasked({
             xtype: 'loadmask'
         });
-        var taxon, i, currentTaxonPanel,
+        var taxon, i, currentTaxonBox,
             me = this;
 
         taxon = Ext.getStore('Taxa').findOrCreateTaxon(name);
@@ -130,17 +130,17 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         me.setTaxon(taxon);
 
         //display current taxon
-        me.down('#taxonContainer').removeAll(false); //clear the taxonContainer without deleting the TaxonPanels
-        currentTaxonPanel = me.findOrCreateTaxonPanel(taxon);
-        currentTaxonPanel.setCollapsed(false);
-        me.down('#taxonContainer').add(currentTaxonPanel);
+        me.down('#taxonContainer').removeAll(false); //clear the taxonContainer without deleting the TaxonBoxes
+        currentTaxonBox = me.findOrCreateTaxonBox(taxon);
+        currentTaxonBox.setCollapsed(false);
+        me.down('#taxonContainer').add(currentTaxonBox);
 
         //display parentTaxons
         me.down('#parentTaxonContainer').removeAll(false);
         me.down('#parentTaxonsListLoadingLabel').setHidden(false);
         me.down('#parentTaxonLabel').setHidden(true);
         taxon.whenLoaded(function (loadedTaxon) {
-            var parentTaxon, parentTaxonPanel;
+            var parentTaxon, parentTaxonBox;
             if (loadedTaxon === me.getTaxon()) {
                 Ext.Viewport.setMasked(false);
                 parentTaxon = loadedTaxon.get('parentTaxon');
@@ -148,10 +148,10 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 if (parentTaxon) {
                     me.down('#parentTaxonLabel').setHidden(false);
                     parentTaxon.ensureFullyLoaded();
-                    parentTaxonPanel = me.findOrCreateTaxonPanel(parentTaxon);
-                    parentTaxonPanel.setCollapsed(true);
+                    parentTaxonBox = me.findOrCreateTaxonBox(parentTaxon);
+                    parentTaxonBox.setCollapsed(true);
                     me.down('#parentTaxonContainer').removeAll(false);
-                    me.down('#parentTaxonContainer').add(parentTaxonPanel);
+                    me.down('#parentTaxonContainer').add(parentTaxonBox);
                     if(firstTimeLoad){ //show instructions first time
                         me.down('#parentTaxonContainer').add({
                             xtype: 'label',
@@ -169,7 +169,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         me.down('#subTaxaContainer').removeAll(false);
         me.down('#subTaxaLabel').setHidden(true);
         taxon.whenSubTaxaLoaded(function (loadedTaxon) {
-            var i, descendantTaxonPanel;
+            var i, descendantTaxonBox;
             if (loadedTaxon === me.getTaxon()) {
                 me.down('#subTaxaListLoadingLabel').setHidden(true);
                 me.down('#subTaxaContainer').removeAll(false);
@@ -191,9 +191,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                         });
                         
                         loadedTaxon.get('subTaxa')[i].ensureFullyLoaded();
-                        descendantTaxonPanel = me.findOrCreateTaxonPanel(loadedTaxon.get('subTaxa')[i]);
-                        descendantTaxonPanel.setCollapsed(true);
-                        descContainer.add(descendantTaxonPanel);
+                        descendantTaxonBox = me.findOrCreateTaxonBox(loadedTaxon.get('subTaxa')[i]);
+                        descendantTaxonBox.setCollapsed(true);
+                        descContainer.add(descendantTaxonBox);
                         descContainer.add(popDescContainer);
                         
                         //Display popular descendants when they are loaded
@@ -217,19 +217,19 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         });
     },
 
-    findOrCreateTaxonPanel: function (taxon) {
-        var i, taxonpanel, me = this;
-        for (i = 0; i < me.__TaxonPanels.length; i++) {
-            if (me.__TaxonPanels[i].getTaxon() === taxon) {
-                return me.__TaxonPanels[i];
+    findOrCreateTaxonBox: function (taxon) {
+        var i, taxonbox, me = this;
+        for (i = 0; i < me.__TaxonBoxes.length; i++) {
+            if (me.__TaxonBoxes[i].getTaxon() === taxon) {
+                return me.__TaxonBoxes[i];
             }
         }
 
-        taxonpanel = Ext.widget('taxonpanel', {
+        taxonbox = Ext.widget('taxonbox', {
             taxon: taxon
         });
-        me.__TaxonPanels.push(taxonpanel);
-        return taxonpanel;
+        me.__TaxonBoxes.push(taxonbox);
+        return taxonbox;
     },
     
     addPopularDescendantsWhenLoaded: function(popDescContainer, taxon){
@@ -261,7 +261,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                         popDescPanelsContainer.add({xtype: 'component',width: 10, height: 10});
                     }
                     firstDesc = false;
-                    var panel = me.findOrCreateTaxonPanel(popularSubTaxa[i]);
+                    var panel = me.findOrCreateTaxonBox(popularSubTaxa[i]);
                     panel.setCollapsed(true);
                     popDescPanelsContainer.add(panel);
                 }

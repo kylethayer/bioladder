@@ -17,13 +17,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('BioLadderOrg.view.TaxonPanel', {
-    xtype: 'taxonpanel',
+Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
+    xtype: 'taxonbox',
     extend: 'Ext.Panel',
 
     requires: [
         'Ext.Label',
-        'Ext.String'
+        'Ext.String',
+        'BioLadderOrg.view.TaxonBox.TaxonBoxContents'
     ],
 
     config: {
@@ -52,38 +53,10 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
             itemId: 'collapsibleContent',
             hidden: true,
             items: [{
-                xtype: 'component',
-                baseCls: 'wikipedia-image',
-                itemId: 'wikipediaImage'
-            }, {
-                xtype: 'container',
-                //hidden: true,
-                items: [{
-                    xtype: 'component',
-                    html: '',
-                    itemId: 'exampleMemberText'
-                }, {
-                    xtype: 'component',
-                    baseCls: 'wikipedia-image',
-                    itemId: 'exampleMemberImage'
-                }, {
-                    xtype: 'component',
-                    html: '',
-                    itemId: 'exampleMemberName'
-                }],
-                itemId: 'exampleMemberContainer'
-            }, {
-                xtype: 'component',
-                html: '',
-                itemId: 'scientificName'
-            }, {
-                xtype: 'component',
-                html: '',
-                itemId: 'otherNames'
-            }, {
-                xtype: 'component',
-                html: '',
-                itemId: 'description'
+                xtype: 'taxonboxcontents',
+                itemId: 'taxonBoxContents',
+                height: '255px',
+                scrollable: 'vertical'
             }, {
                 xtype: 'container',
                 items: [{
@@ -103,18 +76,13 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
                 }]
             }]
         }],
-        width: 300
+        width: 500
     },
 
     updateTaxon: function (newTaxon, oldTaxon) {
         var me = this;
         //reset view elements
-        me.down('#wikipediaImage').setHtml('');
         me.down('#wikipediaBtn').setHidden(true);
-        me.down('#scientificName').setHtml('');
-        me.down('#otherNames').setHtml('');
-        me.down('#description').setHtml('');
-        me.down('#exampleMemberContainer').setHidden(true);
 
         //set name and rest of fields when loaded
         me.updateTitle();
@@ -129,7 +97,7 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
             me.setWidth(200);
             me.down('#collapsibleContent').setHidden(true);
         } else {
-            me.setWidth(400);
+            me.setWidth(500);
             me.down('#collapsibleContent').setHidden(false);
         }
         me.updateTitle();
@@ -138,30 +106,16 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
     onTaxonLoaded: function (newTaxon) {
         if (newTaxon === this.getTaxon()) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
             var me = this;
+            me.down('#taxonBoxContents').setData(newTaxon.data);
             me.updateTitle();
         
-            if (newTaxon.get('wikipediaImage')) {
-                this.down('#wikipediaImage').setHtml('<img src="' + newTaxon.get('wikipediaImage') + '"/>');
-            }
             if (newTaxon.get('wikipediaPage')) {
                 this.down('#wikipediaBtn').setHidden(false);
             }
-            if (newTaxon.get('scientificName')) {
-                this.down('#scientificName').setHtml('<b>Scientific Name:</b> ' + Ext.String.htmlEncode(newTaxon.get('scientificName')));
-            }
-            if (newTaxon.get('otherNames')) {
-                this.down('#otherNames').setHtml('<b>Other Names:</b> ' + Ext.String.htmlEncode(newTaxon.get('otherNames')));
-            }
-            if (newTaxon.get('description')) {
-                this.down('#description').setHtml('<b>Description:</b> ' + Ext.String.htmlEncode(newTaxon.get('description')));
-            }
             if(newTaxon.get('exampleMember')) {
                 var exampleMember = newTaxon.get('exampleMember');
-                this.down('#exampleMemberContainer').setHidden(false);
-                me.down('#exampleMemberName').setHtml(exampleMember.get('name'));
-                me.down('#exampleMemberText').setHtml(newTaxon.get('exampleMemberText'));
-                this.down('#exampleMemberImage').setHtml('Loading...');
                 exampleMember.whenLoaded(function (exampleMember) {
+                    //this.down('#taxonBoxContents').setData(newTaxon.data);
                     me.onExampleMemberLoaded(exampleMember);
                 });
             }
@@ -171,11 +125,7 @@ Ext.define('BioLadderOrg.view.TaxonPanel', {
     
     onExampleMemberLoaded: function (exampleMember) {
         if (exampleMember === this.getTaxon().get('exampleMember')) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
-            if(exampleMember.get('wikipediaImage')){
-                this.down('#exampleMemberImage').setHtml('<img src="' + exampleMember.get('wikipediaImage') + '"/>');
-            }else{
-                this.down('#exampleMemberImage').setHtml('');
-            }
+            this.down('#taxonBoxContents').setData(this.getTaxon().data);
         }
     },
 
