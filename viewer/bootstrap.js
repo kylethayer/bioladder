@@ -29,7 +29,8 @@ Ext.ClassManager.addNameAlternateMappings({
   "BioLadderOrg.view.HowToHelpPanel": [],
   "BioLadderOrg.view.Main": [],
   "BioLadderOrg.view.TaxaContainer": [],
-  "BioLadderOrg.view.TaxonPanel": [],
+  "BioLadderOrg.view.TaxonBox.TaxonBox": [],
+  "BioLadderOrg.view.TaxonBox.TaxonBoxContents": [],
   "Ext.AbstractComponent": [],
   "Ext.AbstractManager": [],
   "Ext.AbstractPlugin": [],
@@ -770,8 +771,11 @@ Ext.ClassManager.addNameAliasMappings({
   "BioLadderOrg.view.TaxaContainer": [
     "widget.taxacontainer"
   ],
-  "BioLadderOrg.view.TaxonPanel": [
-    "widget.taxonpanel"
+  "BioLadderOrg.view.TaxonBox.TaxonBox": [
+    "widget.taxonbox"
+  ],
+  "BioLadderOrg.view.TaxonBox.TaxonBoxContents": [
+    "widget.taxonboxcontents"
   ],
   "Ext.AbstractComponent": [],
   "Ext.AbstractManager": [],

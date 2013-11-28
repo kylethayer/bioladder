@@ -219,6 +219,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
         url += '&format=json';
 
         Ext.Ajax.request({
+            disableCaching: false,
             url: url,
             success: function (response) {
                 var results, taxa, taxaStore, taxonName, taxonFields, printouts, fieldName, taxon,
