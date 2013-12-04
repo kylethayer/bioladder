@@ -22,7 +22,7 @@ Ext.define('BioLadderOrg.view.Main', {
     xtype: 'main',
     requires: [
         'Ext.TitleBar',
-        'BioLadderOrg.view.AboutSimplifiedAncestryPanel',
+        'BioLadderOrg.view.AboutCladesPanel',
         'BioLadderOrg.view.TaxaContainer',
         'BioLadderOrg.view.HowToHelpPanel'
     ],

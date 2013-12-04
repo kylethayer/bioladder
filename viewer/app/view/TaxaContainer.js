@@ -33,8 +33,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             'taxonbox': {
                 navigatetotaxon: 'onNavigateToTaxon'
             },
-            '#aboutSimplifiedAncestryBtn': {
-                tap: function () {Ext.Viewport.add(Ext.widget('aboutSimplifiedAncestryPanel')); }
+            '#aboutCladesBtn': {
+                tap: function () {Ext.Viewport.add(Ext.widget('aboutCladesPanel')); }
             }
         },
 
@@ -51,7 +51,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 xtype: 'button',
                 baseCls: 'no-underline-link-btn',
                 html: '[?]',
-                itemId: 'aboutSimplifiedAncestryBtn'
+                itemId: 'aboutCladesBtn'
             }]
         }, {
             xtype: 'label',
@@ -84,7 +84,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 xtype: 'button',
                 baseCls: 'no-underline-link-btn',
                 html: '[?]',
-                itemId: 'aboutSimplifiedAncestryBtn'
+                itemId: 'aboutCladesBtn'
             }]
         }, {
             xtype: 'label',
