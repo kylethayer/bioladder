@@ -17,15 +17,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+ (function(){ //anonymous function so that internal variables don't go in the global namespace
+ 
  var taxonBoxContentsTpl = new Ext.XTemplate(
     '<tpl if="wikipediaImage">',
-        '<img style="float:left; display:inline; max-width:250px; max-height:250px; margin-right: 5px; margin-bottom:5px" src="{wikipediaImage}"/>',
+        '<img class="wikipedia-image" src="{wikipediaImage}"/>',
     '<tpl elseif="exampleMember">',
-        '<div style="float:left; display:inline; height:250px; width:250px; border: solid; padding: 5px; margin-right: 5px; margin-bottom:5px">',
+        '<div class="example-member">',
             '{exampleMemberText:htmlEncode}<br>',
             '<small>{exampleMember.data.name}</small><br>',
             '<tpl if="exampleMember.data.wikipediaImage">',
-                '<img style="max-width:235px; max-height:180px;" src="{exampleMember.data.wikipediaImage}"/>',
+                '<img class="example-wikipedia-image" src="{exampleMember.data.wikipediaImage}"/>',
             '<tpl else>',
                 'Loading Example Member...',
             '</tpl>',
@@ -33,7 +35,7 @@
     '<tpl else>',
         'No image or example Member<br>',
     '</tpl>',
-    '<div style="font-size: 15px;">',
+    '<div class="description-text">',
         '<tpl if="scientificName">',
             '<b>Scientific Name:</b> {scientificName:htmlEncode}<br><br>',
         '</tpl>',
@@ -45,7 +47,8 @@
         '<tpl else>',
             'No description<br><br>',
         '</tpl>',
-        '<br><small>Text and images based on Wikipedia and other Wikimedia Sources.</small>',
+        '<br><small>Text, images and clade structure based on <a href="http://www.wikepedia.org" target="_blank">Wikipedia</a> and other ',
+        '<a href="http://www.wikimedia.org" target="_blank">Wikimedia</a> Sources.</small>',
     '</div>'
 );
  
@@ -59,7 +62,10 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBoxContents', {
     ],
 
     config: {
+        baseCls: 'taxon-box-contents',
         data: null,
-        tpl: taxonBoxContentsTpl,
+        tpl: taxonBoxContentsTpl
     },
 });
+
+})();

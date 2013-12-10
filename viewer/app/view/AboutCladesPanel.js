@@ -41,6 +41,7 @@ Ext.define('BioLadderOrg.view.AboutCladesPanel', {
             }]
         }, {
             xtype: 'component',
+            baseCls: 'about-clades-panel-text',
             html: [
                 '<p>',
                     '<b>What are Parent Taxa and Sub Taxa?</b>',
@@ -65,8 +66,7 @@ Ext.define('BioLadderOrg.view.AboutCladesPanel', {
                 '<p>',
                     'BioLadder.org shows clades organized vertically so that each clade A is shown as a ',
                     'sub taxon of its parent taxon B above it (B is a larger clade that includes A).',
-                '</p>'].join(''),
-            style: 'font-size: 16px; margin-left: 10px; margin-top: 5px; margin-right: 5px;'
+                '</p>'].join('')
         }],
         maxHeight: 600,
         maxWidth: 650,
