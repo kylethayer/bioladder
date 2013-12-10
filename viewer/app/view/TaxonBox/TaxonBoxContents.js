@@ -47,7 +47,7 @@
         '<tpl else>',
             'No description<br><br>',
         '</tpl>',
-        '<br><small>Text, images and clade structure based on <a href="http://www.wikepedia.org" target="_blank">Wikipedia</a> and other ',
+        '<br><small>Text, images and clade structure based on <a href="http://www.wikipedia.org" target="_blank">Wikipedia</a> and other ',
         '<a href="http://www.wikimedia.org" target="_blank">Wikimedia</a> Sources.</small>',
     '</div>'
 );
