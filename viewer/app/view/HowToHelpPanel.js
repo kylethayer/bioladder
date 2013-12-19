@@ -47,7 +47,7 @@ Ext.define('BioLadderOrg.view.HowToHelpPanel', {
                     'There are two primary ways to help:',
                 '</p><br>',
                     '<a href="../wiki" target="_blank">Content</a>: You can edit the wiki, where ',
-                    'the information for simplified ancestry, photos, and wikipedia links are saved.',
+                    'the information for taxa, photos, descriptions, and wikipedia links are saved.',
                 '</p><br>',
                 '<p>',
                     '<a href="https://code.google.com/p/bioladder/" target="_blank">Open Source ',
