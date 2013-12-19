@@ -33,6 +33,7 @@ $mw.login(credentials['UserName'], credentials['Password'])
 def $mw.bot_edit(title, content, options={})
   form_data = {'action' => 'edit', 'title' => title, 'text' => content, 'summary' => (options[:summary] || ""), 'token' => get_token('edit', title)}
   form_data['minor'] = true
+  form_data['bot'] = true
   form_data['section'] = options[:section].to_s if options[:section]
   make_api_request(form_data)
 end
