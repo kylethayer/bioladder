@@ -75,7 +75,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                         for(var i = 0; i < popularSubTaxa.length; i++){
                             if (popularSubTaxa[i] && typeof popularSubTaxa[i] === 'string') {
                                 //make sure the name is a legitimate name
-                                if (!/^[\w\s]+$/.test(popularSubTaxa[i])) {
+                                if (!/^[-_\w\s]+$/.test(popularSubTaxa[i])) {
                                     window.console.error('Popular Subtaxa name must be normal characters:', popularSubTaxa[i]);
                                     popularSubTaxa[i] = Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                                 }
@@ -108,7 +108,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'string',
                 convert: function (wikipediaPage, record) { //make sure it is a string and a wikipedia page
                     if (wikipediaPage && (typeof wikipediaPage !== 'string' ||
-                        !/^https?:\/\/en\.wikipedia\.org\/wiki\/[\w\s-_%]+$/.test(wikipediaPage))) {
+                        !/^https?:\/\/en\.wikipedia\.org\/wiki\/[\w\s-_%#]+$/.test(wikipediaPage))) {
                         window.console.error('wikipediaPage must be at http://en.wikipedia.org/:', wikipediaPage);
                         return null;
                     }
