@@ -24,6 +24,9 @@ Ext.define('BioLadderOrg.controller.Main', {
         control: {
             main: {
                 navigatetotaxon: 'onNavigateToTaxon'
+            },
+            searchPanel: {
+                navigatetotaxon: 'onNavigateToTaxon'
             }
         },
         routes: {
@@ -31,7 +34,8 @@ Ext.define('BioLadderOrg.controller.Main', {
             '': 'onNoRoute'
         },
         refs: {
-            main: 'main'
+            main: 'main',
+            searchPanel: 'searchPanel'
         }
     },
 

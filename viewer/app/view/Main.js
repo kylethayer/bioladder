@@ -24,7 +24,8 @@ Ext.define('BioLadderOrg.view.Main', {
         'Ext.TitleBar',
         'BioLadderOrg.view.AboutCladesPanel',
         'BioLadderOrg.view.TaxaContainer',
-        'BioLadderOrg.view.HowToHelpPanel'
+        'BioLadderOrg.view.HowToHelpPanel',
+        'BioLadderOrg.view.SearchPanel'
     ],
     config: {
         control: {
@@ -33,6 +34,9 @@ Ext.define('BioLadderOrg.view.Main', {
             },
             '#howToHelpBtn': {
                 tap: function() {Ext.Viewport.add(Ext.widget('howToHelpPanel')); }
+            },
+            '#searchBtn': {
+                tap: function() {Ext.Viewport.add(Ext.widget('searchPanel')); }
             }
         },
 
@@ -41,6 +45,10 @@ Ext.define('BioLadderOrg.view.Main', {
             xtype: 'titlebar',
             title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki',
             items: [{
+                xtype: 'button',
+                iconCls: 'search',
+                itemId: 'searchBtn'
+            }, {
                 xtype: 'button',
                 html: 'How To Help',
                 itemId: 'howToHelpBtn'
