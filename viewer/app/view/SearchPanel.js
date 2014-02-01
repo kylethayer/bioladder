@@ -62,6 +62,12 @@ Ext.define('BioLadderOrg.view.SearchPanel', {
             disableSelection: true,
             itemTpl: '{name}',
             height: '100%'
+        }, {
+            xtype: 'component',
+            docked: 'bottom',
+            html: 'Note: This website is only partially filled out. You can help fill ' + 
+                    'it out more by clicking the "How to Help" button.',
+            style: 'background-color:#FFFF99; font-size:14px; border-top:1px; border-top-color:black; border-top-style:solid; padding-left:4px; padding-right:4px'
         }],
         maxHeight: 500,
         maxWidth: 400,
