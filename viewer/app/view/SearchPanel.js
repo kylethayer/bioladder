@@ -55,7 +55,7 @@ Ext.define('BioLadderOrg.view.SearchPanel', {
             itemId: 'searchField',
             docked: 'top',
             name: 'searchString',
-            placeHolder: 'Type your search here.'
+            placeHolder: 'Enter Search (eg. Life, Dinosaur, Dog)'
         }, {
             xtype: 'list',
             itemId: 'resultsList',
@@ -77,9 +77,10 @@ Ext.define('BioLadderOrg.view.SearchPanel', {
     },
 
     initialize: function () {
-        this.on('hide', function () {this.destroy(); });
+        var ME = this;
+        ME.on('hide', function () {ME.destroy(); });
         
-        this.searches = [
+        ME.searches = [
             {
                 name: 'opensearch',
                 before: '../wiki/api.php?format=json&action=opensearch&search=',
@@ -92,7 +93,11 @@ Ext.define('BioLadderOrg.view.SearchPanel', {
             }
         ];
         
-        this.__searchResults = {};
+        ME.__searchResults = {};
+        
+        ME.on('painted', function() {
+            ME.down('#searchField').focus()
+        });
     },
     
     onSearchFieldChange: function(field) {

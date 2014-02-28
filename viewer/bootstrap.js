@@ -28,6 +28,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "BioLadderOrg.view.AboutCladesPanel": [],
   "BioLadderOrg.view.HowToHelpPanel": [],
   "BioLadderOrg.view.Main": [],
+  "BioLadderOrg.view.SearchPanel": [],
   "BioLadderOrg.view.TaxaContainer": [],
   "BioLadderOrg.view.TaxonBox.TaxonBox": [],
   "BioLadderOrg.view.TaxonBox.TaxonBoxContents": [],
@@ -767,6 +768,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "BioLadderOrg.view.Main": [
     "widget.main"
+  ],
+  "BioLadderOrg.view.SearchPanel": [
+    "widget.searchPanel"
   ],
   "BioLadderOrg.view.TaxaContainer": [
     "widget.taxacontainer"
