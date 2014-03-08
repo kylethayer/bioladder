@@ -17,6 +17,20 @@
   border-color: dark-grey;
   border-style: solid;
 }
+.taxon-panel.x-floating {
+  //Undo sencha formatting
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+//overwrite sencha forcing floating panels to have a white background
+.taxon-panel.x-panel.x-floating .x-panel-inner {
+  background-color: #EEE;
+}
 
 .taxon-panel-label {
   background:LightSteelBlue;

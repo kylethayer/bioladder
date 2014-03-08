@@ -25,7 +25,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
 
     requires: [
         'Ext.Label',
-        'BioLadderOrg.view.TaxonBox.TaxonBox'
+        'BioLadderOrg.view.TaxonBox.TaxonBox',
+        'BioLadderOrg.view.TaxaContainerPositionCalculator',
+        'BioLadderOrg.view.ElbowConnector'
     ],
 
     config: {
@@ -37,72 +39,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 tap: function () {Ext.Viewport.add(Ext.widget('aboutCladesPanel')); }
             }
         },
-
         taxon: null,
-
-        items: [{
-            xtype: 'container',
-            layout: 'hbox',
-            itemId: 'parentTaxonLabel',
-            items:[{
-                xtype: 'label',
-                html: 'Parent Taxon'
-            }, {
-                xtype: 'button',
-                baseCls: 'no-underline-link-btn',
-                html: '[?]',
-                itemId: 'aboutCladesBtn'
-            }]
-        }, {
-            xtype: 'label',
-            html: 'loading parent taxon...',
-            itemId: 'parentTaxonsListLoadingLabel'
-        }, {
-            xtype: 'container',
-            itemId: 'parentTaxonContainer',
-            layout: {
-                type: 'vbox',
-                align: 'middle'
-            }
-        }, {
-            xtype: 'component',
-            height: 20
-        }, {
-            xtype: 'container',
-            itemId: 'taxonContainer'
-        }, {
-            xtype: 'component',
-            height: 20
-        }, {
-            xtype: 'container',
-            layout: 'hbox',
-            itemId: 'subTaxaLabel',
-            items: [{
-                xtype: 'label',
-                html: 'Sub-Taxa'
-            }, {
-                xtype: 'button',
-                baseCls: 'no-underline-link-btn',
-                html: '[?]',
-                itemId: 'aboutCladesBtn'
-            }]
-        }, {
-            xtype: 'label',
-            html: 'loading sub-taxa...',
-            itemId: 'subTaxaListLoadingLabel'
-        }, {
-            xtype: 'container',
-            itemId: 'subTaxaContainer',
-            layout: 'hbox'
-        }, {
-            xtype: 'component',
-            height: 20
-        }],
-
-        layout: {
-            type: 'vbox',
-            align: 'middle'
-        },
         height: '100%',
         width: '100%',
         //scrollable: 'both' //dissabled until I can get the scrollable taxon box not to scroll this as well
@@ -119,85 +56,80 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     },
 
     gotoTaxon: function (name) {
-        Ext.Viewport.setMasked({
-            xtype: 'loadmask'
-        });
         var taxon, i, currentTaxonBox,
-            me = this;
+            me = this,
+            posCalc = BioLadderOrg.view.TaxaContainerPositionCalculator;
 
         taxon = Ext.getStore('Taxa').findOrCreateTaxon(name);
 
         me.setTaxon(taxon);
-
+        //clear current taxon displayed
+        me.removeAll(false, true);
+        
         //display current taxon
-        me.down('#taxonContainer').removeAll(false); //clear the taxonContainer without deleting the TaxonBoxes
         currentTaxonBox = me.findOrCreateTaxonBox(taxon);
         currentTaxonBox.setCollapsed(false);
-        me.down('#taxonContainer').add(currentTaxonBox);
+        var taxonPos = posCalc.getPosition(me, 0, 0);
+        currentTaxonBox.setLeft(taxonPos[0]);
+        currentTaxonBox.setTop(taxonPos[1]);
+        me.add(currentTaxonBox);
 
-        //display parentTaxons
-        me.down('#parentTaxonContainer').removeAll(false);
-        me.down('#parentTaxonsListLoadingLabel').setHidden(false);
-        me.down('#parentTaxonLabel').setHidden(true);
+        //display parentTaxon
         taxon.whenLoaded(function (loadedTaxon) {
             var parentTaxon, parentTaxonBox;
             if (loadedTaxon === me.getTaxon()) {
                 Ext.Viewport.setMasked(false);
                 parentTaxon = loadedTaxon.get('parentTaxon');
-                me.down('#parentTaxonsListLoadingLabel').setHidden(true);
                 if (parentTaxon) {
-                    me.down('#parentTaxonLabel').setHidden(false);
                     parentTaxon.ensureFullyLoaded();
                     parentTaxonBox = me.findOrCreateTaxonBox(parentTaxon);
                     parentTaxonBox.setCollapsed(true);
-                    me.down('#parentTaxonContainer').removeAll(false);
-                    me.down('#parentTaxonContainer').add(parentTaxonBox);
-                    if(firstTimeLoad){ //show instructions first time
-                        me.down('#parentTaxonContainer').add({
-                            xtype: 'label',
-                            html: '^ click above ^',
-                        });
-                        me.down('#parentTaxonContainer').add({xtype: 'component', height: 10});
-                        firstTimeLoad = false;
-                    }
+                    var parentTaxonPos = posCalc.getPosition(me, -1, 0);
+                    parentTaxonBox.setLeft(parentTaxonPos[0]);
+                    parentTaxonBox.setTop(parentTaxonPos[1]);
+                    me.add(parentTaxonBox);
+                    me.add({
+                        xtype: 'elbowconnector',
+                        startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                        endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                        startY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false),
+                        endY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false) + 20
+                    });
+                    me.add({
+                        xtype: 'elbowconnector',
+                        startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                        endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                        startY: parentTaxonPos[1] - 10,
+                        endY: parentTaxonPos[1]
+                    });
                 }
             }
         });
 
         //display subTaxa
-        me.down('#subTaxaListLoadingLabel').setHidden(false);
-        me.down('#subTaxaContainer').removeAll(false);
-        me.down('#subTaxaLabel').setHidden(true);
         taxon.whenSubTaxaLoaded(function (loadedTaxon) {
             var i, descendantTaxonBox;
             if (loadedTaxon === me.getTaxon()) {
-                me.down('#subTaxaListLoadingLabel').setHidden(true);
-                me.down('#subTaxaContainer').removeAll(false);
                 if (loadedTaxon.get('subTaxa').length > 0) {
-                    me.down('#subTaxaLabel').setHidden(false);
                     for (i = 0; i < loadedTaxon.get('subTaxa').length; i++) {
-                        var descContainer = Ext.widget('container', {
-                            itemId: 'descCont_' +loadedTaxon.get('subTaxa')[i].get('name'),
-                            layout: {type: 'vbox', align: 'center'}
-                        });
-
-                        var popDescContainer =  Ext.widget('container', {
-                            layout: {type: 'vbox', align: 'center'},
-                            items:[
-                                {xtype: 'label', html: '<b>:</b>'}, 
-                                { xtype: 'label', html: '<b>:</b>'}, 
-                                {xtype: 'label', html: 'Loading...'}
-                            ]
-                        });
                         
                         loadedTaxon.get('subTaxa')[i].ensureFullyLoaded();
                         descendantTaxonBox = me.findOrCreateTaxonBox(loadedTaxon.get('subTaxa')[i]);
                         descendantTaxonBox.setCollapsed(true);
-                        descContainer.add(descendantTaxonBox);
-                        descContainer.add(popDescContainer);
+                        var subTaxaPos = posCalc.getPosition(me, 1, i, loadedTaxon.get('subTaxa').length);
+                        descendantTaxonBox.setLeft(subTaxaPos[0]);
+                        descendantTaxonBox.setTop(subTaxaPos[1]);
+                        me.add(descendantTaxonBox);
+                        me.add({
+                            xtype: 'elbowconnector',
+                            startX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2,
+                            endX: subTaxaPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                            startY: subTaxaPos[1] - 40,
+                            endY: subTaxaPos[1]
+                        });
                         
                         //Display popular descendants when they are loaded
-                        me.addPopularDescendantsWhenLoaded(popDescContainer, loadedTaxon.get('subTaxa')[i]);
+                        me.addPopularDescendantsWhenLoaded(taxon, loadedTaxon.get('subTaxa')[i], subTaxaPos);
                         
                         //Make sure one more level of descendants are loaded so popular descendants show up
                         loadedTaxon.get('subTaxa')[i].whenSubTaxaLoaded(function (loadedDescTaxon) {
@@ -207,10 +139,6 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                                 }
                             }
                         });
-                        
-                        me.down('#subTaxaContainer').add(descContainer);
-                        
-                        me.down('#subTaxaContainer').add({xtype: 'component',width: 10});
                     }
                 }
             }
@@ -221,6 +149,13 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         var i, taxonbox, me = this;
         for (i = 0; i < me.__TaxonBoxes.length; i++) {
             if (me.__TaxonBoxes[i].getTaxon() === taxon) {
+                //clear rotation before returning
+                me.__TaxonBoxes[i].setStyle(
+                    '-webkit-transform: rotate(0);'+ //safari and chrome
+                    ' -moz-transform: rotate(0);'+ //firefox
+                    ' transform: rotate(0);'+ //ie10
+                    ' -o-transform: rotate(0);' //opera
+                );
                 return me.__TaxonBoxes[i];
             }
         }
@@ -232,42 +167,37 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         return taxonbox;
     },
     
-    addPopularDescendantsWhenLoaded: function(popDescContainer, taxon){
-        var me = this;
+    addPopularDescendantsWhenLoaded: function(pageTaxon, taxon, parentPosition){
+        var me = this,
+            taxonBox = BioLadderOrg.view.TaxonBox.TaxonBox;
         taxon.whenSubTaxaLoaded(function (loadedDescTaxon) {
-            popDescContainer.removeAll(true);
-            if(loadedDescTaxon.get('popularSubTaxa') && loadedDescTaxon.get('popularSubTaxa').length > 0) {
-                popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
-                popDescContainer.add({xtype: 'label', html: '<b>:</b>'});
-                var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
-                var xTranslate = -92;
-                if(popularSubTaxa.length == 2){
-                    xTranslate = -75;
-                }
-                if(popularSubTaxa.length == 3){
-                    xTranslate = -60;
-                }
-                var popDescPanelsContainer =  Ext.widget('container', {
-                    //this panel is rotated so it doesn't imply that one popular descendant is ranked above another
-                    // rotate for Safari, Firefox, IE, Opera, Internet Explorer 
-                    style: '-webkit-transform: rotate(-90deg) translateX('+xTranslate+'px);'+ //safari and chrome
-                        ' -moz-transform: rotate(-90deg) translateX('+xTranslate+'px);'+ //firefox
-                        ' transform: rotate(-90deg) translateX('+xTranslate+'px);'+ //ie10
-                        ' -o-transform: rotate(-90deg) translateX('+xTranslate+'px);' //opera
-                });
-                var firstDesc = true;
-                for(i = 0; i < popularSubTaxa.length; i++){
-                    if(!firstDesc){
-                        popDescPanelsContainer.add({xtype: 'component',width: 10, height: 10});
+            if (pageTaxon === me.getTaxon()) {//check that correct taxon is still up
+                if(loadedDescTaxon.get('popularSubTaxa') && loadedDescTaxon.get('popularSubTaxa').length > 0) {
+                    var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
+                    for(var i = 0; i < popularSubTaxa.length; i++){
+                        var popSubtaxonBox = me.findOrCreateTaxonBox(popularSubTaxa[i]);
+                        popSubtaxonBox.setCollapsed(true);
+                        var pos = BioLadderOrg.view.TaxaContainerPositionCalculator.getPosition(me, Infinity, i, popularSubTaxa.length, parentPosition);
+                        //position has added movement to handle rotation (left moved so center is where rotation happens, top so that it corrects for the rotation)
+                        popSubtaxonBox.setLeft(pos[0] - (taxonBox.getWidth(false) - taxonBox.getHeight(false)) / 2);
+                        popSubtaxonBox.setTop(pos[1] + (taxonBox.getWidth(false) - taxonBox.getHeight(false))  / 2);
+                        popSubtaxonBox.setStyle(
+                            '-webkit-transform: rotate(-90deg);'+ //safari and chrome
+                            ' -moz-transform: rotate(-90deg);'+ //firefox
+                            ' transform: rotate(-90deg);'+ //ie10
+                            ' -o-transform: rotate(-90deg);' //opera
+                        );
+                        me.add(popSubtaxonBox);
+                        me.add({
+                            xtype: 'elbowconnector',
+                            startX: parentPosition[0] + taxonBox.getWidth(false) / 2,
+                            endX: pos[0] + taxonBox.getHeight(false) / 2,
+                            startY: pos[1] - 40,
+                            endY: pos[1],
+                            lineStyle: 'dashed',
+                            lineWidth: 1
+                        });
                     }
-                    firstDesc = false;
-                    var panel = me.findOrCreateTaxonBox(popularSubTaxa[i]);
-                    panel.setCollapsed(true);
-                    popDescPanelsContainer.add(panel);
-                }
-                popDescContainer.add(popDescPanelsContainer);
-                if(popularSubTaxa.length > 0){//This is a hack to add more space since I had to use a hack to rotate the popular descendants.
-                    popDescContainer.add({xtype: 'component', height: 180});
                 }
             }
         });

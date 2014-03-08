@@ -26,6 +26,23 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
         'Ext.String',
         'BioLadderOrg.view.TaxonBox.TaxonBoxContents'
     ],
+    
+    statics:{
+        getHeight: function(isOpen){
+            if(isOpen){
+                return 293;
+            }else{
+                return 21;
+            }
+        },
+        getWidth: function(isOpen){
+            if(isOpen){
+                return 500;
+            }else{
+                return 200;
+            }
+        }
+    },
 
     config: {
         control: {
@@ -86,8 +103,12 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
 
         //set name and rest of fields when loaded
         me.updateTitle();
+        me.down('#taxonBoxContents').setMasked({
+            xtype: 'loadmask'
+        });
         newTaxon.whenLoaded(function (newTaxon) {
             me.onTaxonLoaded(newTaxon);
+            me.down('#taxonBoxContents').setMasked(false);
         });
     },
 
