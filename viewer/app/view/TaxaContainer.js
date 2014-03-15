@@ -27,7 +27,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         'Ext.Label',
         'BioLadderOrg.view.TaxonBox.TaxonBox',
         'BioLadderOrg.view.TaxaContainerPositionCalculator',
-        'BioLadderOrg.view.ElbowConnector'
+        'BioLadderOrg.view.ElbowConnector',
+        'BioLadderOrg.view.LoadingSpinner'
     ],
 
     config: {
@@ -74,12 +75,25 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         currentTaxonBox.setTop(taxonPos[1]);
         me.add(currentTaxonBox);
 
+        var parentLoadingSpinner = me.add({
+            xtype: 'loadingspinner',
+            centerY: taxonPos[1] - 30,
+            centerX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2 
+        });
+        
+        var childrenLoadingSpinner = me.add({
+            xtype: 'loadingspinner',
+            centerY: taxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(true) + 40,
+            centerX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2 ,
+        });
+        
         //display parentTaxon
         taxon.whenLoaded(function (loadedTaxon) {
             var parentTaxon, parentTaxonBox;
             if (loadedTaxon === me.getTaxon()) {
                 Ext.Viewport.setMasked(false);
                 parentTaxon = loadedTaxon.get('parentTaxon');
+                parentLoadingSpinner.destroy();
                 if (parentTaxon) {
                     parentTaxon.ensureFullyLoaded();
                     parentTaxonBox = me.findOrCreateTaxonBox(parentTaxon);
@@ -95,12 +109,28 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                         startY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false),
                         endY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false) + 20
                     });
-                    me.add({
-                        xtype: 'elbowconnector',
-                        startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                        endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                        startY: parentTaxonPos[1] - 10,
-                        endY: parentTaxonPos[1]
+                    
+                    var grandParentLoadingSpinner = me.add({
+                        xtype: 'loadingspinner',
+                        centerY: parentTaxonPos[1] - 6,
+                        centerX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                        scale: .15
+                    });
+                    parentTaxon.whenLoaded(function (loadedTaxon) {
+                        if(taxon === me.getTaxon()){
+                            var grandParentTaxon = loadedTaxon.get('parentTaxon');
+                            grandParentLoadingSpinner.destroy();
+                            if(grandParentTaxon){
+                                grandParentTaxon.ensureFullyLoaded();
+                                me.add({
+                                    xtype: 'elbowconnector',
+                                    startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                                    endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
+                                    startY: parentTaxonPos[1] - 10,
+                                    endY: parentTaxonPos[1]
+                                });
+                            }
+                        }
                     });
                 }
             }
@@ -110,6 +140,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         taxon.whenSubTaxaLoaded(function (loadedTaxon) {
             var i, descendantTaxonBox;
             if (loadedTaxon === me.getTaxon()) {
+                childrenLoadingSpinner.destroy();
                 if (loadedTaxon.get('subTaxa').length > 0) {
                     for (i = 0; i < loadedTaxon.get('subTaxa').length; i++) {
                         
@@ -170,8 +201,16 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     addPopularDescendantsWhenLoaded: function(pageTaxon, taxon, parentPosition){
         var me = this,
             taxonBox = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+        var popSubtaxaLoadingSpinner = me.add({
+            xtype: 'loadingspinner',
+            centerY: parentPosition[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false) + 40,
+            centerX: parentPosition[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2 ,
+        });
+        
         taxon.whenSubTaxaLoaded(function (loadedDescTaxon) {
             if (pageTaxon === me.getTaxon()) {//check that correct taxon is still up
+                popSubtaxaLoadingSpinner.destroy();
                 if(loadedDescTaxon.get('popularSubTaxa') && loadedDescTaxon.get('popularSubTaxa').length > 0) {
                     var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
                     for(var i = 0; i < popularSubTaxa.length; i++){
