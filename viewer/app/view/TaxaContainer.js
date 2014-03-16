@@ -64,8 +64,23 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         taxon = Ext.getStore('Taxa').findOrCreateTaxon(name);
 
         me.setTaxon(taxon);
-        //clear current taxon displayed
+        //clear current display
         me.removeAll(false, true);
+        
+        var cladeLegend = me.add({
+            xtype: 'button', //button allows tap event capture
+            baseCls: 'no-formatting',
+            html: '<span style="font-size:10px">Parent Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span><br>&#8593;<br>&#8595;<br><span style="font-size:10px">Child Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span>',
+            top: 5,
+            left: 5,
+            listeners: {
+                tap: function(obj, e){
+                    if(e.target.id == "aboutCladesBtn"){
+                        Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
+                    }
+                },
+            }
+         });
         
         //display current taxon
         currentTaxonBox = me.findOrCreateTaxonBox(taxon);
