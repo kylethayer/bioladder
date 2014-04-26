@@ -26,10 +26,13 @@ Ext.ClassManager.addNameAlternateMappings({
   "BioLadderOrg.model.TaxonSearch": [],
   "BioLadderOrg.store.Taxa": [],
   "BioLadderOrg.view.AboutCladesPanel": [],
+  "BioLadderOrg.view.ElbowConnector": [],
   "BioLadderOrg.view.HowToHelpPanel": [],
+  "BioLadderOrg.view.LoadingSpinner": [],
   "BioLadderOrg.view.Main": [],
   "BioLadderOrg.view.SearchPanel": [],
   "BioLadderOrg.view.TaxaContainer": [],
+  "BioLadderOrg.view.TaxaContainerPositionCalculator": [],
   "BioLadderOrg.view.TaxonBox.TaxonBox": [],
   "BioLadderOrg.view.TaxonBox.TaxonBoxContents": [],
   "Ext.AbstractComponent": [],
@@ -763,8 +766,14 @@ Ext.ClassManager.addNameAliasMappings({
   "BioLadderOrg.view.AboutCladesPanel": [
     "widget.aboutCladesPanel"
   ],
+  "BioLadderOrg.view.ElbowConnector": [
+    "widget.elbowconnector"
+  ],
   "BioLadderOrg.view.HowToHelpPanel": [
     "widget.howToHelpPanel"
+  ],
+  "BioLadderOrg.view.LoadingSpinner": [
+    "widget.loadingspinner"
   ],
   "BioLadderOrg.view.Main": [
     "widget.main"
@@ -775,6 +784,7 @@ Ext.ClassManager.addNameAliasMappings({
   "BioLadderOrg.view.TaxaContainer": [
     "widget.taxacontainer"
   ],
+  "BioLadderOrg.view.TaxaContainerPositionCalculator": [],
   "BioLadderOrg.view.TaxonBox.TaxonBox": [
     "widget.taxonbox"
   ],

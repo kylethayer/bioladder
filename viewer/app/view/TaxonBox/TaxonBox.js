@@ -107,8 +107,10 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
             xtype: 'loadmask'
         });
         newTaxon.whenLoaded(function (newTaxon) {
-            me.onTaxonLoaded(newTaxon);
-            me.down('#taxonBoxContents').setMasked(false);
+            if (!me.__isDestroyed) {
+                me.onTaxonLoaded(newTaxon);
+                me.down('#taxonBoxContents').setMasked(false);
+            }
         });
     },
 
@@ -125,7 +127,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     },
 
     onTaxonLoaded: function (newTaxon) {
-        if (newTaxon === this.getTaxon()) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
+        if (!this.__isDestroyed) {
             var me = this;
             me.down('#taxonBoxContents').setData(newTaxon.data);
             me.updateTitle();
@@ -145,7 +147,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     },
     
     onExampleMemberLoaded: function (exampleMember) {
-        if (exampleMember === this.getTaxon().get('exampleMember')) { //make sure a delayed load of a previous taxon doesn't overwrite the current one
+        if (!this.__isDestroyed) {
             this.down('#taxonBoxContents').setData(this.getTaxon().data);
         }
     },
@@ -182,5 +184,10 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
         } else {
             me.down('#taxonLabel').setHtml(me.getTaxon().get('name') + ' (' + Ext.String.htmlEncode(me.getTaxon().get('taxonomicRank')) + ')');
         }
+    },
+    
+    destroy: function(){
+        this.__isDestroyed = true;       
+        this.callSuper();
     }
 });
