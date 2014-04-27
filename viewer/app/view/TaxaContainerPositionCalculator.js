@@ -59,6 +59,14 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                 y = parentPosition[1] + taxonBox.getHeight(false) + 2 * this.verticalSpacing;
                 return [x, y];
             }
+        },
+        
+        getPositionFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
+            var parentPos = null;
+            if(taxonBoxDisplayInfo.descendantIndex == Infinity){ //if we need parent position
+                parentPos = this.getPositionFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo.parentTaxonDisplayInfo);
+            }
+            return this.getPosition(taxaContainer, taxonBoxDisplayInfo.descendantIndex, taxonBoxDisplayInfo.taxonSiblingIndex, taxonBoxDisplayInfo.siblingsCount, parentPos);
         }
     }
 });
