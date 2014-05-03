@@ -158,20 +158,11 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             me.__displayedTaxonBoxInfo.push(parentTaxonDisplayInfo);
             taxonDisplayInfo.parentTaxonDisplayInfo = parentTaxonDisplayInfo;
             
+            //If we aren't currently transitioning to a new taxon
             if(me.__olddisplayedTaxonBoxInfo.length == 0){
-                parentTaxonBox.setCollapsed(true);
-                parentTaxonBox.setLeft(parentTaxonPos[0]);
-                parentTaxonBox.setTop(parentTaxonPos[1]);
+                me.fadeInTaxonBox(parentTaxonDisplayInfo);
+                me.fadeInParentElbowConnector(taxonDisplayInfo);
             }
-            
-            
-            /*me.add({
-                xtype: 'elbowconnector',
-                startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                startY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false),
-                endY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false) + 20
-            });*/
             
             var grandParentLoadingSpinner = me.add({
                 xtype: 'loadingspinner',
@@ -183,15 +174,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 if(taxon === me.getTaxon()){
                     var grandParentTaxon = loadedTaxon.get('parentTaxon');
                     grandParentLoadingSpinner.destroy();
+                    me.fadeInParentElbowConnector(parentTaxonDisplayInfo);
                     if(grandParentTaxon){
                         grandParentTaxon.ensureFullyLoaded();
-                        /*me.add({
-                            xtype: 'elbowconnector',
-                            startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                            endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                            startY: parentTaxonPos[1] - 10,
-                            endY: parentTaxonPos[1]
-                        });*/
                     }
                 }
             });
@@ -213,19 +198,11 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 me.__displayedTaxonBoxInfo.push(subTaxonDisplayInfo);
                 var subTaxaPos = posCalc.getPosition(me, 1, i, taxon.get('subTaxa').length);
                 
+                //if we are not currently transitioning to a new taxon
                 if(me.__olddisplayedTaxonBoxInfo.length == 0){
-                    //me.add(descendantTaxonBox);
-                    descendantTaxonBox.setCollapsed(true);
-                    descendantTaxonBox.setLeft(subTaxaPos[0]);
-                    descendantTaxonBox.setTop(subTaxaPos[1]);
+                    me.fadeInTaxonBox(subTaxonDisplayInfo);
+                    me.fadeInParentElbowConnector(subTaxonDisplayInfo);
                 }
-                /*me.add({
-                    xtype: 'elbowconnector',
-                    startX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2,
-                    endX: subTaxaPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
-                    startY: subTaxaPos[1] - 40,
-                    endY: subTaxaPos[1]
-                });*/
                 
                 //Display popular descendants when they are loaded
                 me.addPopularDescendantsWhenLoaded(taxon, taxon.get('subTaxa')[i], subTaxonDisplayInfo, subTaxaPos);
@@ -260,31 +237,14 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     for(var i = 0; i < popularSubTaxa.length; i++){
                         var popSubtaxonBox = me.findOrCreateTaxonBox(popularSubTaxa[i]);
 
-                        var pos = BioLadderOrg.view.TaxaContainerPositionCalculator.getPosition(me, Infinity, i, popularSubTaxa.length, parentPosition);
-                        //position has added movement to handle rotation (left moved so center is where rotation happens, top so that it corrects for the rotation)
-                        if(me.__olddisplayedTaxonBoxInfo.length == 0){
-                            popSubtaxonBox.setCollapsed(true);
-                            popSubtaxonBox.setLeft(pos[0] - (taxonBox.getWidth(false) - taxonBox.getHeight(false)) / 2);
-                            popSubtaxonBox.setTop(pos[1] + (taxonBox.getWidth(false) - taxonBox.getHeight(false))  / 2);
-                            popSubtaxonBox.setStyle(
-                                '-webkit-transform: rotate(-90deg);'+ //safari and chrome
-                                ' -moz-transform: rotate(-90deg);'+ //firefox
-                                ' transform: rotate(-90deg);'+ //ie10
-                                ' -o-transform: rotate(-90deg);' //opera
-                            );
-                            //me.add(popSubtaxonBox);
-                        }
                         var popSubtaxonDisplayInfo = { taxonBox: popSubtaxonBox, descendantIndex: Infinity, taxonSiblingIndex: i, siblingsCount: popularSubTaxa.length, parentTaxonDisplayInfo: subTaxonDisplayInfo };
                         me.__displayedTaxonBoxInfo.push(popSubtaxonDisplayInfo);
-                        /*me.add({
-                            xtype: 'elbowconnector',
-                            startX: parentPosition[0] + taxonBox.getWidth(false) / 2,
-                            endX: pos[0] + taxonBox.getHeight(false) / 2,
-                            startY: pos[1] - 40,
-                            endY: pos[1],
-                            lineStyle: 'dashed',
-                            lineWidth: 1
-                        });*/
+                        
+                        //If we aren't currently moving to a new taxon
+                        if(me.__olddisplayedTaxonBoxInfo.length == 0){
+                            me.fadeInTaxonBox(popSubtaxonDisplayInfo);
+                            me.fadeInParentElbowConnector(popSubtaxonDisplayInfo);
+                        }
                     }
                 }
             }
@@ -439,18 +399,20 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             }
             
             //display elbow connector to parent
-            var topElbowConnectorPos = posCalc.getTopElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
-            var parentElbowConnectorPos = posCalc.getParentElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
-            
-            newBoxInfo.parentElbowConnector = me.add({
-                xtype: 'elbowconnector',
-                startX: parentElbowConnectorPos[0],
-                endX: topElbowConnectorPos[0],
-                startY: parentElbowConnectorPos[1],
-                endY: topElbowConnectorPos[1],
-                lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, newBoxInfo),
-                lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, newBoxInfo)
-            });
+            if(newBoxInfo.descendantIndex == Infinity || newBoxInfo.taxonBox.getTaxon().get('parentTaxon')){
+                var topElbowConnectorPos = posCalc.getTopElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
+                var parentElbowConnectorPos = posCalc.getParentElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
+                
+                newBoxInfo.parentElbowConnector = me.add({
+                    xtype: 'elbowconnector',
+                    startX: parentElbowConnectorPos[0],
+                    endX: topElbowConnectorPos[0],
+                    startY: parentElbowConnectorPos[1],
+                    endY: topElbowConnectorPos[1],
+                    lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, newBoxInfo),
+                    lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, newBoxInfo)
+                });
+            }
         }
         
         //for remaining me.__olddisplayedTaxonBoxInfo, move off screen according to direction
@@ -561,5 +523,75 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 }
             });
         }*/
-    }
+    },
+    
+    fadeInTaxonBox: function(taxonBoxDispInfo){
+        var me = this;
+        var taxonBox = taxonBoxDispInfo.taxonBox;
+        var posCalc = BioLadderOrg.view.TaxaContainerPositionCalculator;
+        var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+        
+        var taxonPos = posCalc.getPositionFromDisplayInfo(me, taxonBoxDispInfo);
+        
+        if(posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo) == -90){
+            taxonPos[0] = taxonPos[0] - (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false)) / 2;
+            taxonPos[1] = taxonPos[1] + (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false))  / 2;
+        }
+        
+        taxonBox.setStyle(
+            '-webkit-transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);'+ //safari and chrome
+            ' -moz-transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);'+ //firefox
+            ' transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);'+ //ie10
+            ' -o-transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);' //opera
+        );
+        taxonBox.setCollapsed(posCalc.getIsCollapsedFromDisplayInfo(me, taxonBoxDispInfo));
+        taxonBox.setLeft(taxonPos[0]);
+        taxonBox.setTop(taxonPos[1]);
+
+        
+        Ext.Animator.run({
+            element: taxonBox.element,
+            autoClear: false,
+            duration: 500,
+            easing: 'ease-in-out',
+            from: {
+                'opacity': 0
+            },
+            to: {
+                'opacity': 1,
+            }
+        });
+    },
+    
+    fadeInParentElbowConnector: function(taxonBoxDispInfo){
+        var me = this;
+        var posCalc = BioLadderOrg.view.TaxaContainerPositionCalculator;
+        
+        if(taxonBoxDispInfo.descendantIndex == Infinity || taxonBoxDispInfo.taxonBox.getTaxon().get('parentTaxon')){
+            var topElbowConnectorPos = posCalc.getTopElbowConnectorPosFromDisplayInfo(me, taxonBoxDispInfo);
+            var parentElbowConnectorPos = posCalc.getParentElbowConnectorPosFromDisplayInfo(me, taxonBoxDispInfo);
+            
+            taxonBoxDispInfo.parentElbowConnector = me.add({
+                xtype: 'elbowconnector',
+                startX: parentElbowConnectorPos[0],
+                endX: topElbowConnectorPos[0],
+                startY: parentElbowConnectorPos[1],
+                endY: topElbowConnectorPos[1],
+                lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, taxonBoxDispInfo),
+                lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, taxonBoxDispInfo)
+            });
+            Ext.Animator.run({
+                element: taxonBoxDispInfo.parentElbowConnector.element,
+                autoClear: false,
+                duration: 500,
+                easing: 'ease-in-out',
+                from: {
+                    'opacity': 0
+                },
+                to: {
+                    'opacity': 1,
+                }
+            });
+        }
+    },
 });

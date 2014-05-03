@@ -63,9 +63,9 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         
         getIsCollapsedFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
             if(taxonBoxDisplayInfo.descendantIndex == 0){
-                return true;
-            }else{
                 return false;
+            }else{
+                return true;
             }
         },
         
@@ -93,12 +93,12 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
             var elbowConnectorPos = null;
             if(me.getRotationFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo) == 0){
                 elbowConnectorPos = [
-                    boxPosition[0] + taxonBoxClass.getWidth(me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) / 2,
+                    boxPosition[0] + taxonBoxClass.getWidth(!me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) / 2,
                     boxPosition[1]
                 ];
             }else{ //otherwise it should be rotated -90 degrees, swapping height/width
                 var elbowConnectorPos = [
-                    boxPosition[0] + taxonBoxClass.getHeight(me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) / 2,
+                    boxPosition[0] + taxonBoxClass.getHeight(!me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) / 2,
                     boxPosition[1]
                 ];
             }
@@ -113,8 +113,8 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
             if(parentDispInf){
                 var parentBoxPosition = me.getPositionFromDisplayInfo(taxaContainer, parentDispInf);
                 return [
-                    parentBoxPosition[0] + taxonBoxClass.getWidth(me.getIsCollapsedFromDisplayInfo(taxaContainer, parentDispInf)) / 2,
-                    parentBoxPosition[1] + taxonBoxClass.getHeight(me.getIsCollapsedFromDisplayInfo(taxaContainer, parentDispInf)) 
+                    parentBoxPosition[0] + taxonBoxClass.getWidth(!me.getIsCollapsedFromDisplayInfo(taxaContainer, parentDispInf)) / 2,
+                    parentBoxPosition[1] + taxonBoxClass.getHeight(!me.getIsCollapsedFromDisplayInfo(taxaContainer, parentDispInf)) 
                 ];
             }else if(taxonBoxDisplayInfo.descendantIndex == -1){
                 return [
