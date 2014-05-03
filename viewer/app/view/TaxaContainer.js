@@ -47,8 +47,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     },
 
     initialize: function () {
-        //this.__TaxonBoxes = [];
-        this.__displayedTaxonBoxInfo = [];
+        this.firstLoad = true;
+        this.__displayedTaxonBoxInfo = []; //TODO, store Elbow connectors with this?
     },
 
     onNavigateToTaxon: function (taxon) {
@@ -75,20 +75,22 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         // new function goes through the two lists and figures out the "direction", then for each on the new list it 
         //animates it and pulls it out of the old list. It then goes through the remaining things in the old list and animates those disappearing.
         
-        var cladeLegend = me.add({
-            xtype: 'button', //button allows tap event capture
-            baseCls: 'no-formatting',
-            html: '<span style="font-size:10px">Parent Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span><br>&#8593;<br>&#8595;<br><span style="font-size:10px">Child Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span>',
-            top: 5,
-            left: 5,
-            listeners: {
-                tap: function(obj, e){
-                    if(e.target.id == "aboutCladesBtn"){
-                        Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
-                    }
-                },
-            }
-         });
+        if(me.firstLoad){
+            var cladeLegend = me.add({
+                xtype: 'button', //button allows tap event capture
+                baseCls: 'no-formatting',
+                html: '<span style="font-size:10px">Parent Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span><br>&#8593;<br>&#8595;<br><span style="font-size:10px">Child Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span>',
+                top: 5,
+                left: 5,
+                listeners: {
+                    tap: function(obj, e){
+                        if(e.target.id == "aboutCladesBtn"){
+                            Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
+                        }
+                    },
+                }
+             });
+         }
         
         //display current taxon
         currentTaxonBox = me.findOrCreateTaxonBox(taxon);
@@ -113,7 +115,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         taxon.whenLoaded(function (loadedTaxon) {
             if (taxon === me.getTaxon()) {
                 parentLoadingSpinner.destroy();
-                me.addParentTaxon(taxon);
+                me.addParentTaxon(taxon, taxonDisplayInfo);
             }
         });
 
@@ -135,15 +137,11 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         if(me.__olddisplayedTaxonBoxInfo.length != 0){
             me.animateTaxonBoxes();
         }
-        
-        /*for(i = 0; i < me.__olddisplayedTaxonBoxInfo.length; i++){
-            me.remove(me.__olddisplayedTaxonBoxInfo[i].taxonBox, true);
-        }
-        me.__olddisplayedTaxonBoxInfo = null;
-        */
+
+        me.firstLoad = false;
     },
     
-    addParentTaxon: function(taxon){
+    addParentTaxon: function(taxon, taxonDisplayInfo){
         var parentTaxon = taxon.get('parentTaxon'),
             parentTaxonBox,
             parentTaxonPos,
@@ -156,22 +154,24 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             
             parentTaxonBox = me.findOrCreateTaxonBox(parentTaxon);
 
-            me.__displayedTaxonBoxInfo.push({ taxonBox: parentTaxonBox, descendantIndex: -1 });
+            parentTaxonDisplayInfo = { taxonBox: parentTaxonBox, descendantIndex: -1 };
+            me.__displayedTaxonBoxInfo.push(parentTaxonDisplayInfo);
+            taxonDisplayInfo.parentTaxonDisplayInfo = parentTaxonDisplayInfo;
+            
             if(me.__olddisplayedTaxonBoxInfo.length == 0){
-                //me.add(parentTaxonBox);
                 parentTaxonBox.setCollapsed(true);
                 parentTaxonBox.setLeft(parentTaxonPos[0]);
                 parentTaxonBox.setTop(parentTaxonPos[1]);
             }
             
             
-            me.add({
+            /*me.add({
                 xtype: 'elbowconnector',
                 startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
                 endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
                 startY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false),
                 endY: parentTaxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false) + 20
-            });
+            });*/
             
             var grandParentLoadingSpinner = me.add({
                 xtype: 'loadingspinner',
@@ -185,13 +185,13 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     grandParentLoadingSpinner.destroy();
                     if(grandParentTaxon){
                         grandParentTaxon.ensureFullyLoaded();
-                        me.add({
+                        /*me.add({
                             xtype: 'elbowconnector',
                             startX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
                             endX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
                             startY: parentTaxonPos[1] - 10,
                             endY: parentTaxonPos[1]
-                        });
+                        });*/
                     }
                 }
             });
@@ -219,13 +219,13 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     descendantTaxonBox.setLeft(subTaxaPos[0]);
                     descendantTaxonBox.setTop(subTaxaPos[1]);
                 }
-                me.add({
+                /*me.add({
                     xtype: 'elbowconnector',
                     startX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2,
                     endX: subTaxaPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
                     startY: subTaxaPos[1] - 40,
                     endY: subTaxaPos[1]
-                });
+                });*/
                 
                 //Display popular descendants when they are loaded
                 me.addPopularDescendantsWhenLoaded(taxon, taxon.get('subTaxa')[i], subTaxonDisplayInfo, subTaxaPos);
@@ -276,7 +276,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                         }
                         var popSubtaxonDisplayInfo = { taxonBox: popSubtaxonBox, descendantIndex: Infinity, taxonSiblingIndex: i, siblingsCount: popularSubTaxa.length, parentTaxonDisplayInfo: subTaxonDisplayInfo };
                         me.__displayedTaxonBoxInfo.push(popSubtaxonDisplayInfo);
-                        me.add({
+                        /*me.add({
                             xtype: 'elbowconnector',
                             startX: parentPosition[0] + taxonBox.getWidth(false) / 2,
                             endX: pos[0] + taxonBox.getHeight(false) / 2,
@@ -284,7 +284,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                             endY: pos[1],
                             lineStyle: 'dashed',
                             lineWidth: 1
-                        });
+                        });*/
                     }
                 }
             }
@@ -358,6 +358,12 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         var posCalc = BioLadderOrg.view.TaxaContainerPositionCalculator;
         var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
         
+        //create a struct of before/after (including off-screen animate in and off info)
+            //use this to run the animations on the boxes and to animate/position the elbow connectors and loading thingies.
+        //I really need to parent info, do I need the old info? I have it in this function when it's available.
+        // How do I figure out the parent info? I do that earlier and have that here, handy
+        //we have parentTaxonDisplayInfo now
+        
         
         //determine "direction"
         var direction = null;
@@ -377,40 +383,45 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             }
         }
         
-   
-        
         //animate
         for(var i = 0; i < newdisplayedTaxonBoxInfo.length; i++){
-            var newBoxItem = newdisplayedTaxonBoxInfo[i];
-            var taxonBox = newBoxItem.taxonBox;
+            var newBoxInfo = newdisplayedTaxonBoxInfo[i];
+            var taxonBox = newBoxInfo.taxonBox;
             
             //parentTaxonDisplayInfo
-            var taxonPos = posCalc.getPositionFromDisplayInfo(me, newBoxItem);
+            var taxonPos = posCalc.getPositionFromDisplayInfo(me, newBoxInfo);
             var taxonCollapse = true;
-            if(newBoxItem.descendantIndex == 0){
+            if(newBoxInfo.descendantIndex == 0){
                 taxonCollapse = false;
             }
             var taxonRotation = 0;
-            if(newBoxItem.descendantIndex == Infinity){
+            if(newBoxInfo.descendantIndex == Infinity){
                 taxonRotation = -90;
-                
                 taxonPos[0] = taxonPos[0] - (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false)) / 2;
                 taxonPos[1] = taxonPos[1] + (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false))  / 2;
             }
+           
             
-            var foundOldCopy = false;
+            var oldDisplayInfo = null;
             if(me.__olddisplayedTaxonBoxInfo){
                 for(var j = 0; j < me.__olddisplayedTaxonBoxInfo.length; j++){
-                    oldBoxItem = me.__olddisplayedTaxonBoxInfo[j];
-                    if(oldBoxItem.taxonBox == taxonBox){
-                        me.animateTaxonBoxTo(taxonBox, taxonPos, taxonCollapse, taxonRotation);
+                    oldBoxInfo = me.__olddisplayedTaxonBoxInfo[j];
+                    if(oldBoxInfo.taxonBox == taxonBox){
+                        oldDisplayInfo = oldBoxInfo;
+
                         me.__olddisplayedTaxonBoxInfo.splice(j, 1);
-                        foundOldCopy = true;
                         break;
                     }
                 }
             }
-            if(!foundOldCopy){ //animate in from off screen
+            if(oldDisplayInfo){
+                me.animateTaxonBoxTo(taxonBox, taxonPos, taxonCollapse, taxonRotation);
+                //newBoxInfo.oldBoxInfo = oldBoxInfo;
+                newBoxInfo.deleteWhenDone = false;
+                if(oldDisplayInfo.parentElbowConnector){
+                    me.remove(oldDisplayInfo.parentElbowConnector, true);
+                }
+            }else{ //animate in from off screen
                 taxonBox.setCollapsed(true);
                 taxonBox.setStyle({
                     '-webkit-transform': 'rotate('+taxonRotation+'deg)'
@@ -422,16 +433,32 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     taxonBox.setLeft(taxonPos[0]);
                     taxonBox.setTop(me.element.getHeight() + 30);
                 }
+                //newBoxInfo.oldBoxInfo = ;
+                newBoxInfo.deleteWhenDone = true;
                 me.animateTaxonBoxTo(taxonBox, taxonPos, taxonCollapse, taxonRotation);
             }
+            
+            //display elbow connector to parent
+            var topElbowConnectorPos = posCalc.getTopElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
+            var parentElbowConnectorPos = posCalc.getParentElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
+            
+            newBoxInfo.parentElbowConnector = me.add({
+                xtype: 'elbowconnector',
+                startX: parentElbowConnectorPos[0],
+                endX: topElbowConnectorPos[0],
+                startY: parentElbowConnectorPos[1],
+                endY: topElbowConnectorPos[1],
+                lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, newBoxInfo),
+                lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, newBoxInfo)
+            });
         }
         
         //for remaining me.__olddisplayedTaxonBoxInfo, move off screen according to direction
         for(var i = 0; i < me.__olddisplayedTaxonBoxInfo.length; i++){
             var taxonBoxToRemove = me.__olddisplayedTaxonBoxInfo[i].taxonBox;
             
-            var callbackToDelte = function(){
-                me.remove(taxonBoxToRemove, true);
+            var callbackToDelte = function(taxonBoxToDelete){
+                me.remove(taxonBoxToDelete, true);
             }
             
             var offScreenPos = [];
@@ -442,10 +469,14 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 offScreenPos[0] = taxonBoxToRemove.getLeft();
                 offScreenPos[1] = -30 - taxonBoxClass.getHeight(false);
             }
-            
+            newBoxInfo.deleteWhenDone = true;
             me.animateTaxonBoxTo(taxonBoxToRemove, offScreenPos, true, 0, callbackToDelte); //TODO: Keep current rotation
             
+            if(me.__olddisplayedTaxonBoxInfo[i].parentElbowConnector){
+                me.remove(me.__olddisplayedTaxonBoxInfo[i].parentElbowConnector, true);
+            }
         }
+        me.__olddisplayedTaxonBoxInfo = [];
     },
     
     animateTaxonBoxTo: function(taxonBox, pos, collapse, taxonRotation, callback){
@@ -487,7 +518,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     '-webkit-transform': 'rotate('+taxonRotation+'deg)'
                 });
                 if(callback){
-                    callback();
+                    callback(taxonBox);
                 }
             }
         });
