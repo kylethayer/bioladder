@@ -105,6 +105,27 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
             return elbowConnectorPos;
         },
         
+        getBottomElbowConnectorPosFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
+            var me = this;
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            var boxPosition = me.getPositionFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            
+            var elbowConnectorPos = null;
+            if(me.getRotationFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo) == 0){
+                elbowConnectorPos = [
+                    boxPosition[0] + taxonBoxClass.getWidth(!me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) / 2,
+                    boxPosition[1] + taxonBoxClass.getHeight(!me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) 
+                ];
+            }else{ //otherwise it should be rotated -90 degrees, swapping height/width
+                var elbowConnectorPos = [
+                    boxPosition[0] + taxonBoxClass.getHeight(!me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) / 2,
+                    boxPosition[1] + taxonBoxClass.getWidth(!me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo)) 
+                ];
+            }
+            return elbowConnectorPos;
+        },
+        
+        //TODO: Remove
         getParentElbowConnectorPosFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
             var me = this;
             var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
@@ -141,6 +162,262 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
             }else{
                 return 2;
             }
-        }
+        },
+        
+        getTaxonPositionConfigs: function(taxaContainer, taxonBoxDisplayInfo){
+            var me = this;
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+            var taxonPositionConfigs = {};
+            
+            //taxon box position
+            taxonPositionConfigs.taxonBoxPos = me.getPositionFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.taxonBoxRotation = me.getRotationFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.taxonBoxCollapsed = me.getIsCollapsedFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            if(taxonPositionConfigs.taxonBoxRotation == -90){
+                taxonPositionConfigs.taxonBoxPos[0] = taxonPositionConfigs.taxonBoxPos[0] 
+                                                      - (taxonBoxClass.getWidth(!taxonPositionConfigs.taxonBoxCollapsed) 
+                                                         - taxonBoxClass.getHeight(!taxonPositionConfigs.taxonBoxCollapsed)) / 2;
+                taxonPositionConfigs.taxonBoxPos[1] = taxonPositionConfigs.taxonBoxPos[1] 
+                                                      + (taxonBoxClass.getWidth(!taxonPositionConfigs.taxonBoxCollapsed) 
+                                                         - taxonBoxClass.getHeight(!taxonPositionConfigs.taxonBoxCollapsed))  / 2;
+            }
+            
+            //connection points
+            taxonPositionConfigs.bottomConnectPos = me.getBottomElbowConnectorPosFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.topConnectPos = me.getTopElbowConnectorPosFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.topConnectStyle = me.getElbowConnecterStyleFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.topConnectLineWidth = me.getElbowConnecterLineWidthFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            
+            return taxonPositionConfigs;
+        },
+        
+        getAnimationDuration: function(){
+            return 500;
+        },
+        
+        getOffscreenStartPosition: function(taxaContainer, taxonBoxDisplayInfo, directionInfo){
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            var taxonBoxAdd = taxonBoxDisplayInfo.taxonBox;
+
+            var offScreenPos = [];
+            if(directionInfo.direction == 1 && taxonBoxDisplayInfo.descendantIndex == 1){
+                //figure out whether to go left or right
+                if(taxonBoxDisplayInfo.taxonSiblingIndex < directionInfo.minDescendant1SibblingIndex){
+                    offScreenPos[0] =  -30 - taxonBoxClass.getWidth(false);;
+                    offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                } else if(taxonBoxDisplayInfo.taxonSiblingIndex > directionInfo.maxDescendant1SibblingIndex){
+                    offScreenPos[0] =  taxaContainer.element.getWidth() + 30 + taxonBoxClass.getWidth(false);;
+                    offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                } else {
+                    offScreenPos[0] =  -30 - taxonBoxClass.getWidth(false);
+                    offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                }
+            } else if(directionInfo.direction == 1 && taxonBoxDisplayInfo.descendantIndex == Infinity){
+                if(taxonBoxDisplayInfo.parentTaxonDisplayInfo){
+                    if(taxonBoxDisplayInfo.parentTaxonDisplayInfo.taxonSiblingIndex < directionInfo.minDescendant1SibblingIndex){
+                        offScreenPos[0] =  -30 - taxonBoxClass.getWidth(false);;
+                        offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                    } else if(taxonBoxDisplayInfo.parentTaxonDisplayInfo.taxonSiblingIndex > directionInfo.maxDescendant1SibblingIndex){
+                        offScreenPos[0] =  taxaContainer.element.getWidth() + 30 + taxonBoxClass.getWidth(false);;
+                        offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                    } else {
+                        offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
+                        offScreenPos[1] = -30 - taxonBoxClass.getHeight(taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxCollapsed);
+                    }
+                } else {
+                    offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
+                    offScreenPos[1] = -30 - taxonBoxClass.getHeight(taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxCollapsed);
+                }
+            } else if(directionInfo.direction > 0){
+                offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
+                offScreenPos[1] = -30 - taxonBoxClass.getHeight(taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxCollapsed);
+            } else {
+                offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
+                offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+            }
+            return offScreenPos;
+        },
+        
+        getOffscreenEndPosition: function(taxaContainer, taxonBoxDisplayInfo, directionInfo){
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            var taxonBoxToRemove = taxonBoxDisplayInfo.taxonBox;
+            
+            var offScreenPos = [];
+            if(directionInfo.direction == -1 && taxonBoxDisplayInfo.descendantIndex == 1){
+                //figure out whether to go left or right
+                if(taxonBoxDisplayInfo.taxonSiblingIndex < directionInfo.minDescendant1SibblingIndex){
+                    offScreenPos[0] =  -30 - taxonBoxClass.getWidth(false);;
+                    offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                } else if(taxonBoxDisplayInfo.taxonSiblingIndex > directionInfo.maxDescendant1SibblingIndex){
+                    offScreenPos[0] =  taxaContainer.element.getWidth() + 30 + taxonBoxClass.getWidth(false);;
+                    offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                } else {
+                    offScreenPos[0] =  -30 - taxonBoxClass.getWidth(false);
+                    offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                }
+            } else if(directionInfo.direction == -1 && taxonBoxDisplayInfo.descendantIndex == Infinity){
+                if(taxonBoxDisplayInfo.parentTaxonDisplayInfo){
+                    if(taxonBoxDisplayInfo.parentTaxonDisplayInfo.taxonSiblingIndex < directionInfo.minDescendant1SibblingIndex){
+                        offScreenPos[0] =  -30 - taxonBoxClass.getWidth(false);;
+                        offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                    } else if(taxonBoxDisplayInfo.parentTaxonDisplayInfo.taxonSiblingIndex > directionInfo.maxDescendant1SibblingIndex){
+                        offScreenPos[0] =  taxaContainer.element.getWidth() + 30 + taxonBoxClass.getWidth(false);;
+                        offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
+                    } else {
+                        offScreenPos[0] = taxonBoxToRemove.getLeft();
+                        offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+                    }
+                } else {
+                    offScreenPos[0] = taxonBoxToRemove.getLeft();
+                    offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+                }
+            } else if(directionInfo.direction > 0){
+                offScreenPos[0] = taxonBoxToRemove.getLeft();
+                offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+            } else {
+                offScreenPos[0] = taxonBoxToRemove.getLeft();
+                offScreenPos[1] = -30 - taxonBoxClass.getHeight(false);
+            }
+            return offScreenPos;
+        },
+        
+        getDirectionInfo: function(olddisplayedTaxonBoxInfo, newdisplayedTaxonBoxInfo){
+            var direction = null;
+            var directionLevelsInfo = { from: {}, to: {}};
+            var minDescendant1SibblingIndex = null;
+            var maxDescendant1SibblingIndex = null;
+            //I need something for each level, which sibling index is kept, or which position the current taxon is going to
+            if(olddisplayedTaxonBoxInfo){
+                for(var i = 0; i < newdisplayedTaxonBoxInfo.length; i++){
+                    var newBoxItem = newdisplayedTaxonBoxInfo[i];
+                    for(var j = 0; j < olddisplayedTaxonBoxInfo.length; j++){
+                        oldBoxItem = olddisplayedTaxonBoxInfo[j];
+                        if(newBoxItem.taxonBox == oldBoxItem.taxonBox){
+                            if(!isNaN(newBoxItem.descendantIndex - oldBoxItem.descendantIndex)){
+                                direction = newBoxItem.descendantIndex - oldBoxItem.descendantIndex;
+                            }
+                            if(!directionLevelsInfo.to[newBoxItem.descendantIndex]){
+                                directionLevelsInfo.to[newBoxItem.descendantIndex] = []
+                            }
+                            if(!directionLevelsInfo.from[oldBoxItem.descendantIndex]){
+                                directionLevelsInfo.from[oldBoxItem.descendantIndex] = []
+                            }
+                            directionLevelsInfo.to[newBoxItem.descendantIndex].push({from: oldBoxItem, to: newBoxItem});
+                            directionLevelsInfo.from[oldBoxItem.descendantIndex].push({from: oldBoxItem, to: newBoxItem});
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if(direction < 0){
+                if(directionLevelsInfo.to[0]){
+                    var levelto0 = directionLevelsInfo.to[0];
+                    for(var i = 0; i < levelto0.length; i++){
+                        if(minDescendant1SibblingIndex == null || levelto0[i].from.taxonSiblingIndex < minDescendant1SibblingIndex){
+                            minDescendant1SibblingIndex = levelto0[i].from.taxonSiblingIndex;
+                        }
+                        if(maxDescendant1SibblingIndex == null || levelto0[i].from.taxonSiblingIndex > maxDescendant1SibblingIndex){
+                            maxDescendant1SibblingIndex = levelto0[i].from.taxonSiblingIndex;
+                        }
+                    }
+                }
+            
+            }else if(direction > 0){
+                if(directionLevelsInfo.to[1]){
+                    var level1 = directionLevelsInfo.to[1];
+                    for(var i = 0; i < level1.length; i++){
+                        if(minDescendant1SibblingIndex == null || level1[i].to.taxonSiblingIndex < minDescendant1SibblingIndex){
+                            minDescendant1SibblingIndex = level1[i].to.taxonSiblingIndex;
+                        }
+                        if(maxDescendant1SibblingIndex == null || level1[i].to.taxonSiblingIndex > maxDescendant1SibblingIndex){
+                            maxDescendant1SibblingIndex = level1[i].to.taxonSiblingIndex;
+                        }
+                    }
+                }
+            
+            }
+        
+            return {direction: direction, minDescendant1SibblingIndex: minDescendant1SibblingIndex, maxDescendant1SibblingIndex: maxDescendant1SibblingIndex};
+        },
+        
+        getOffscreenStartPositionConfigs: function(taxaContainer, taxonBoxDisplayInfo, directionInfo){
+            var me = this;
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+            var taxonPositionConfigs = {};
+            
+            //taxon box position
+            taxonPositionConfigs.taxonBoxPos = me.getOffscreenStartPosition(taxaContainer, taxonBoxDisplayInfo, directionInfo);
+            taxonPositionConfigs.taxonBoxRotation = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxRotation;
+            taxonPositionConfigs.taxonBoxCollapsed = true;
+            
+            //connection points
+            taxonPositionConfigs.bottomConnectPos = me.getBottomElbowConnectorPos(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxRotation, taxonPositionConfigs.taxonBoxCollapsed);
+            taxonPositionConfigs.topConnectPos = me.getTopElbowConnectorPos(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxRotation, taxonPositionConfigs.taxonBoxCollapsed);
+            taxonPositionConfigs.topConnectStyle = me.getElbowConnecterStyleFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.topConnectLineWidth = me.getElbowConnecterLineWidthFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            
+            return taxonPositionConfigs;
+        },
+        
+        getOffscreenEndPositionConfigs: function(taxaContainer, taxonBoxDisplayInfo, directionInfo){
+            var me = this;
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+            var taxonPositionConfigs = {};
+            
+            //taxon box position
+            taxonPositionConfigs.taxonBoxPos = me.getOffscreenEndPosition(taxaContainer, taxonBoxDisplayInfo, directionInfo);
+            taxonPositionConfigs.taxonBoxRotation = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxRotation;
+            taxonPositionConfigs.taxonBoxCollapsed = true;
+            
+            //connection points
+            taxonPositionConfigs.bottomConnectPos = me.getBottomElbowConnectorPos(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxRotation, taxonPositionConfigs.taxonBoxCollapsed);
+            taxonPositionConfigs.topConnectPos = me.getTopElbowConnectorPos(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxRotation, taxonPositionConfigs.taxonBoxCollapsed);
+            taxonPositionConfigs.topConnectStyle = me.getElbowConnecterStyleFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            taxonPositionConfigs.topConnectLineWidth = me.getElbowConnecterLineWidthFromDisplayInfo(taxaContainer, taxonBoxDisplayInfo);
+            
+            return taxonPositionConfigs;
+        },
+        
+        getTopElbowConnectorPos: function(taxonBoxPos, taxonBoxRotation, taxonBoxCollapsed){
+            var me = this;
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+            var elbowConnectorPos = null;
+            if(taxonBoxRotation == 0){
+                elbowConnectorPos = [
+                    taxonBoxPos[0] + taxonBoxClass.getWidth(!taxonBoxCollapsed) / 2,
+                    taxonBoxPos[1]
+                ];
+            }else{ //otherwise it should be rotated -90 degrees, swapping height/width
+                var elbowConnectorPos = [
+                    taxonBoxPos[0] + taxonBoxClass.getHeight(!taxonBoxCollapsed) / 2,
+                    taxonBoxPos[1]
+                ];
+            }
+            return elbowConnectorPos;
+        },
+        
+        getBottomElbowConnectorPos: function(taxonBoxPos, taxonBoxRotation, taxonBoxCollapsed){
+            var me = this;
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+            var elbowConnectorPos = null;
+            if(taxonBoxRotation == 0){
+                elbowConnectorPos = [
+                    taxonBoxPos[0] + taxonBoxClass.getWidth(!taxonBoxCollapsed) / 2,
+                    taxonBoxPos[1] + taxonBoxClass.getHeight(!taxonBoxCollapsed) 
+                ];
+            }else{ //otherwise it should be rotated -90 degrees, swapping height/width
+                var elbowConnectorPos = [
+                    taxonBoxPos[0] + taxonBoxClass.getHeight(!taxonBoxCollapsed) / 2,
+                    taxonBoxPos[1] + taxonBoxClass.getWidth(!taxonBoxCollapsed) 
+                ];
+            }
+            return elbowConnectorPos;
+        },
     }
 });

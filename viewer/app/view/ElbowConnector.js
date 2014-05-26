@@ -25,18 +25,23 @@ Ext.define('BioLadderOrg.view.ElbowConnector', {
 
     requires: [
     ],
+    
+    statics:{
+        lineId: 0, //This counter is used to make sure each line element div has a unique id
+    },
 
     config: {
         startX: 0,
         startY: 0,
         endX: 0,
         endY: 0,
-        direction: 'vertical', //'vertical' as the first/last line or 'horizontal' as the first/last line
         lineStyle: 'solid',
         lineWidth: 2
     },
 
     initialize: function () {
+        this.__lineId = BioLadderOrg.view.ElbowConnector.lineId;
+        BioLadderOrg.view.ElbowConnector.lineId += 1;
         this.drawComponent();
     },
     
@@ -44,23 +49,135 @@ Ext.define('BioLadderOrg.view.ElbowConnector', {
         var me=this;
         
         html = '';
-        if(this.getDirection() == 'vertical'){
-             html += '<div style="position:absolute;left:'+me.getStartX()+'px;top:'+me.getStartY()+'px;';
-             html += 'height:'+(me.getEndY() - me.getStartY()) / 2 +'px;border-right-width:'+me.getLineWidth()+'px;border-right-style:'+me.getLineStyle()+';"></div>';
-             
-             if(me.getEndX() >= me.getStartX()){
-                 html += '<div style="position:absolute;left:'+me.getStartX()+'px;top:'+(me.getStartY() + (me.getEndY() - me.getStartY()) / 2)+'px;';
-                 html += 'width:'+(me.getEndX() - me.getStartX()) +'px;border-bottom-width:'+me.getLineWidth()+'px;border-bottom-style:'+me.getLineStyle()+';"></div>';
-             } else {
-                 html += '<div style="position:absolute;left:'+me.getEndX()+'px;top:'+(me.getStartY() + (me.getEndY() - me.getStartY()) / 2)+'px;';
-                 html += 'width:'+(me.getStartX() - me.getEndX()) +'px;border-bottom-width:'+me.getLineWidth()+'px;border-bottom-style:'+me.getLineStyle()+';"></div>';
-             }
-             
-             html += '<div style="position:absolute;left:'+me.getEndX()+'px;top:'+(me.getStartY() + (me.getEndY() - me.getStartY()) / 2)+'px;';
-             html += 'height:'+(me.getEndY() - me.getStartY()) / 2 +'px;border-right-width:'+me.getLineWidth()+'px;border-right-style:'+me.getLineStyle()+';"></div>';
-        }else{
-        
-        }
+        html += me.createHtmlForLine('line1_' + this.__lineId);
+        html += me.createHtmlForLine('line2_' + this.__lineId);
+        html += me.createHtmlForLine('line3_' + this.__lineId);
         this.setHtml(html);
+    },
+    
+    animateTo: function(startPos, endPos, lineStyle, lineWidth){
+        var me = this;
+        me.setStartX(startPos[0]);
+        me.setStartY(startPos[1]);
+        me.setEndX(endPos[0]);
+        me.setEndY(endPos[1]);
+        me.setLineStyle(lineStyle);
+        me.setLineWidth(lineWidth);
+        if(!this.element){
+            console.log('no element!');
+            return;
+        }
+
+        this.animateLine('line1_' + this.__lineId);
+        this.animateLine('line2_' + this.__lineId);
+        this.animateLine('line3_' + this.__lineId);
+    },
+    
+    animateLine: function(id){
+        var me=this;
+        
+        var lineElement = this.element.down('#'+id);
+        var currentStyle = lineElement.dom.style;
+        
+        var fromConfig = {   
+            'left': currentStyle.left,
+            'top': currentStyle.top,
+            'height': currentStyle.height,
+            'width': currentStyle.width,
+        };
+        var finalStyle = {
+            'left': me.getDivLeft(id) + 'px',
+            'top': me.getDivTop(id) + 'px',
+            'height': me.getDivHeight(id) + 'px',
+            'width': me.getDivWidth(id) + 'px',
+        };
+        finalStyle['border-'+me.getBorderSideToUse(id)+'-width'] = me.getLineWidth()+'px';
+        finalStyle['border-'+me.getBorderSideToUse(id)+'-style'] = me.getLineStyle();
+        
+        var toConfig = {
+            'left': me.getDivLeft(id) + 'px',
+            'top': me.getDivTop(id) + 'px',
+            'height': me.getDivHeight(id) + 'px',
+            'width': me.getDivWidth(id) + 'px',
+        };
+        
+        Ext.Animator.run({
+            element: lineElement,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
+            easing: 'ease-in-out',
+            from: fromConfig,
+            to: toConfig,
+            onEnd: function(arguments){
+                lineElement.setStyle(finalStyle);
+            }
+        });
+    },
+    
+    getDivLeft: function(id){
+        var me = this;
+        if(id == 'line1_' + this.__lineId){
+            return me.getStartX();
+        }else if(id == 'line2_' + this.__lineId){
+            if(me.getEndX() >= me.getStartX()){
+                return me.getStartX();
+            }else{
+                return me.getEndX();
+            }
+        }else if(id == 'line3_' + this.__lineId){
+            return me.getEndX();
+        }
+    },
+    
+    getDivTop: function(id){
+        var me = this;
+        if(id == 'line1_' + this.__lineId){
+            return me.getStartY();
+        }else if(id == 'line2_' + this.__lineId || id == 'line3_' + this.__lineId){
+            return me.getStartY() + (me.getEndY() - me.getStartY()) / 2;
+        }
+    },
+    
+    getDivHeight: function(id){
+        var me = this;
+        if(id == 'line1_' + this.__lineId || id == 'line3_' + this.__lineId){
+            return (me.getEndY() - me.getStartY()) / 2;
+        }else if(id == 'line2_' + this.__lineId){
+            return 0;
+        }
+    },
+    
+    getDivWidth: function(id){
+        var me = this;
+        if(id == 'line1_' + this.__lineId || id == 'line3_' + this.__lineId){
+            return 0;
+        }else if(id == 'line2_' + this.__lineId){
+            if(me.getEndX() >= me.getStartX()){
+                return me.getEndX() - me.getStartX();
+            }else{
+                return me.getStartX() - me.getEndX();
+            }
+        }
+    },
+    
+    getBorderSideToUse: function(id){
+        var me = this;
+        if(id == 'line1_' + this.__lineId || id == 'line3_' + this.__lineId){
+            return 'right';
+        }else if(id == 'line2_' + this.__lineId){
+            return 'bottom';
+        }
+    },
+    
+    createHtmlForLine: function(id){
+        var me = this;
+        html = '<div id="'+id+'" style="position:absolute;';
+        html +=    'left:'+me.getDivLeft(id)+'px;';
+        html +=    'top:'+me.getDivTop(id)+'px;';
+        html +=    'height:'+me.getDivHeight(id)+'px;';
+        html +=    'width:'+me.getDivWidth(id)+'px;';
+        html +=    'border-'+me.getBorderSideToUse(id)+'-width:'+me.getLineWidth()+'px;';
+        html +=    'border-'+me.getBorderSideToUse(id)+'-style:'+me.getLineStyle()+';">';
+        html += '</div>';
+        return html;
     }
 });

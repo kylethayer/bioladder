@@ -324,43 +324,18 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         // How do I figure out the parent info? I do that earlier and have that here, handy
         //we have parentTaxonDisplayInfo now
         
+       var directionInfo =  posCalc.getDirectionInfo(me.__olddisplayedTaxonBoxInfo, newdisplayedTaxonBoxInfo);
+       direction = directionInfo.direction;
         
-        //determine "direction"
-        var direction = null;
-        if(me.__olddisplayedTaxonBoxInfo){
-            for(var i = 0; i < newdisplayedTaxonBoxInfo.length; i++){
-                var newBoxItem = newdisplayedTaxonBoxInfo[i];
-                for(var j = 0; j < me.__olddisplayedTaxonBoxInfo.length; j++){
-                    oldBoxItem = me.__olddisplayedTaxonBoxInfo[j];
-                    if(newBoxItem.taxonBox == oldBoxItem.taxonBox){
-                        direction = newBoxItem.descendantIndex - oldBoxItem.descendantIndex;
-                        break;
-                    }
-                }
-                if(direction != null){
-                    break;
-                }
-            }
-        }
-        
-        //animate
+        //animate Taxon Boxes
         for(var i = 0; i < newdisplayedTaxonBoxInfo.length; i++){
             var newBoxInfo = newdisplayedTaxonBoxInfo[i];
             var taxonBox = newBoxInfo.taxonBox;
             
             //parentTaxonDisplayInfo
-            var taxonPos = posCalc.getPositionFromDisplayInfo(me, newBoxInfo);
-            var taxonCollapse = true;
-            if(newBoxInfo.descendantIndex == 0){
-                taxonCollapse = false;
-            }
-            var taxonRotation = 0;
-            if(newBoxInfo.descendantIndex == Infinity){
-                taxonRotation = -90;
-                taxonPos[0] = taxonPos[0] - (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false)) / 2;
-                taxonPos[1] = taxonPos[1] + (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false))  / 2;
-            }
-           
+            var taxonPositionConfigs = posCalc.getTaxonPositionConfigs(me, newBoxInfo);
+            //taxonBoxPos, taxonBoxRotation, taxonBoxCollapsed, taxonBoxRotation, bottomConnectPos, topConnectPos, topConnectStyle, topConnectLineWidth
+            newBoxInfo.taxonPositionConfigs = taxonPositionConfigs;
             
             var oldDisplayInfo = null;
             if(me.__olddisplayedTaxonBoxInfo){
@@ -374,70 +349,180 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     }
                 }
             }
+            
             if(oldDisplayInfo){
-                me.animateTaxonBoxTo(taxonBox, taxonPos, taxonCollapse, taxonRotation);
-                //newBoxInfo.oldBoxInfo = oldBoxInfo;
-                newBoxInfo.deleteWhenDone = false;
-                if(oldDisplayInfo.parentElbowConnector){
-                    me.remove(oldDisplayInfo.parentElbowConnector, true);
+                newBoxInfo.oldTaxonPositionConfigs = oldDisplayInfo.taxonPositionConfigs;
+                oldDisplayInfo.newTaxonPositionConfigs = newBoxInfo.taxonPositionConfigs;
+                newBoxInfo.oldParentElbowConnector = oldDisplayInfo.parentElbowConnector;
+                if(oldDisplayInfo.parentTaxonDisplayInfo){
+                    newBoxInfo.oldParentConnectionTaxon = oldDisplayInfo.parentTaxonDisplayInfo.taxonBox.getTaxon();
                 }
+                
+                me.animateTaxonBoxTo(taxonBox, taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation);
             }else{ //animate in from off screen
                 taxonBox.setCollapsed(true);
                 taxonBox.setStyle({
-                    '-webkit-transform': 'rotate('+taxonRotation+'deg)'
+                    '-webkit-transform': 'rotate('+taxonPositionConfigs.taxonBoxRotation+'deg)'
                 });
-                if(direction > 0){
-                    taxonBox.setLeft(taxonPos[0]);
-                    taxonBox.setTop(-30 - taxonBoxClass.getHeight(taxonCollapse));
+                
+                if(direction == null || direction == 0 || isNaN(direction)){
+                    newBoxInfo.oldTaxonPositionConfigs = newBoxInfo.taxonPositionConfigs;
                 } else {
-                    taxonBox.setLeft(taxonPos[0]);
-                    taxonBox.setTop(me.element.getHeight() + 30);
+                    var offScreenStartPosConf = posCalc.getOffscreenStartPositionConfigs(me, newBoxInfo, directionInfo);
+                    newBoxInfo.offScreenStartPosConf = offScreenStartPosConf;
+                    var offScreenPos = offScreenStartPosConf.taxonBoxPos
+                    
+                    taxonBox.setLeft(offScreenPos[0]);
+                    taxonBox.setTop(offScreenPos[1]);
+                    me.animateTaxonBoxTo(taxonBox, taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation);
                 }
-                //newBoxInfo.oldBoxInfo = ;
-                newBoxInfo.deleteWhenDone = true;
-                me.animateTaxonBoxTo(taxonBox, taxonPos, taxonCollapse, taxonRotation);
             }
             
-            //display elbow connector to parent
-            if(newBoxInfo.descendantIndex == Infinity || newBoxInfo.taxonBox.getTaxon().get('parentTaxon')){
-                var topElbowConnectorPos = posCalc.getTopElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
-                var parentElbowConnectorPos = posCalc.getParentElbowConnectorPosFromDisplayInfo(me, newBoxInfo);
-                
-                newBoxInfo.parentElbowConnector = me.add({
-                    xtype: 'elbowconnector',
-                    startX: parentElbowConnectorPos[0],
-                    endX: topElbowConnectorPos[0],
-                    startY: parentElbowConnectorPos[1],
-                    endY: topElbowConnectorPos[1],
-                    lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, newBoxInfo),
-                    lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, newBoxInfo)
-                });
-            }
         }
         
         //for remaining me.__olddisplayedTaxonBoxInfo, move off screen according to direction
         for(var i = 0; i < me.__olddisplayedTaxonBoxInfo.length; i++){
-            var taxonBoxToRemove = me.__olddisplayedTaxonBoxInfo[i].taxonBox;
+            var oldTaxonBoxDispInfo = me.__olddisplayedTaxonBoxInfo[i];
+            var taxonBoxToRemove = oldTaxonBoxDispInfo.taxonBox;
             
-            var callbackToDelte = function(taxonBoxToDelete){
-                me.remove(taxonBoxToDelete, true);
-            }
-            
-            var offScreenPos = [];
-            if(direction > 0){
-                offScreenPos[0] = taxonBoxToRemove.getLeft();
-                offScreenPos[1] = me.element.getHeight() + 30;
+            if(direction == null || direction == 0 || isNaN(direction)){
+                me.fadeOutTaxonBox(taxonBoxToRemove);
             } else {
-                offScreenPos[0] = taxonBoxToRemove.getLeft();
-                offScreenPos[1] = -30 - taxonBoxClass.getHeight(false);
-            }
-            newBoxInfo.deleteWhenDone = true;
-            me.animateTaxonBoxTo(taxonBoxToRemove, offScreenPos, true, 0, callbackToDelte); //TODO: Keep current rotation
-            
-            if(me.__olddisplayedTaxonBoxInfo[i].parentElbowConnector){
-                me.remove(me.__olddisplayedTaxonBoxInfo[i].parentElbowConnector, true);
+                var offScreenEndPosConfig = posCalc.getOffscreenEndPositionConfigs(me, oldTaxonBoxDispInfo, directionInfo); 
+                oldTaxonBoxDispInfo.offScreenEndPosConfig = offScreenEndPosConfig; 
+                var offScreenPos = offScreenEndPosConfig.taxonBoxPos;
+                newBoxInfo.deleteWhenDone = true;
+                var callbackToDelte = function(taxonBoxToDelete){
+                    me.remove(taxonBoxToDelete, true);
+                }
+                me.animateTaxonBoxTo(taxonBoxToRemove, offScreenPos, offScreenEndPosConfig.taxonBoxCollapsed, offScreenEndPosConfig.taxonBoxRotation, callbackToDelte);
             }
         }
+        //then remove all their elbow connectors:
+        for(var i = 0; i < me.__olddisplayedTaxonBoxInfo.length; i++){
+            var oldTaxonBoxDispInfo = me.__olddisplayedTaxonBoxInfo[i];
+            if(oldTaxonBoxDispInfo.parentElbowConnector){
+                var newParentPositionConfigs = null;
+                for(var j = 0; j < newdisplayedTaxonBoxInfo.length; j++){
+                    if(parentTaxonDisplayInfo.taxonBox == newdisplayedTaxonBoxInfo[j].taxonBox){
+                        newParentPositionConfigs = newdisplayedTaxonBoxInfo[j].taxonPositionConfigs;
+                        break
+                    }
+                }
+                for(var j = 0; j < me.__olddisplayedTaxonBoxInfo.length; j++){
+                    if(parentTaxonDisplayInfo.taxonBox == me.__olddisplayedTaxonBoxInfo[j].taxonBox){
+                        newParentPositionConfigs = me.__olddisplayedTaxonBoxInfo[j].offScreenEndPosConfig;
+                        break
+                    }
+                }
+                if(newParentPositionConfigs){
+                    var topElbowConnectorPos = oldTaxonBoxDispInfo.offScreenEndPosConfig.topConnectPos;
+                    var parentElbowConnectorPos = newParentPositionConfigs.bottomConnectPos;
+                    var lineStyle = oldTaxonBoxDispInfo.offScreenEndPosConfig.topConnectStyle;
+                    var lineWidth = oldTaxonBoxDispInfo.offScreenEndPosConfig.topConnectLineWidth;
+                    oldTaxonBoxDispInfo.parentElbowConnector.animateTo(parentElbowConnectorPos, topElbowConnectorPos, lineStyle, lineWidth);
+                }
+                me.fadeOutParentElbowConnector(oldTaxonBoxDispInfo.parentElbowConnector);
+            }
+        }
+        
+        
+        //animate elbow connectors
+        for(var i = 0; i < newdisplayedTaxonBoxInfo.length; i++){
+            //we handle to the top connector of each one
+            var newBoxInfo = newdisplayedTaxonBoxInfo[i];
+
+             //handle the previous one
+            if(newBoxInfo.oldParentElbowConnector){
+                if(newBoxInfo.parentTaxonDisplayInfo 
+                    && newBoxInfo.parentTaxonDisplayInfo.taxonBox.getTaxon() == newBoxInfo.oldParentConnectionTaxon){
+                    //This elbow connector can just be moved to the new position, and we are done with this row
+                    newBoxInfo.parentElbowConnector = newBoxInfo.oldParentElbowConnector;
+                    var topElbowConnectorPos = newBoxInfo.taxonPositionConfigs.topConnectPos;
+                    var parentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.taxonPositionConfigs.bottomConnectPos;
+                    var lineStyle = newBoxInfo.taxonPositionConfigs.topConnectStyle;
+                    var lineWidth = newBoxInfo.taxonPositionConfigs.topConnectLineWidth;
+                    
+                    newBoxInfo.parentElbowConnector.animateTo(parentElbowConnectorPos, topElbowConnectorPos, lineStyle, lineWidth);
+                    continue;
+                }else{
+                    //This elbow connector must be gotten rid of
+                    var newParentPositionConfigs = null;
+                    for(var j = 0; j < newdisplayedTaxonBoxInfo.length; j++){
+                        if(newBoxInfo.oldParentConnectionTaxon == newdisplayedTaxonBoxInfo[j].taxonBox.getTaxon()){
+                            newParentPositionConfigs = newdisplayedTaxonBoxInfo[j].taxonPositionConfigs;
+                            break
+                        }
+                    }
+                    for(var j = 0; j < me.__olddisplayedTaxonBoxInfo.length; j++){
+                        if(newBoxInfo.oldParentConnectionTaxon == me.__olddisplayedTaxonBoxInfo[j].taxonBox.getTaxon()){
+                            newParentPositionConfigs = me.__olddisplayedTaxonBoxInfo[j].offScreenEndPosConfig;
+                            break
+                        }
+                    }
+                    if(newParentPositionConfigs){
+                        var topElbowConnectorPos = newBoxInfo.taxonPositionConfigs.topConnectPos;
+                        var parentElbowConnectorPos = newParentPositionConfigs.bottomConnectPos;
+                        var lineStyle = newBoxInfo.taxonPositionConfigs.topConnectStyle;
+                        var lineWidth = newBoxInfo.taxonPositionConfigs.topConnectLineWidth;
+                        newBoxInfo.oldParentElbowConnector.animateTo(parentElbowConnectorPos, topElbowConnectorPos, lineStyle, lineWidth);
+                    }
+                    me.fadeOutParentElbowConnector(newBoxInfo.oldParentElbowConnector);
+                }
+            }
+            
+            //Any matching elbow connectors have been handled, now we must add the remaining ones
+            // if position is -1, then connect to the empty space above
+            // else, connect to the actual parent
+            var startTopElbowConnectorPos = null;
+            var startParentElbowConnectorPos = null;
+            if(newBoxInfo.oldTaxonPositionConfigs){
+                startTopElbowConnectorPos = newBoxInfo.oldTaxonPositionConfigs.topConnectPos;
+            } else if(newBoxInfo.offScreenStartPosConf) {
+                startTopElbowConnectorPos = newBoxInfo.offScreenStartPosConf.topConnectPos;
+            } else{
+                continue;
+            }
+            if(!newBoxInfo.parentTaxonDisplayInfo){
+                continue;
+            }
+            if(newBoxInfo.parentTaxonDisplayInfo.oldTaxonPositionConfigs){
+                startParentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.oldTaxonPositionConfigs.bottomConnectPos;
+            } else if(newBoxInfo.parentTaxonDisplayInfo.offScreenStartPosConf){
+                startParentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.offScreenStartPosConf.bottomConnectPos;
+            } else{
+                continue;
+            }
+
+            newBoxInfo.parentElbowConnector = me.add({
+                xtype: 'elbowconnector',
+                startX: startParentElbowConnectorPos[0],
+                endX: startTopElbowConnectorPos[0],
+                startY: startParentElbowConnectorPos[1],
+                endY: startTopElbowConnectorPos[1],
+                lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, newBoxInfo),
+                lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, newBoxInfo)
+            });
+            var topElbowConnectorPos = newBoxInfo.taxonPositionConfigs.topConnectPos;
+            var parentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.taxonPositionConfigs.bottomConnectPos;
+            var lineStyle = newBoxInfo.taxonPositionConfigs.topConnectStyle;
+            var lineWidth = newBoxInfo.taxonPositionConfigs.topConnectLineWidth;
+            newBoxInfo.parentElbowConnector.animateTo(parentElbowConnectorPos, topElbowConnectorPos, lineStyle, lineWidth);
+            Ext.Animator.run({
+                element: newBoxInfo.parentElbowConnector.element,
+                autoClear: false,
+                duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
+                easing: 'ease-in-out',
+                from: {
+                    'opacity': -1
+                },
+                to: {
+                    'opacity': 1,
+                }
+            });
+            
+        }
+        
         me.__olddisplayedTaxonBoxInfo = [];
     },
     
@@ -459,7 +544,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         
         Ext.Animator.run({
             element: taxonBox.element,
-            duration: 500,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
             easing: 'ease-in-out',
             from: {
                 '-webkit-transform': currentTransform,
@@ -533,32 +618,55 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         
         var taxonPos = posCalc.getPositionFromDisplayInfo(me, taxonBoxDispInfo);
         
-        if(posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo) == -90){
-            taxonPos[0] = taxonPos[0] - (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false)) / 2;
-            taxonPos[1] = taxonPos[1] + (taxonBoxClass.getWidth(false) - taxonBoxClass.getHeight(false))  / 2;
-        }
+        var taxonPositionConfigs = posCalc.getTaxonPositionConfigs(me, taxonBoxDispInfo);
+        //taxonBoxPos, taxonBoxRotation, taxonBoxCollapsed, taxonBoxRotation, bottomConnectPos, topConnectPos, topConnectStyle, topConnectLineWidth
+        taxonBoxDispInfo.taxonPositionConfigs = taxonPositionConfigs;
         
         taxonBox.setStyle(
-            '-webkit-transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);'+ //safari and chrome
-            ' -moz-transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);'+ //firefox
-            ' transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);'+ //ie10
-            ' -o-transform: rotate('+posCalc.getRotationFromDisplayInfo(me, taxonBoxDispInfo)+'deg);' //opera
+            '-webkit-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //safari and chrome
+            ' -moz-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //firefox
+            ' transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //ie10
+            ' -o-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);' //opera
         );
-        taxonBox.setCollapsed(posCalc.getIsCollapsedFromDisplayInfo(me, taxonBoxDispInfo));
-        taxonBox.setLeft(taxonPos[0]);
-        taxonBox.setTop(taxonPos[1]);
+        taxonBox.setCollapsed(taxonPositionConfigs.taxonBoxCollapsed);
+        taxonBox.setLeft(taxonPositionConfigs.taxonBoxPos[0]);
+        taxonBox.setTop(taxonPositionConfigs.taxonBoxPos[1]);
 
         
         Ext.Animator.run({
             element: taxonBox.element,
             autoClear: false,
-            duration: 500,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
             easing: 'ease-in-out',
             from: {
                 'opacity': 0
             },
             to: {
                 'opacity': 1,
+            }
+        });
+    },
+    
+    fadeOutTaxonBox: function(taxonBox){
+        var me = this;
+        
+        if(taxonBox.element == null){
+            console.log("cannot fade out taxon box: " + taxonBox.getTaxon().get('name') + ' since it has already been deleted');
+            return;
+        }
+        Ext.Animator.run({
+            element: taxonBox.element,
+            autoClear: false,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration() / 2,
+            easing: 'linear',
+            from: {
+                'opacity': 1
+            },
+            to: {
+                'opacity': 0,
+            },
+            onEnd: function(){
+                me.remove(taxonBox, true);
             }
         });
     },
@@ -583,7 +691,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             Ext.Animator.run({
                 element: taxonBoxDispInfo.parentElbowConnector.element,
                 autoClear: false,
-                duration: 500,
+                duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
                 easing: 'ease-in-out',
                 from: {
                     'opacity': 0
@@ -594,4 +702,23 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             });
         }
     },
+    
+    fadeOutParentElbowConnector: function(elbowConnector){
+        var me = this;
+        Ext.Animator.run({
+            element: elbowConnector.element,
+            autoClear: false,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration() / 2,
+            easing: 'linear',
+            from: {
+                'opacity': 1
+            },
+            to: {
+                'opacity': 0,
+            },
+            onEnd: function(){
+                me.remove(elbowConnector, true);
+            }
+        });
+    }
 });
