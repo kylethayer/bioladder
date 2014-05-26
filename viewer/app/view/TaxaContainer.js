@@ -250,20 +250,12 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             }
         });
     },
-    
-    
+
     findOrCreateTaxonBox: function (taxon) {
         var i, taxonbox, me = this;
         if(me.__olddisplayedTaxonBoxInfo){
             for (i = 0; i < me.__olddisplayedTaxonBoxInfo.length; i++) {
                 if (me.__olddisplayedTaxonBoxInfo[i].taxonBox.getTaxon() === taxon) {
-                    //clear rotation before returning
-                    /*me.__TaxonBoxes[i].setStyle(
-                        '-webkit-transform: rotate(0);'+ //safari and chrome
-                        ' -moz-transform: rotate(0);'+ //firefox
-                        ' transform: rotate(0);'+ //ie10
-                        ' -o-transform: rotate(0);' //opera
-                    );*/
                     return me.__olddisplayedTaxonBoxInfo[i].taxonBox;
                 }
             }
@@ -273,45 +265,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             taxon: taxon
         });
         me.add(taxonbox);
-        //me.__TaxonBoxes.push(taxonbox);
-        return taxonbox;
-        /*var taxonBox = this.findAndRemoveTaxonBox(taxon, me.__olddisplayedTaxonBoxInfo);
-        if(taxonBox){
-            this.remove(taxonBox, true);
-            //return taxonBox;
-        }
-        return this.createTaxonBox(taxon);
-        */
-    },
-    
-    findAndRemoveTaxonBox: function (taxon) {
-        var i, taxonbox, me = this;
-        
-        var foundBox = null;
-        for(i = 0; i < me.__olddisplayedTaxonBoxInfo.length; i++){
-            if(me.__olddisplayedTaxonBoxInfo[i].taxonBox.getTaxon() == taxon){
-                foundBox = me.__olddisplayedTaxonBoxInfo[i].taxonBox;
-                /*foundBox.setStyle(
-                    '-webkit-transform: rotate(0);'+ //safari and chrome
-                    ' -moz-transform: rotate(0);'+ //firefox
-                    ' transform: rotate(0);'+ //ie10
-                    ' -o-transform: rotate(0);' //opera
-                );*/
-                me.__olddisplayedTaxonBoxInfo.splice(i, 1);
-                break;
-            }
-        }
-        
-        return foundBox;
-    },
-    
-    createTaxonBox: function(taxon) {
-        var taxonbox = Ext.widget('taxonbox', {
-            taxon: taxon
-        });
         return taxonbox;
     },
-    
+
     animateTaxonBoxes: function(){
         var me = this;
         var newdisplayedTaxonBoxInfo = me.__displayedTaxonBoxInfo;
