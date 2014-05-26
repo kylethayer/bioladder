@@ -189,5 +189,91 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     destroy: function(){
         this.__isDestroyed = true;       
         this.callSuper();
-    }
+    },
+    
+    animateTo: function(pos, collapse, taxonRotation, callback){
+        var me = this;
+        
+        var currentLeft = me.getLeft();
+        var currentTop = me.getTop();
+        
+        var beforeIsCollapsed = me.getCollapsed();
+        
+        var currentTransform = me.element.dom.style.webkitTransform;
+        var rotateMatch = /rotate\(([-\d]*)deg\)/.exec(currentTransform);
+        if(!rotateMatch){
+            currentTransform += ' rotate(0deg) '
+        }
+        var translateMatch = /translate3d\(([\d px]*)\)/.exec(currentTransform);
+        if(!translateMatch){
+            currentTransform += ' translate3d(0 px, 0 px, 0) '
+        }
+        
+        Ext.Animator.run({
+            element: me.element,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
+            easing: 'ease-in-out',
+            from: {
+                '-webkit-transform': currentTransform,
+                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!beforeIsCollapsed)                
+            },
+            to: {
+                '-webkit-transform': 'translate3d(' + (pos[0] - currentLeft) + 'px, ' + (pos[1] - currentTop) + 'px, 0) ' +
+                                     ' rotate('+taxonRotation+'deg) ',
+                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse)
+            },
+            onEnd: function(arguments){
+                //make sure the width gets reset properly by setting it the opposite first
+                //me.setCollapsed(!collapse);
+                me.setCollapsed(collapse);
+                me.setLeft(pos[0]);
+                me.setTop(pos[1]);
+                me.setStyle({
+                    '-webkit-transform': 'rotate('+taxonRotation+'deg)'
+                });
+                if(callback){
+                    callback(me);
+                }
+            }
+        });
+
+        /*if(collapse && !beforeIsCollapsed){
+            Ext.Animator.run({
+                element: me.down('#taxonBoxContents').element,
+                duration: 500,
+                autoClear: false,
+                easing: 'ease-in-out',
+                from: {
+                    'height': 255
+                },
+                to: {
+                    'height': 0
+                },
+                onEnd: function(arguments){
+                    me.setCollapsed(false);
+                    me.setCollapsed(true);
+                    //me.down('#taxonBoxContents').setHeight(255);
+                }
+            });
+        }else if(!collapse && beforeIsCollapsed){
+            me.setCollapsed(false);
+            Ext.Animator.run({
+                element: me.down('#taxonBoxContents').element,
+                duration: 500,
+                autoClear: false,
+                easing: 'ease-in-out',
+                from: {
+                    'height': 0
+                },
+                to: {
+                    'height': 255
+                },
+                onEnd: function(arguments){
+                    me.setCollapsed(!collapse);
+                    me.setCollapsed(collapse);
+                    me.down('#taxonBoxContents').setHeight(255);
+                }
+            });
+        }*/
+    },
 });
