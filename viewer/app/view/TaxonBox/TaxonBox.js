@@ -67,30 +67,40 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
             itemId: 'taxonLabel'
         }, {
             xtype: 'container',
-            itemId: 'collapsibleContent',
+            itemId: 'contentMask',
+            height: '270px',
+            style: 'overflow: hidden;',
             hidden: true,
-            items: [{
-                xtype: 'taxonboxcontents',
-                height: '255px',
-                scrollable: 'vertical'
-            }, {
+            items: {
                 xtype: 'container',
+                itemId: 'collapsibleContent',
+                style: 'overflow: hidden;',
+                width: '498px',
+                height: '270px',
                 items: [{
-                    xtype: 'button',
-                    baseCls: 'link-btn',
-                    html: 'edit',
-                    itemId: 'wikiEditBtn',
-                    width: '3em'
+                    xtype: 'taxonboxcontents',
+                    width: '498px',
+                    height: '255px',
+                    scrollable: 'vertical'
                 }, {
-                    xtype: 'button',
-                    baseCls: 'link-btn',
-                    docked: 'right',
-                    hidden: true,
-                    html: 'wikipedia page',
-                    itemId: 'wikipediaBtn',
-                    width: '9em'
+                    xtype: 'container',
+                    items: [{
+                        xtype: 'button',
+                        baseCls: 'link-btn',
+                        html: 'edit',
+                        itemId: 'wikiEditBtn',
+                        width: '3em'
+                    }, {
+                        xtype: 'button',
+                        baseCls: 'link-btn',
+                        docked: 'right',
+                        hidden: true,
+                        html: 'wikipedia page',
+                        itemId: 'wikipediaBtn',
+                        width: '9em'
+                    }]
                 }]
-            }]
+            }
         }],
         width: 500
     },
@@ -117,10 +127,10 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
         var me = this;
         if (newCollapsed) {
             me.setWidth(200);
-            me.down('#collapsibleContent').setHidden(true);
+            me.down('#contentMask').setHidden(true);
         } else {
             me.setWidth(500);
-            me.down('#collapsibleContent').setHidden(false);
+            me.down('#contentMask').setHidden(false);
         }
         me.updateTitle();
     },
@@ -209,12 +219,11 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
         
         if(collapse && !beforeIsCollapsed){
             Ext.Animator.run({
-                element: me.down('taxonboxcontents').element,
+                element: me.down('#contentMask').element,
                 duration: 500,
-                autoClear: false,
                 easing: 'ease-in-out',
                 from: {
-                    'height': '255px'
+                    'height': '270px'
                 },
                 to: {
                     'height': '0px'
@@ -223,22 +232,52 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
                     me.setCollapsed(true);
                 }
             });
+            Ext.Animator.run({
+                element: me.down('#collapsibleContent').element,
+                duration: 500,
+                easing: 'ease-in-out',
+                from: {
+                    'width': '498px'
+                },
+                to: {
+                    'width': '198px'
+                },
+                onEnd: function(arguments){
+                    me.setCollapsed(true);
+                }
+            });
         }else if(!collapse && beforeIsCollapsed){
             me.setCollapsed(false);
             Ext.Animator.run({
-                element: me.down('taxonboxcontents').element,
+                element: me.down('#contentMask').element,
                 duration: 500,
-                autoClear: false,
                 easing: 'ease-in-out',
                 from: {
                     'height': '0px'
                 },
                 to: {
-                    'height': '255px'
+                    'height': '270px'
                 },
                 onEnd: function(arguments){
-                    me.down('taxonboxcontents').setStyle({
-                        'height': '255px'
+                    me.down('#contentMask').setStyle({
+                        'height': '270px'
+                    });
+                    return true;
+                }
+            });
+            Ext.Animator.run({
+                element: me.down('#collapsibleContent').element,
+                duration: 500,
+                easing: 'ease-in-out',
+                from: {
+                    'width': '198px'
+                },
+                to: {
+                    'width': '498px'
+                },
+                onEnd: function(arguments){
+                    me.down('#contentMask').setStyle({
+                        'width': '498px'
                     });
                     return true;
                 }
