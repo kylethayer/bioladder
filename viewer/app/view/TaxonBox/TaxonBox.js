@@ -71,7 +71,6 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
             hidden: true,
             items: [{
                 xtype: 'taxonboxcontents',
-                itemId: 'taxonBoxContents',
                 height: '255px',
                 scrollable: 'vertical'
             }, {
@@ -103,13 +102,13 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
 
         //set name and rest of fields when loaded
         me.updateTitle();
-        me.down('#taxonBoxContents').setMasked({
+        me.down('taxonboxcontents').setMasked({
             xtype: 'loadmask'
         });
         newTaxon.whenLoaded(function (newTaxon) {
             if (!me.__isDestroyed) {
                 me.onTaxonLoaded(newTaxon);
-                me.down('#taxonBoxContents').setMasked(false);
+                me.down('taxonboxcontents').setMasked(false);
             }
         });
     },
@@ -129,7 +128,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     onTaxonLoaded: function (newTaxon) {
         if (!this.__isDestroyed) {
             var me = this;
-            me.down('#taxonBoxContents').setData(newTaxon.data);
+            me.down('taxonboxcontents').setData(newTaxon.data);
             me.updateTitle();
         
             if (newTaxon.get('wikipediaPage')) {
@@ -138,7 +137,6 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
             if(newTaxon.get('exampleMember')) {
                 var exampleMember = newTaxon.get('exampleMember');
                 exampleMember.whenLoaded(function (exampleMember) {
-                    //this.down('#taxonBoxContents').setData(newTaxon.data);
                     me.onExampleMemberLoaded(exampleMember);
                 });
             }
@@ -148,7 +146,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     
     onExampleMemberLoaded: function (exampleMember) {
         if (!this.__isDestroyed) {
-            this.down('#taxonBoxContents').setData(this.getTaxon().data);
+            this.down('taxonboxcontents').setData(this.getTaxon().data);
         }
     },
 
@@ -209,71 +207,69 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
             currentTransform += ' translate3d(0 px, 0 px, 0) '
         }
         
+        if(collapse && !beforeIsCollapsed){
+            Ext.Animator.run({
+                element: me.down('taxonboxcontents').element,
+                duration: 500,
+                autoClear: false,
+                easing: 'ease-in-out',
+                from: {
+                    'height': '255px'
+                },
+                to: {
+                    'height': '0px'
+                },
+                onEnd: function(arguments){
+                    me.setCollapsed(true);
+                }
+            });
+        }else if(!collapse && beforeIsCollapsed){
+            me.setCollapsed(false);
+            Ext.Animator.run({
+                element: me.down('taxonboxcontents').element,
+                duration: 500,
+                autoClear: false,
+                easing: 'ease-in-out',
+                from: {
+                    'height': '0px'
+                },
+                to: {
+                    'height': '255px'
+                },
+                onEnd: function(arguments){
+                    me.down('taxonboxcontents').setStyle({
+                        'height': '255px'
+                    });
+                    return true;
+                }
+            });
+        }
+        
         Ext.Animator.run({
             element: me.element,
             duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
             easing: 'ease-in-out',
             from: {
                 '-webkit-transform': currentTransform,
-                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!beforeIsCollapsed)                
+                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!beforeIsCollapsed) + 'px'               
             },
             to: {
                 '-webkit-transform': 'translate3d(' + (pos[0] - currentLeft) + 'px, ' + (pos[1] - currentTop) + 'px, 0) ' +
                                      ' rotate('+taxonRotation+'deg) ',
-                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse)
+                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse) + 'px'
             },
             onEnd: function(arguments){
-                //make sure the width gets reset properly by setting it the opposite first
-                //me.setCollapsed(!collapse);
-                me.setCollapsed(collapse);
                 me.setLeft(pos[0]);
                 me.setTop(pos[1]);
                 me.setStyle({
-                    '-webkit-transform': 'rotate('+taxonRotation+'deg)'
+                    '-webkit-transform': 'rotate('+taxonRotation+'deg)',
+                    'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse) + 'px'
                 });
                 if(callback){
                     callback(me);
                 }
+                return true;
             }
         });
-
-        /*if(collapse && !beforeIsCollapsed){
-            Ext.Animator.run({
-                element: me.down('#taxonBoxContents').element,
-                duration: 500,
-                autoClear: false,
-                easing: 'ease-in-out',
-                from: {
-                    'height': 255
-                },
-                to: {
-                    'height': 0
-                },
-                onEnd: function(arguments){
-                    me.setCollapsed(false);
-                    me.setCollapsed(true);
-                    //me.down('#taxonBoxContents').setHeight(255);
-                }
-            });
-        }else if(!collapse && beforeIsCollapsed){
-            me.setCollapsed(false);
-            Ext.Animator.run({
-                element: me.down('#taxonBoxContents').element,
-                duration: 500,
-                autoClear: false,
-                easing: 'ease-in-out',
-                from: {
-                    'height': 0
-                },
-                to: {
-                    'height': 255
-                },
-                onEnd: function(arguments){
-                    me.setCollapsed(!collapse);
-                    me.setCollapsed(collapse);
-                    me.down('#taxonBoxContents').setHeight(255);
-                }
-            });
-        }*/
-    },
+    }
 });
