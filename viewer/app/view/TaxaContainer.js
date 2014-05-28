@@ -116,8 +116,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             centerX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2 
         });
         taxon.whenLoaded(function (loadedTaxon) {
+            parentLoadingSpinner.destroy();
             if (taxon === me.getTaxon()) {
-                parentLoadingSpinner.destroy();
                 me.addParentTaxon(taxon, taxonDisplayInfo);
             }
         });
@@ -130,8 +130,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             centerX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2 ,
         });
         taxon.whenSubTaxaLoaded(function (loadedTaxon) {
+            childrenLoadingSpinner.destroy();
             if (taxon === me.getTaxon()) {
-                childrenLoadingSpinner.destroy();
                 me.addSubTaxa(taxon, taxonDisplayInfo, taxonPos);
             }
             
@@ -174,9 +174,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 scale: .15
             });
             parentTaxon.whenLoaded(function (loadedTaxon) {
+                grandParentLoadingSpinner.destroy();
                 if(taxon === me.getTaxon()){
                     var grandParentTaxon = loadedTaxon.get('parentTaxon');
-                    grandParentLoadingSpinner.destroy();
                     me.fadeInParentElbowConnector(parentTaxonDisplayInfo);
                     if(grandParentTaxon){
                         grandParentTaxon.ensureFullyLoaded();
@@ -233,8 +233,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         });
         
         taxon.whenSubTaxaLoaded(function (loadedDescTaxon) {
+            popSubtaxaLoadingSpinner.destroy();
             if (pageTaxon === me.getTaxon()) {//check that correct taxon is still up
-                popSubtaxaLoadingSpinner.destroy();
                 if(loadedDescTaxon.get('popularSubTaxa') && loadedDescTaxon.get('popularSubTaxa').length > 0) {
                     var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
                     for(var i = 0; i < popularSubTaxa.length; i++){
