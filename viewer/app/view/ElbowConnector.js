@@ -113,6 +113,42 @@ Ext.define('BioLadderOrg.view.ElbowConnector', {
         });
     },
     
+    fadeIn: function(){
+        var me = this;
+
+        Ext.Animator.run({
+            element: me.element,
+            autoClear: false,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
+            easing: 'ease-in-out',
+            from: {
+                'opacity': 0
+            },
+            to: {
+                'opacity': 1,
+            }
+        });
+    },
+    
+    fadeOut: function(callback){
+        var me = this;
+        Ext.Animator.run({
+            element: me.element,
+            autoClear: false,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration() / 2,
+            easing: 'linear',
+            from: {
+                'opacity': 1
+            },
+            to: {
+                'opacity': 0,
+            },
+            onEnd: function(){
+                callback(me);
+            }
+        });
+    },
+    
     getDivLeft: function(id){
         var me = this;
         if(id == 'line1_' + this.__lineId){

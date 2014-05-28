@@ -271,5 +271,45 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
                 return true;
             }
         });
-    }
+    },
+    
+    fadeIn: function(){
+        var me = this;
+        Ext.Animator.run({
+            element: me.element,
+            autoClear: false,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
+            easing: 'ease-in-out',
+            from: {
+                'opacity': 0
+            },
+            to: {
+                'opacity': 1,
+            }
+        });
+    },
+    
+    fadeOut: function(callBack){
+        var me = this;
+        
+        if(me.element == null){
+            console.log("cannot fade out taxon box: " + me.getTaxon().get('name') + ' since it has already been deleted');
+            return;
+        }
+        Ext.Animator.run({
+            element: me.element,
+            autoClear: false,
+            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration() / 2,
+            easing: 'linear',
+            from: {
+                'opacity': 1
+            },
+            to: {
+                'opacity': 0,
+            },
+            onEnd: function(){
+                callBack(me);
+            }
+        });
+    },
 });

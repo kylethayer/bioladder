@@ -47,8 +47,12 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     },
 
     initialize: function () {
-        this.firstLoad = true;
-        this.__displayedTaxonBoxInfo = []; //TODO, store Elbow connectors with this?
+        var me = this;
+        me.firstLoad = true;
+        me.__displayedTaxonBoxInfo = []; //TODO, store Elbow connectors with this?
+        me.__deleteItem = function(item){
+            me.remove(item, true);
+        };
     },
 
     onNavigateToTaxon: function (taxon) {
@@ -280,10 +284,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         for(var i = 0; i < newdisplayedTaxonBoxInfo.length; i++){
             var newBoxInfo = newdisplayedTaxonBoxInfo[i];
             var taxonBox = newBoxInfo.taxonBox;
-            
-            //parentTaxonDisplayInfo
+
             var taxonPositionConfigs = posCalc.getTaxonPositionConfigs(me, newBoxInfo);
-            //taxonBoxPos, taxonBoxRotation, taxonBoxCollapsed, taxonBoxRotation, bottomConnectPos, topConnectPos, topConnectStyle, topConnectLineWidth
             newBoxInfo.taxonPositionConfigs = taxonPositionConfigs;
             
             var oldDisplayInfo = null;
@@ -335,16 +337,13 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             var taxonBoxToRemove = oldTaxonBoxDispInfo.taxonBox;
             
             if(direction == null || direction == 0 || isNaN(direction)){
-                me.fadeOutTaxonBox(taxonBoxToRemove);
+                taxonBoxToRemove.fadeOut(me.__deleteItem);
             } else {
                 var offScreenEndPosConfig = posCalc.getOffscreenEndPositionConfigs(me, oldTaxonBoxDispInfo, directionInfo); 
                 oldTaxonBoxDispInfo.offScreenEndPosConfig = offScreenEndPosConfig; 
                 var offScreenPos = offScreenEndPosConfig.taxonBoxPos;
                 newBoxInfo.deleteWhenDone = true;
-                var callbackToDelte = function(taxonBoxToDelete){
-                    me.remove(taxonBoxToDelete, true);
-                }
-                taxonBoxToRemove.animateTo(offScreenPos, offScreenEndPosConfig.taxonBoxCollapsed, offScreenEndPosConfig.taxonBoxRotation, callbackToDelte);
+                taxonBoxToRemove.animateTo(offScreenPos, offScreenEndPosConfig.taxonBoxCollapsed, offScreenEndPosConfig.taxonBoxRotation, me.__deleteItem);
             }
         }
         //then remove all their elbow connectors:
@@ -371,7 +370,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     var lineWidth = oldTaxonBoxDispInfo.offScreenEndPosConfig.topConnectLineWidth;
                     oldTaxonBoxDispInfo.parentElbowConnector.animateTo(parentElbowConnectorPos, topElbowConnectorPos, lineStyle, lineWidth);
                 }
-                me.fadeOutParentElbowConnector(oldTaxonBoxDispInfo.parentElbowConnector);
+                oldTaxonBoxDispInfo.parentElbowConnector.fadeOut(me.__deleteItem);
             }
         }
         
@@ -416,7 +415,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                         var lineWidth = newBoxInfo.taxonPositionConfigs.topConnectLineWidth;
                         newBoxInfo.oldParentElbowConnector.animateTo(parentElbowConnectorPos, topElbowConnectorPos, lineStyle, lineWidth);
                     }
-                    me.fadeOutParentElbowConnector(newBoxInfo.oldParentElbowConnector);
+                    newBoxInfo.oldParentElbowConnector.fadeOut(me.__deleteItem);
                 }
             }
             
@@ -485,56 +484,20 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         
         var taxonPositionConfigs = posCalc.getTaxonPositionConfigs(me, taxonBoxDispInfo);
         taxonBoxDispInfo.taxonPositionConfigs = taxonPositionConfigs;
-        
+
+        taxonBox.setCollapsed(taxonPositionConfigs.taxonBoxCollapsed);
+        taxonBox.setLeft(taxonPositionConfigs.taxonBoxPos[0]);
+        taxonBox.setTop(taxonPositionConfigs.taxonBoxPos[1]);
         taxonBox.setStyle(
             '-webkit-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //safari and chrome
             ' -moz-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //firefox
             ' transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //ie10
             ' -o-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);' //opera
         );
-        taxonBox.setCollapsed(taxonPositionConfigs.taxonBoxCollapsed);
-        taxonBox.setLeft(taxonPositionConfigs.taxonBoxPos[0]);
-        taxonBox.setTop(taxonPositionConfigs.taxonBoxPos[1]);
 
-        
-        Ext.Animator.run({
-            element: taxonBox.element,
-            autoClear: false,
-            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
-            easing: 'ease-in-out',
-            from: {
-                'opacity': 0
-            },
-            to: {
-                'opacity': 1,
-            }
-        });
+        taxonBox.fadeIn();
     },
-    
-    fadeOutTaxonBox: function(taxonBox){
-        var me = this;
-        
-        if(taxonBox.element == null){
-            console.log("cannot fade out taxon box: " + taxonBox.getTaxon().get('name') + ' since it has already been deleted');
-            return;
-        }
-        Ext.Animator.run({
-            element: taxonBox.element,
-            autoClear: false,
-            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration() / 2,
-            easing: 'linear',
-            from: {
-                'opacity': 1
-            },
-            to: {
-                'opacity': 0,
-            },
-            onEnd: function(){
-                me.remove(taxonBox, true);
-            }
-        });
-    },
-    
+
     fadeInParentElbowConnector: function(taxonBoxDispInfo){
         var me = this;
         var posCalc = BioLadderOrg.view.TaxaContainerPositionCalculator;
@@ -552,37 +515,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, taxonBoxDispInfo),
                 lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, taxonBoxDispInfo)
             });
-            Ext.Animator.run({
-                element: taxonBoxDispInfo.parentElbowConnector.element,
-                autoClear: false,
-                duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
-                easing: 'ease-in-out',
-                from: {
-                    'opacity': 0
-                },
-                to: {
-                    'opacity': 1,
-                }
-            });
+            
+            taxonBoxDispInfo.parentElbowConnector.fadeIn();
         }
-    },
-    
-    fadeOutParentElbowConnector: function(elbowConnector){
-        var me = this;
-        Ext.Animator.run({
-            element: elbowConnector.element,
-            autoClear: false,
-            duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration() / 2,
-            easing: 'linear',
-            from: {
-                'opacity': 1
-            },
-            to: {
-                'opacity': 0,
-            },
-            onEnd: function(){
-                me.remove(elbowConnector, true);
-            }
-        });
     }
 });
