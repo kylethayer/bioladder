@@ -332,6 +332,10 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 
                 if(direction == null || direction == 0 || isNaN(direction)){
                     newBoxInfo.oldTaxonPositionConfigs = newBoxInfo.taxonPositionConfigs;
+                    taxonBox.setLeft(newBoxInfo.taxonPositionConfigs.taxonBoxPos[0]);
+                    taxonBox.setTop(newBoxInfo.taxonPositionConfigs.taxonBoxPos[1]);
+                    taxonBox.setCollapsed(taxonPositionConfigs.taxonBoxCollapsed);
+                    taxonBox.fadeIn();
                 } else {
                     var offScreenStartPosConf = posCalc.getOffscreenStartPositionConfigs(me, newBoxInfo, directionInfo);
                     newBoxInfo.offScreenStartPosConf = offScreenStartPosConf;
@@ -351,6 +355,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             var taxonBoxToRemove = oldTaxonBoxDispInfo.taxonBox;
             
             if(direction == null || direction == 0 || isNaN(direction)){
+                //TODO: Put this as the offscreenEndPosConfig, same location
+                oldTaxonBoxDispInfo.offScreenEndPosConfig = oldTaxonBoxDispInfo.taxonPositionConfigs;
                 taxonBoxToRemove.fadeOut(me.__deleteItem);
             } else {
                 var offScreenEndPosConfig = posCalc.getOffscreenEndPositionConfigs(me, oldTaxonBoxDispInfo, directionInfo); 
@@ -436,24 +442,21 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             //Any matching elbow connectors have been handled, now we must add the remaining ones
             // if position is -1, then connect to the empty space above
             // else, connect to the actual parent
+            if(!newBoxInfo.parentTaxonDisplayInfo){ // There is no new parent to connect to, go to the next one
+                continue;
+            }
             var startTopElbowConnectorPos = null;
             var startParentElbowConnectorPos = null;
             if(newBoxInfo.oldTaxonPositionConfigs){
                 startTopElbowConnectorPos = newBoxInfo.oldTaxonPositionConfigs.topConnectPos;
             } else if(newBoxInfo.offScreenStartPosConf) {
                 startTopElbowConnectorPos = newBoxInfo.offScreenStartPosConf.topConnectPos;
-            } else{
-                continue;
             }
-            if(!newBoxInfo.parentTaxonDisplayInfo){
-                continue;
-            }
+
             if(newBoxInfo.parentTaxonDisplayInfo.oldTaxonPositionConfigs){
                 startParentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.oldTaxonPositionConfigs.bottomConnectPos;
             } else if(newBoxInfo.parentTaxonDisplayInfo.offScreenStartPosConf){
                 startParentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.offScreenStartPosConf.bottomConnectPos;
-            } else{
-                continue;
             }
 
             newBoxInfo.parentElbowConnector = me.add({
@@ -462,8 +465,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 endX: startTopElbowConnectorPos[0],
                 startY: startParentElbowConnectorPos[1],
                 endY: startTopElbowConnectorPos[1],
-                lineStyle: posCalc.getElbowConnecterStyleFromDisplayInfo(me, newBoxInfo),
-                lineWidth: posCalc.getElbowConnecterLineWidthFromDisplayInfo(me, newBoxInfo)
+                lineStyle: newBoxInfo.taxonPositionConfigs.topConnectStyle,
+                lineWidth: newBoxInfo.taxonPositionConfigs.topConnectLineWidth
             });
             var topElbowConnectorPos = newBoxInfo.taxonPositionConfigs.topConnectPos;
             var parentElbowConnectorPos = newBoxInfo.parentTaxonDisplayInfo.taxonPositionConfigs.bottomConnectPos;
