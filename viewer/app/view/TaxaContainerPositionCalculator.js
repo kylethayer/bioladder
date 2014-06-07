@@ -179,6 +179,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         },
         
         getOffscreenStartPosition: function(taxaContainer, taxonBoxDisplayInfo, directionInfo){
+            var me = this;
             var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
             var taxonBoxAdd = taxonBoxDisplayInfo.taxonBox;
 
@@ -205,15 +206,16 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                         offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
                     } else {
                         offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
-                        offScreenPos[1] = -30 - taxonBoxClass.getHeight(taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxCollapsed);
+                        //TODO getHeightAccountingForRotation
+                        offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
                     }
                 } else {
                     offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
-                    offScreenPos[1] = -30 - taxonBoxClass.getHeight(taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxCollapsed);
+                    offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
                 }
             } else if(directionInfo.direction > 0){
                 offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
-                offScreenPos[1] = -30 - taxonBoxClass.getHeight(taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxCollapsed);
+                offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
             } else {
                 offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
                 offScreenPos[1] = taxaContainer.element.getHeight() + 30;
@@ -222,6 +224,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         },
         
         getOffscreenEndPosition: function(taxaContainer, taxonBoxDisplayInfo, directionInfo){
+            var me = this;
             var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
             var taxonBoxToRemove = taxonBoxDisplayInfo.taxonBox;
             
@@ -259,9 +262,19 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                 offScreenPos[1] = taxaContainer.element.getHeight() + 30;
             } else {
                 offScreenPos[0] = taxonBoxToRemove.getLeft();
-                offScreenPos[1] = -30 - taxonBoxClass.getHeight(false);
+                offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
             }
             return offScreenPos;
+        },
+
+        getHeightAccountingForRotation: function(taxonPositionConfigs){
+            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            
+            if(taxonPositionConfigs.taxonBoxRotation == 0){
+                return taxonBoxClass.getHeight(taxonPositionConfigs.taxonBoxCollapsed);
+            }else{ //it is rotated
+                return taxonBoxClass.getWidth(taxonPositionConfigs.taxonBoxCollapsed);
+            }
         },
         
         getDirectionInfo: function(olddisplayedTaxonBoxInfo, newdisplayedTaxonBoxInfo){
