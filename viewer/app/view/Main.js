@@ -46,10 +46,12 @@ Ext.define('BioLadderOrg.view.Main', {
             title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki',
             items: [{
                 xtype: 'button',
+                align: 'right',
                 iconCls: 'search',
                 itemId: 'searchBtn'
             }, {
                 xtype: 'button',
+                align: 'right',
                 html: 'How To Help',
                 itemId: 'howToHelpBtn'
             }]
