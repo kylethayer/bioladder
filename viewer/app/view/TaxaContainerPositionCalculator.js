@@ -37,6 +37,11 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         getPosition: function(taxaContainer, taxonDescendantIndex, taxonSiblingIndex, siblingsCount, parentPosition){
             var x,y,
                 taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
+            if(taxonDescendantIndex == -2){
+                x = taxaContainer.element.getWidth() / 2 - taxonBoxClass.getWidth(false) / 2;
+                y = -this.topSpacing - taxonBoxClass.getHeight(false);
+                return [x, y];
+            }
             if(taxonDescendantIndex == -1){
                 x = taxaContainer.element.getWidth() / 2 - taxonBoxClass.getWidth(false) / 2;
                 y = this.topSpacing;
@@ -124,30 +129,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
             }
             return elbowConnectorPos;
         },
-        
-        //TODO: Remove
-        getParentElbowConnectorPosFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
-            var me = this;
-            var taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
-            var parentDispInf = taxonBoxDisplayInfo.parentTaxonDisplayInfo;
-            
-            if(parentDispInf){
-                var parentBoxPosition = me.getPositionFromDisplayInfo(taxaContainer, parentDispInf);
-                return [
-                    parentBoxPosition[0] + taxonBoxClass.getWidth(!me.getIsCollapsedFromDisplayInfo(taxaContainer, parentDispInf)) / 2,
-                    parentBoxPosition[1] + taxonBoxClass.getHeight(!me.getIsCollapsedFromDisplayInfo(taxaContainer, parentDispInf)) 
-                ];
-            }else if(taxonBoxDisplayInfo.descendantIndex == -1){
-                return [
-                    taxaContainer.element.getWidth() / 2, 
-                    -30
-                ]
-            }else{
-                return null;
-            }
-            return elbowConnectorPos;
-        },
-        
+
         getElbowConnecterStyleFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
             if(taxonBoxDisplayInfo.descendantIndex == Infinity){
                 return 'dashed';
