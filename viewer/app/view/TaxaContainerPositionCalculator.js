@@ -431,7 +431,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                 return "-moz-transform";
             }
             if(Ext.browser.is.IE) {
-                return "transform";
+                return "msTransform";
             }
             return "transform";
         },
