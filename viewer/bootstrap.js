@@ -24,6 +24,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "BioLadderOrg.controller.Main": [],
   "BioLadderOrg.model.Taxon": [],
   "BioLadderOrg.model.TaxonSearch": [],
+  "BioLadderOrg.overrides.fx.runner.CssTransitionPatch": [],
   "BioLadderOrg.store.Taxa": [],
   "BioLadderOrg.view.AboutCladesPanel": [],
   "BioLadderOrg.view.ElbowConnector": [],
@@ -762,6 +763,7 @@ Ext.ClassManager.addNameAliasMappings({
   "BioLadderOrg.controller.Main": [],
   "BioLadderOrg.model.Taxon": [],
   "BioLadderOrg.model.TaxonSearch": [],
+  "BioLadderOrg.overrides.fx.runner.CssTransitionPatch": [],
   "BioLadderOrg.store.Taxa": [],
   "BioLadderOrg.view.AboutCladesPanel": [
     "widget.aboutCladesPanel"

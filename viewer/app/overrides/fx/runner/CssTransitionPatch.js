@@ -25,7 +25,6 @@ Ext.define('BioLadderOrg.overrides.fx.runner.CssTransitionPatch', {
         // This just guarantees that "-moz-transform" is there for Firefox to handle properly.
         if(propertyNames.indexOf("transform") >= 0 && propertyNames.indexOf("-moz-transform") < 0){
             propertyNames.push("-moz-transform");
-            console.warn("refreshRunningAnimationsData override2", propertyNames);
         }
         return this.callParent(arguments);
     }
