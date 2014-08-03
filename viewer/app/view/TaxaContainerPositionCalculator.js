@@ -206,7 +206,6 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                         offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
                     } else {
                         offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
-                        //TODO getHeightAccountingForRotation
                         offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
                     }
                 } else {
@@ -218,7 +217,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                 offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
             } else {
                 offScreenPos[0] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[0];
-                offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+                offScreenPos[1] = taxaContainer.element.getHeight() + me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs) / 2;
             }
             return offScreenPos;
         },
@@ -251,15 +250,15 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                         offScreenPos[1] = taxonBoxDisplayInfo.taxonPositionConfigs.taxonBoxPos[1];
                     } else {
                         offScreenPos[0] = taxonBoxToRemove.getLeft();
-                        offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+                        offScreenPos[1] = taxaContainer.element.getHeight() + me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs) / 2;
                     }
                 } else {
                     offScreenPos[0] = taxonBoxToRemove.getLeft();
-                    offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+                    offScreenPos[1] = taxaContainer.element.getHeight() + me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs) / 2;
                 }
             } else if(directionInfo.direction > 0){
                 offScreenPos[0] = taxonBoxToRemove.getLeft();
-                offScreenPos[1] = taxaContainer.element.getHeight() + 30;
+                offScreenPos[1] = taxaContainer.element.getHeight() + me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs) / 2;
             } else {
                 offScreenPos[0] = taxonBoxToRemove.getLeft();
                 offScreenPos[1] = -30 - me.getHeightAccountingForRotation(taxonBoxDisplayInfo.taxonPositionConfigs);
