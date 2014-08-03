@@ -10,6 +10,8 @@
     will need to resolve manually.
 */
 
+Ext.require('BioLadderOrg.overrides.fx.runner.CssTransitionPatch')
+
 Ext.application({
     name: 'BioLadderOrg',
 

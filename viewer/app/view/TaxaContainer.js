@@ -113,13 +113,14 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
  
 
         //display parentTaxon
-        var parentLoadingSpinner = me.add({
+        me.destroyParentLoadingSpinner(taxonDisplayInfo);
+        taxonDisplayInfo.parentLoadingSpinner = me.add({
             xtype: 'loadingspinner',
             centerY: taxonPos[1] - 30,
             centerX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2 
         });
         taxon.whenLoaded(function (loadedTaxon) {
-            parentLoadingSpinner.destroy();
+            me.destroyParentLoadingSpinner(taxonDisplayInfo);
             if (taxon === me.getTaxon()) {
                 me.addParentTaxon(taxon, taxonDisplayInfo);
             }
@@ -127,13 +128,14 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
 
 
         //display subTaxa
-        var childrenLoadingSpinner = me.add({
+        me.destroyChildrenLoadingSpinner(taxonDisplayInfo);
+        taxonDisplayInfo.childrenLoadingSpinner = me.add({
             xtype: 'loadingspinner',
             centerY: taxonPos[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(true) + 40,
             centerX: taxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(true) / 2 ,
         });
         taxon.whenSubTaxaLoaded(function (loadedTaxon) {
-            childrenLoadingSpinner.destroy();
+            me.destroyChildrenLoadingSpinner(taxonDisplayInfo);
             if (taxon === me.getTaxon()) {
                 me.addSubTaxa(taxon, taxonDisplayInfo, taxonPos);
             }
@@ -170,14 +172,15 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 me.fadeInParentElbowConnector(taxonDisplayInfo);
             }
             
-            var grandParentLoadingSpinner = me.add({
+            me.destroyParentLoadingSpinner(parentTaxonDisplayInfo);
+            parentTaxonDisplayInfo.parentLoadingSpinner = me.add({
                 xtype: 'loadingspinner',
                 centerY: parentTaxonPos[1] - 6,
                 centerX: parentTaxonPos[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2,
                 scale: .15
             });
             parentTaxon.whenLoaded(function (loadedTaxon) {
-                grandParentLoadingSpinner.destroy();
+                me.destroyParentLoadingSpinner(parentTaxonDisplayInfo);
                 if(taxon === me.getTaxon()){
                     var grandParentTaxon = loadedTaxon.get('parentTaxon');
 
@@ -239,15 +242,16 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     addPopularDescendantsWhenLoaded: function(pageTaxon, taxon, subTaxonDisplayInfo, parentPosition){
         var me = this,
             taxonBox = BioLadderOrg.view.TaxonBox.TaxonBox;
-            
-        var popSubtaxaLoadingSpinner = me.add({
+        
+        me.destroyChildrenLoadingSpinner(subTaxonDisplayInfo);
+        subTaxonDisplayInfo.childrenLoadingSpinner = me.add({
             xtype: 'loadingspinner',
             centerY: parentPosition[1] + BioLadderOrg.view.TaxonBox.TaxonBox.getHeight(false) + 40,
             centerX: parentPosition[0] + BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(false) / 2 ,
         });
         
         taxon.whenSubTaxaLoaded(function (loadedDescTaxon) {
-            popSubtaxaLoadingSpinner.destroy();
+            me.destroyChildrenLoadingSpinner(subTaxonDisplayInfo);
             if (pageTaxon === me.getTaxon()) {//check that correct taxon is still up
                 if(loadedDescTaxon.get('popularSubTaxa') && loadedDescTaxon.get('popularSubTaxa').length > 0) {
                     var popularSubTaxa = loadedDescTaxon.get('popularSubTaxa');
@@ -326,9 +330,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 taxonBox.animateTo(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation);
             }else{ //animate in from off screen
                 taxonBox.setCollapsed(true);
-                taxonBox.setStyle({
-                    '-webkit-transform': 'rotate('+taxonPositionConfigs.taxonBoxRotation+'deg)'
-                });
+                var taxonBoxStyle = {}
+                taxonBoxStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+taxonPositionConfigs.taxonBoxRotation+'deg)';
+                taxonBox.setStyle(taxonBoxStyle);
                 
                 if(direction == null || direction == 0 || isNaN(direction)){
                     newBoxInfo.oldTaxonPositionConfigs = newBoxInfo.taxonPositionConfigs;
@@ -505,12 +509,9 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         taxonBox.setCollapsed(taxonPositionConfigs.taxonBoxCollapsed);
         taxonBox.setLeft(taxonPositionConfigs.taxonBoxPos[0]);
         taxonBox.setTop(taxonPositionConfigs.taxonBoxPos[1]);
-        taxonBox.setStyle(
-            '-webkit-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //safari and chrome
-            ' -moz-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //firefox
-            ' transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);'+ //ie10
-            ' -o-transform: rotate('+taxonPositionConfigs.taxonBoxRotation+'deg);' //opera
-        );
+        var taxonBoxStyle = {};
+        taxonBoxStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+taxonPositionConfigs.taxonBoxRotation+'deg)';
+        taxonBox.setStyle(taxonBoxStyle);
 
         taxonBox.fadeIn();
     },
@@ -535,5 +536,20 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             
             taxonBoxDispInfo.parentElbowConnector.fadeIn();
         }
+    },
+    
+    destroyParentLoadingSpinner: function(taxonDisplayInfo){
+        if(taxonDisplayInfo.parentLoadingSpinner){
+            taxonDisplayInfo.parentLoadingSpinner.destroy();
+            taxonDisplayInfo.parentLoadingSpinner = null;
+        }
+    },
+    
+    destroyChildrenLoadingSpinner: function(taxonDisplayInfo){
+        if(taxonDisplayInfo.childrenLoadingSpinner){
+            taxonDisplayInfo.childrenLoadingSpinner.destroy();
+            taxonDisplayInfo.childrenLoadingSpinner = null;
+        }
     }
+    
 });

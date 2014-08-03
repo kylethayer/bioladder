@@ -414,5 +414,39 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
             }
             return elbowConnectorPos;
         },
+        
+        getTaxonBoxMotionAttributeType: function(){
+            if(Ext.browser.is.IE) {
+                return 'top-left';
+            }else{
+                return 'transform';
+            }
+        },
+        
+        getCssTransitionAttribute: function(){
+            if(Ext.browser.is.Chrome) {
+                return "-webkit-transform";
+            }
+            if(Ext.browser.is.Firefox) {
+                return "-moz-transform";
+            }
+            if(Ext.browser.is.IE) {
+                return "transform";
+            }
+            return "transform";
+        },
+        
+        getCssTransitionAttributeAccessor: function(){
+            if(Ext.browser.is.Chrome) {
+                return "webkitTransform";
+            }
+            if(Ext.browser.is.Firefox) {
+                return "MozTransform";
+            }
+            if(Ext.browser.is.IE) {
+                return "transform";
+            }
+            return "transform";
+        }
     }
 });

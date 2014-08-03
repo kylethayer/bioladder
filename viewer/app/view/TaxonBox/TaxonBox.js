@@ -201,20 +201,24 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     
     animateTo: function(pos, collapse, taxonRotation, callback){
         var me = this;
+        var posCalc = BioLadderOrg.view.TaxaContainerPositionCalculator;
         
         var currentLeft = me.getLeft();
         var currentTop = me.getTop();
         
         var beforeIsCollapsed = me.getCollapsed();
         
-        var currentTransform = me.element.dom.style.webkitTransform;
+        var currentTransform = me.element.dom.style[posCalc.getCssTransitionAttributeAccessor()];
         var rotateMatch = /rotate\(([-\d]*)deg\)/.exec(currentTransform);
-        if(!rotateMatch){
-            currentTransform += ' rotate(0deg) '
+        var startRotation = 0;
+        if(rotateMatch){
+            var startRotation = rotateMatch[1];
         }
-        var translateMatch = /translate3d\(([\d px]*)\)/.exec(currentTransform);
-        if(!translateMatch){
-            currentTransform += ' translate3d(0 px, 0 px, 0) '
+
+        var translateMatch = /translate3d\(([-\d px,\.]*)\)/.exec(currentTransform);
+        var startTranslate = '0 px, 0 px, 0';
+        if(translateMatch){
+            startTranslate =  translateMatch[1];
         }
         
         if(collapse && !beforeIsCollapsed){
@@ -284,26 +288,52 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
             });
         }
         
+        var motionAttributeType = posCalc.getTaxonBoxMotionAttributeType();
+        var fromWidth = BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!beforeIsCollapsed);
+        var fromStyle = {};
+        if(motionAttributeType == 'top-left'){
+            fromStyle.left = me.getLeft();
+            fromStyle.top = me.getTop();
+            fromStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+startRotation+'deg)';
+        }else{
+            fromStyle[posCalc.getCssTransitionAttribute()] = 'translate3d('+startTranslate+') rotate('+startRotation+'deg)';
+        }
+        
+        var toWidth = BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse);
+        var toStyle = {};
+        if(fromWidth != toWidth){
+            fromStyle.width = fromWidth + 'px';
+            toStyle.width = toWidth + 'px';
+        }
+        
+        if(motionAttributeType == 'top-left'){
+            toStyle.left = pos[0];
+            toStyle.top =  pos[1];
+            toStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+taxonRotation+'deg)';
+        }else{
+            toStyle[posCalc.getCssTransitionAttribute()] = 'translate3d(' + (pos[0] - currentLeft) + 'px, ' + (pos[1] - currentTop) + 'px, 0) rotate('+taxonRotation+'deg) ';
+        }
+        
+        var endStyle = {
+            'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse) + 'px'
+        };
+        if(motionAttributeType == 'top-left'){
+            endStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+taxonRotation+'deg)';
+        } else{
+            endStyle[posCalc.getCssTransitionAttribute()] = ' translate3d(0px, 0px, 0px) rotate('+taxonRotation+'deg)';
+        }
+        
         Ext.Animator.run({
             element: me.element,
             duration: BioLadderOrg.view.TaxaContainerPositionCalculator.getAnimationDuration(),
             easing: 'ease-in-out',
-            from: {
-                '-webkit-transform': currentTransform,
-                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!beforeIsCollapsed) + 'px'               
-            },
-            to: {
-                '-webkit-transform': 'translate3d(' + (pos[0] - currentLeft) + 'px, ' + (pos[1] - currentTop) + 'px, 0) ' +
-                                     ' rotate('+taxonRotation+'deg) ',
-                'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse) + 'px'
-            },
+            from: fromStyle,
+            to: toStyle,
             onEnd: function(arguments){
                 me.setLeft(pos[0]);
                 me.setTop(pos[1]);
-                me.setStyle({
-                    '-webkit-transform': 'rotate('+taxonRotation+'deg)',
-                    'width': BioLadderOrg.view.TaxonBox.TaxonBox.getWidth(!collapse) + 'px'
-                });
+                var thisTaxon = me.getTaxon().get('name');
+                me.setStyle(endStyle);
                 if(callback){
                     callback(me);
                 }
@@ -332,7 +362,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
         var me = this;
         
         if(me.element == null){
-            console.log("cannot fade out taxon box: " + me.getTaxon().get('name') + ' since it has already been deleted');
+            console.warn("cannot fade out taxon box: " + me.getTaxon().get('name') + ' since it has already been deleted');
             return;
         }
         Ext.Animator.run({
