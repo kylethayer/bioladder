@@ -23,9 +23,6 @@ require 'media_wiki'
 require 'yaml'
 #see https://github.com/jpatokal/mediawiki-gateway
 
-#mw = MediaWiki::Gateway.new('http://bioladder.org/wiki/api.php')
-
-puts "logging in"
 credentials = YAML.load_file('LoginCredentials.yaml')
 $mw = MediaWiki::Gateway.new(credentials['URL'])
 $mw.login(credentials['UserName'], credentials['Password'])
@@ -38,31 +35,8 @@ def $mw.bot_edit(title, content, options={})
   make_api_request(form_data)
 end
 
-#xml.elements["query"].elements["results"].first.name
-
-#entry = mw.get("api.php?action=ask&query=[[Are Popular Subtaxa Out Of Date::true]]|?Has Parent Taxon|?Has Wikipedia Image|?Has Wikipedia Page|limit=1&format=json")
-
-#Note: Make an edit plugin to set Subtaxa Out of Date to False on non-minor edits
-
-#select by Are Popular Subtaxa Out Of Date=false (include '?Has Parent Taxon', '?Popular Subtaxa', '?Has Popularity')
-#NOTE: Make this modify the parent then put the parent out of date (the out of date means parent needs to be processed)
-#For each one (up to 50?) 
-  # Do another ask to get Subtaxa ('?Popular Subtaxa', '?Has Popularity')
-  # combine the Popular Subtaxa and popularity of the descendants to generate a new list
-  # load the page and if that is different than the current one,
-    # change:
-      # the Popular Subtaxa, 
-      # mark self as out of date
-      # mark the Ancestor as out of date
-  #else
-    # mark it as not out of date
-  #NOTE: SAVES ARE MINOR SO WE DON'T GO INTO INFINITE LOOP
-  
 WeightAgainstBranchFraction = 0.7
 
-#BUG: Change in popularity is not carried up if it doesn't change the immediate parent!!! Need to embed the popularities somehow!!!
-  
-  
 def processPopularSubtaxaForTaxon(parentTaxonName)
   puts "processPopularSubtaxaForTaxon #{parentTaxonName}..."
   queryResults = $mw.semantic_query("[[Has Parent Taxon::#{parentTaxonName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
@@ -207,7 +181,6 @@ maxEntriesToProcess = 25
     puts "#{i}, #{entry.name}"
     processTaxon(entry)
   else
-    puts "completed"
     break
   end
   sleep(1) # pause to allow other non-bot requests to go through
