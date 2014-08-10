@@ -21,14 +21,14 @@
  * @ingroup Maintenance
  */
 
-require_once( __DIR__ . '/Maintenance.php' );
+require_once __DIR__ . '/Maintenance.php';
 
 /**
  * Maintenance script that picks a database that has pending jobs.
  *
  * @ingroup Maintenance
  */
-class nextJobDB extends Maintenance {
+class NextJobDB extends Maintenance {
 	public function __construct() {
 		parent::__construct();
 		$this->mDescription = "Pick a database that has pending jobs";
@@ -78,10 +78,6 @@ class nextJobDB extends Maintenance {
 			}
 
 			list( $type, $db ) = $candidates[mt_rand( 0, count( $candidates ) - 1 )];
-			if ( JobQueueGroup::singleton( $db )->isQueueDeprioritized( $type ) ) {
-				$pendingDBs[$type] = array_diff( $pendingDBs[$type], array( $db ) );
-				$again = true;
-			}
 		} while ( $again );
 
 		if ( $this->hasOption( 'types' ) ) {
@@ -115,5 +111,5 @@ class nextJobDB extends Maintenance {
 	}
 }
 
-$maintClass = "nextJobDb";
-require_once( RUN_MAINTENANCE_IF_MAIN );
+$maintClass = "NextJobDb";
+require_once RUN_MAINTENANCE_IF_MAIN;

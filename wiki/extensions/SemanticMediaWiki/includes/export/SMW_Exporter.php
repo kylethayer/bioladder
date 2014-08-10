@@ -1,8 +1,9 @@
 <?php
-/**
- * @file
- * @ingroup SMW
- */
+
+use SMW\DataTypeRegistry;
+use SMW\DataValueFactory;
+use SMW\DIProperty;
+use SMW\DIWikiPage;
 
 /**
  * SMWExporter is a class for converting internal page-based data (SMWSemanticData) into
@@ -12,10 +13,39 @@
  * @ingroup SMW
  */
 class SMWExporter {
+
+	/**
+	 * @var SMWExporter
+	 */
+	private static $instance = null;
+
 	static protected $m_exporturl = false;
 	static protected $m_ent_wiki = false;
 	static protected $m_ent_property = false;
 	static protected $m_ent_wikiurl = false;
+
+	/**
+	 * @since 2.0
+	 *
+	 * @return SMWExporter
+	 */
+	public static function getInstance() {
+
+		if ( self::$instance === null ) {
+
+			self::$instance = new self();
+			self::$instance->initBaseURIs();
+		}
+
+		return self::$instance;
+	}
+
+	/**
+	 * @since 2.0
+	 */
+	public static function clear() {
+		self::$instance = null;
+	}
 
 	/**
 	 * Make sure that necessary base URIs are initialised properly.
@@ -39,6 +69,15 @@ class SMWExporter {
 		self::$m_ent_property = self::$m_ent_wiki . self::encodeURI( urlencode( str_replace( ' ', '_', $wgContLang->getNsText( SMW_NS_PROPERTY ) . ':' ) ) );
 		$title = SpecialPage::getTitleFor( 'ExportRDF' );
 		self::$m_exporturl    = self::$m_ent_wikiurl . $title->getPrefixedURL();
+	}
+
+	/**
+	 * @since  2.0
+	 *
+	 * @return string
+	 */
+	public function getEncodedPropertyNamespace() {
+		return $this->encodeURI( urlencode( str_replace( ' ', '_', $GLOBALS['wgContLang']->getNsText( SMW_NS_PROPERTY ) . ':' ) ) );
 	}
 
 	/**
@@ -107,7 +146,7 @@ class SMWExporter {
 				break;
 				case SMW_NS_PROPERTY:
 					if ( $typesvalueforproperty == null ) {
-						$types = smwfGetStore()->getPropertyValues( $diWikiPage, new SMWDIProperty( '_TYPE' ) );
+						$types = \SMW\StoreFactory::getStore()->getPropertyValues( $diWikiPage, new SMWDIProperty( '_TYPE' ) );
 						$typesvalueforproperty = end( $types );
 					}
 					$maintype_pe = self::getSpecialNsResource( 'owl', self::getOWLPropertyType( $typesvalueforproperty ) );
@@ -127,7 +166,7 @@ class SMWExporter {
 				$result->addPropertyObjectValue( self::getSpecialNsResource( 'swivt', 'page' ), $ed );
 				$ed = new SMWExpResource( self::$m_exporturl . '/' . $prefixedSubjectUrl );
 				$result->addPropertyObjectValue( self::getSpecialNsResource( 'rdfs', 'isDefinedBy' ), $ed );
-				$ed = new SMWExpLiteral( $diWikiPage->getNamespace(), 'http://www.w3.org/2001/XMLSchema#integer' );
+				$ed = new SMWExpLiteral( strval( $diWikiPage->getNamespace() ), 'http://www.w3.org/2001/XMLSchema#integer' );
 				$result->addPropertyObjectValue( self::getSpecialNsResource( 'swivt', 'wikiNamespace' ), $ed );
 				if ( $addStubData ) {
 					// Add a default sort key; for pages that exist in the wiki,
@@ -207,6 +246,11 @@ class SMWExporter {
 						$expData->addPropertyObjectValue( $pe, $ed );
 						$peUri = self::getSpecialPropertyResource( '_URI' );
 						$expData->addPropertyObjectValue( $peUri, $ed );
+					} elseif ( !$property->isUserDefined() && !self::hasSpecialPropertyResource( $property )  ) {
+						$expData->addPropertyObjectValue(
+							self::getResourceElementForWikiPage( $property->getDiWikiPage(), 'aux' ),
+							$ed
+						);
 					} else {
 						$expData->addPropertyObjectValue( $pe, $ed );
 					}
@@ -273,35 +317,33 @@ class SMWExporter {
 
 		if ( $modifier === '' ) {
 			$importProperty = new SMWDIProperty( '_IMPO' );
-			$importDis = smwfGetStore()->getPropertyValues( $diWikiPage, $importProperty );
+			$importDis = \SMW\StoreFactory::getStore()->getPropertyValues( $diWikiPage, $importProperty );
 			$importURI = ( count( $importDis ) > 0 );
 		} else {
 			$importURI = false;
 		}
 
 		if ( $importURI ) {
-			$importValue = SMWDataValueFactory::newDataItemValue( current( $importDis ), $importProperty );
+			$importValue = DataValueFactory::getInstance()->newDataItemValue( current( $importDis ), $importProperty );
 			$namespace = $importValue->getNS();
 			$namespaceId = $importValue->getNSID();
 			$localName = $importValue->getLocalName();
 		} else {
 			$localName = '';
+
 			if ( $diWikiPage->getNamespace() == SMW_NS_PROPERTY ) {
 				$namespace = self::getNamespaceUri( 'property' );
 				$namespaceId = 'property';
 				$localName = self::encodeURI( rawurlencode( $diWikiPage->getDBkey() ) );
 			}
+
 			if ( ( $localName === '' ) ||
 			     ( in_array( $localName{0}, array( '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ) ) ) ) {
 				$namespace = self::getNamespaceUri( 'wiki' );
 				$namespaceId = 'wiki';
-				if ( $diWikiPage->getNamespace() !== 0 ) {
-					$localName = str_replace( ' ', '_', $wgContLang->getNSText( $diWikiPage->getNamespace() ) ) . ':' . $diWikiPage->getDBkey();
-				} else {
-					$localName = $diWikiPage->getDBkey();
-				}
-				$localName = self::encodeURI( wfUrlencode( $localName ) );
+				$localName = self::getEncodedPageName( $diWikiPage );
 			}
+
 			if ( $modifier !== '' ) {
 				$localName .=  '-23' . $modifier;
 			}
@@ -324,12 +366,14 @@ class SMWExporter {
 		if ( $expElement instanceof SMWExpResource ) {
 			$uri = $expElement->getUri();
 			$wikiNamespace = self::getNamespaceUri( 'wiki' );
+
 			if ( strpos( $uri, $wikiNamespace ) === 0 ) {
 				$localName = substr( $uri, strlen( $wikiNamespace ) );
 				$dbKey = rawurldecode( self::decodeURI( $localName ) );
 
-				$parts = explode( '-23', $dbKey, 2 );
+				$parts = explode( '#', $dbKey, 2 );
 				if ( count( $parts ) == 2 ) {
+					$dbKey = $parts[0];
 					$subobjectname = $parts[1];
 				} else {
 					$subobjectname = '';
@@ -373,7 +417,7 @@ class SMWExporter {
 	 */
 	static public function getOWLPropertyType( $type = '' ) {
 		if ( $type instanceof SMWDIWikiPage ) {
-			$type = SMWDataValueFactory::findTypeID( str_replace( '_', ' ', $type->getDBkey() ) );
+			$type = DataTypeRegistry::getInstance()->findTypeId( str_replace( '_', ' ', $type->getDBkey() ) );
 		} elseif ( $type == false ) {
 			$type = '';
 		} // else keep $type
@@ -434,6 +478,8 @@ class SMWExporter {
 				return self::getSpecialNsResource( 'swivt', 'wikiPageSortKey' );
 			case '_TYPE':
 				return self::getSpecialNsResource( 'swivt', 'type' );
+			case '_IMPO':
+				return self::getSpecialNsResource( 'swivt', 'specialImportedFrom' );
 			default:
 				return self::getSpecialNsResource( 'swivt', 'specialProperty' . $propertyKey );
 		}
@@ -557,9 +603,9 @@ class SMWExporter {
 	static public function getDataItemExpElement( SMWDataItem $dataItem ) {
 		switch ( $dataItem->getDIType() ) {
 			case SMWDataItem::TYPE_NUMBER:
-				$lit = new SMWExpLiteral( $dataItem->getNumber(), 'http://www.w3.org/2001/XMLSchema#double', $dataItem );
+				$lit = new SMWExpLiteral( strval( $dataItem->getNumber() ), 'http://www.w3.org/2001/XMLSchema#double', $dataItem );
 				return $lit;
-			case SMWDataItem::TYPE_STRING: case SMWDataItem::TYPE_BLOB:
+			case SMWDataItem::TYPE_BLOB:
 				$lit = new SMWExpLiteral( smwfHTMLtoUTF8( $dataItem->getString() ), 'http://www.w3.org/2001/XMLSchema#string', $dataItem );
 				return $lit;
 			case SMWDataItem::TYPE_BOOLEAN:
@@ -639,7 +685,7 @@ class SMWExporter {
 	 */
 	static public function getDataItemHelperExpElement( SMWDataItem $dataItem ) {
 		if ( $dataItem->getDIType() == SMWDataItem::TYPE_TIME ) {
-			$lit = new SMWExpLiteral( $dataItem->getSortKey(), 'http://www.w3.org/2001/XMLSchema#double', $dataItem );
+			$lit = new SMWExpLiteral( (string)$dataItem->getSortKey(), 'http://www.w3.org/2001/XMLSchema#double', $dataItem );
 			return $lit;
 		} else {
 			return null;
@@ -650,11 +696,42 @@ class SMWExporter {
 	 * Check whether the values of a given type of dataitem have helper
 	 * values in the sense of SMWExporter::getDataItemHelperExpElement().
 	 *
-	 * @param $dataItemType integer type ID of dataitem (see SMWDataItem)
+	 * @param DIProperty $property
+	 *
 	 * @return boolean
 	 */
-	static public function hasHelperExpElement( $dataItemType ) {
-		return ( $dataItemType == SMWDataItem::TYPE_TIME );
+	static public function hasHelperExpElement( DIProperty $property ) {
+		return ( $property->findPropertyTypeID() === '_dat' ) || ( !$property->isUserDefined() && !self::hasSpecialPropertyResource( $property ) );
+	}
+
+	static protected function hasSpecialPropertyResource( DIProperty $property ) {
+		return $property->getKey() === '_SKEY' ||
+			$property->getKey() === '_INST' ||
+			$property->getKey() === '_MDAT' ||
+			$property->getKey() === '_SUBC' ||
+			$property->getKey() === '_SUBP' ||
+			$property->getKey() === '_TYPE' ||
+			$property->getKey() === '_IMPO' ||
+			$property->getKey() === '_URI';
+	}
+
+	/**
+	 * @since 2.0
+	 *
+	 * @param  DIWikiPage $diWikiPage
+	 * @return string
+	 */
+	static public function getEncodedPageName( DIWikiPage $diWikiPage ) {
+
+		$localName = '';
+
+		if ( $diWikiPage->getNamespace() !== 0 ) {
+			$localName = str_replace( ' ', '_', $GLOBALS['wgContLang']->getNSText( $diWikiPage->getNamespace() ) ) . ':' . $diWikiPage->getDBkey();
+		} else {
+			$localName = $diWikiPage->getDBkey();
+		}
+
+		return self::encodeURI( wfUrlencode( $localName ) );
 	}
 
 }

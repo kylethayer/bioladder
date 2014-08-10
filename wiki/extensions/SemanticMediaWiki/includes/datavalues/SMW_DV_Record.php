@@ -78,7 +78,7 @@ class SMWRecordValue extends SMWDataValue {
 			if ( ( $values[$valueIndex] === '' ) || ( $values[$valueIndex] == '?' ) ) { // explicit omission
 				$valueIndex++;
 			} else {
-				$dataValue = SMWDataValueFactory::newPropertyObjectValue( $diProperty, $values[$valueIndex] );
+				$dataValue = \SMW\DataValueFactory::getInstance()->newPropertyObjectValue( $diProperty, $values[$valueIndex] );
 
 				if ( $dataValue->isValid() ) { // valid DV: keep
 					if ( $queryMode ) {
@@ -135,7 +135,7 @@ class SMWRecordValue extends SMWDataValue {
 			return true;
 		} elseif ( $dataItem->getDIType() == SMWDataItem::TYPE_WIKIPAGE ) {
 			$semanticData = new SMWContainerSemanticData( $dataItem );
-			$semanticData->copyDataFrom( smwfGetStore()->getSemanticData( $dataItem ) );
+			$semanticData->copyDataFrom( \SMW\StoreFactory::getStore()->getSemanticData( $dataItem ) );
 			$this->m_dataitem = new SMWDIContainer( $semanticData );
 			return true;
 		} else {
@@ -268,7 +268,7 @@ class SMWRecordValue extends SMWDataValue {
 
 			if ( !is_null( $propertyDiWikiPage ) ) {
 				$listDiProperty = new SMWDIProperty( '_LIST' );
-				$dataItems = smwfGetStore()->getPropertyValues( $propertyDiWikiPage, $listDiProperty );
+				$dataItems = \SMW\StoreFactory::getStore()->getPropertyValues( $propertyDiWikiPage, $listDiProperty );
 
 				if ( count( $dataItems ) == 1 ) {
 					$propertyListValue = new SMWPropertyListValue( '__pls' );
@@ -303,7 +303,7 @@ class SMWRecordValue extends SMWDataValue {
 			$propertyValues = $this->m_dataitem->getSemanticData()->getPropertyValues( $propertyDataItem ); // combining this with next line violates PHP strict standards
 			$dataItem = reset( $propertyValues );
 			if ( $dataItem !== false ) {
-				$dataValue = SMWDataValueFactory::newDataItemValue( $dataItem, $propertyDataItem );
+				$dataValue = \SMW\DataValueFactory::getInstance()->newDataItemValue( $dataItem, $propertyDataItem );
 				$result .= $this->makeValueOutputText( $type, $dataValue, $linker );
 			} else {
 				$result .= '?';

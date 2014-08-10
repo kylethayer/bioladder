@@ -55,9 +55,9 @@
  *              'compress_threshold' => 10240,
  *              'persistent' => true));
  *
- * $mc->add('key', array('some', 'array'));
- * $mc->replace('key', 'some random string');
- * $val = $mc->get('key');
+ * $mc->add( 'key', array( 'some', 'array' ) );
+ * $mc->replace( 'key', 'some random string' );
+ * $val = $mc->get( 'key' );
  *
  * @author  Ryan T. Dean <rtdean@cytherianage.net>
  * @version 0.1.2
@@ -102,8 +102,8 @@ class MWMemcached {
 	/**
 	 * Command statistics
 	 *
-	 * @var     array
-	 * @access  public
+	 * @var array
+	 * @access public
 	 */
 	var $stats;
 
@@ -113,112 +113,112 @@ class MWMemcached {
 	/**
 	 * Cached Sockets that are connected
 	 *
-	 * @var     array
-	 * @access  private
+	 * @var array
+	 * @access private
 	 */
 	var $_cache_sock;
 
 	/**
 	 * Current debug status; 0 - none to 9 - profiling
 	 *
-	 * @var     boolean
-	 * @access  private
+	 * @var boolean
+	 * @access private
 	 */
 	var $_debug;
 
 	/**
 	 * Dead hosts, assoc array, 'host'=>'unixtime when ok to check again'
 	 *
-	 * @var     array
-	 * @access  private
+	 * @var array
+	 * @access private
 	 */
 	var $_host_dead;
 
 	/**
 	 * Is compression available?
 	 *
-	 * @var     boolean
-	 * @access  private
+	 * @var boolean
+	 * @access private
 	 */
 	var $_have_zlib;
 
 	/**
 	 * Do we want to use compression?
 	 *
-	 * @var     boolean
-	 * @access  private
+	 * @var boolean
+	 * @access private
 	 */
 	var $_compress_enable;
 
 	/**
 	 * At how many bytes should we compress?
 	 *
-	 * @var     integer
-	 * @access  private
+	 * @var integer
+	 * @access private
 	 */
 	var $_compress_threshold;
 
 	/**
 	 * Are we using persistent links?
 	 *
-	 * @var     boolean
-	 * @access  private
+	 * @var boolean
+	 * @access private
 	 */
 	var $_persistent;
 
 	/**
 	 * If only using one server; contains ip:port to connect to
 	 *
-	 * @var     string
-	 * @access  private
+	 * @var string
+	 * @access private
 	 */
 	var $_single_sock;
 
 	/**
 	 * Array containing ip:port or array(ip:port, weight)
 	 *
-	 * @var     array
-	 * @access  private
+	 * @var array
+	 * @access private
 	 */
 	var $_servers;
 
 	/**
 	 * Our bit buckets
 	 *
-	 * @var     array
-	 * @access  private
+	 * @var array
+	 * @access private
 	 */
 	var $_buckets;
 
 	/**
 	 * Total # of bit buckets we have
 	 *
-	 * @var     integer
-	 * @access  private
+	 * @var integer
+	 * @access private
 	 */
 	var $_bucketcount;
 
 	/**
 	 * # of total servers we have
 	 *
-	 * @var     integer
-	 * @access  private
+	 * @var integer
+	 * @access private
 	 */
 	var $_active;
 
 	/**
 	 * Stream timeout in seconds. Applies for example to fread()
 	 *
-	 * @var     integer
-	 * @access  private
+	 * @var integer
+	 * @access private
 	 */
 	var $_timeout_seconds;
 
 	/**
 	 * Stream timeout in microseconds
 	 *
-	 * @var     integer
-	 * @access  private
+	 * @var integer
+	 * @access private
 	 */
 	var $_timeout_microseconds;
 
@@ -243,7 +243,7 @@ class MWMemcached {
 	 *
 	 * @param array $args Associative array of settings
 	 *
-	 * @return  mixed
+	 * @return mixed
 	 */
 	public function __construct( $args ) {
 		$this->set_servers( isset( $args['servers'] ) ? $args['servers'] : array() );
@@ -329,7 +329,7 @@ class MWMemcached {
 			$this->stats['delete'] = 1;
 		}
 		$cmd = "delete $key $time\r\n";
-		if( !$this->_fwrite( $sock, $cmd ) ) {
+		if ( !$this->_fwrite( $sock, $cmd ) ) {
 			return false;
 		}
 		$res = $this->_fgets( $sock );
@@ -489,17 +489,17 @@ class MWMemcached {
 			}
 			$key = is_array( $key ) ? $key[1] : $key;
 			if ( !isset( $sock_keys[$sock] ) ) {
-				$sock_keys[ intval( $sock ) ] = array();
+				$sock_keys[intval( $sock )] = array();
 				$socks[] = $sock;
 			}
-			$sock_keys[ intval( $sock ) ][] = $key;
+			$sock_keys[intval( $sock )][] = $key;
 		}
 
 		$gather = array();
 		// Send out the requests
 		foreach ( $socks as $sock ) {
 			$cmd = 'gets';
-			foreach ( $sock_keys[ intval( $sock ) ] as $key ) {
+			foreach ( $sock_keys[intval( $sock )] as $key ) {
 				$cmd .= ' ' . $key;
 			}
 			$cmd .= "\r\n";
@@ -708,7 +708,7 @@ class MWMemcached {
 	 *
 	 * @param string $sock socket to close
 	 *
-	 * @access  private
+	 * @access private
 	 */
 	function _close_sock( $sock ) {
 		$host = array_search( $sock, $this->_cache_sock );
@@ -725,15 +725,15 @@ class MWMemcached {
 	 * @param $sock Integer: socket to connect
 	 * @param string $host Host:IP to connect to
 	 *
-	 * @return  boolean
-	 * @access  private
+	 * @return boolean
+	 * @access private
 	 */
 	function _connect_sock( &$sock, $host ) {
-		list( $ip, $port ) = explode( ':', $host );
+		list( $ip, $port ) = preg_split( '/:(?=\d)/', $host );
 		$sock = false;
 		$timeout = $this->_connect_timeout;
 		$errno = $errstr = null;
-		for( $i = 0; !$sock && $i < $this->_connect_attempts; $i++ ) {
+		for ( $i = 0; !$sock && $i < $this->_connect_attempts; $i++ ) {
 			wfSuppressWarnings();
 			if ( $this->_persistent == 1 ) {
 				$sock = pfsockopen( $ip, $port, $errno, $errstr, $timeout );
@@ -767,7 +767,7 @@ class MWMemcached {
 	 *
 	 * @param string $sock socket to mark as dead
 	 *
-	 * @access  private
+	 * @access private
 	 */
 	function _dead_sock( $sock ) {
 		$host = array_search( $sock, $this->_cache_sock );
@@ -810,7 +810,7 @@ class MWMemcached {
 			$bu = array();
 			foreach ( $this->_servers as $v ) {
 				if ( is_array( $v ) ) {
-					for( $i = 0; $i < $v[1]; $i++ ) {
+					for ( $i = 0; $i < $v[1]; $i++ ) {
 						$bu[] = $v[0];
 					}
 				} else {
@@ -822,7 +822,7 @@ class MWMemcached {
 		}
 
 		$realkey = is_array( $key ) ? $key[1] : $key;
-		for( $tries = 0; $tries < 20; $tries++ ) {
+		for ( $tries = 0; $tries < 20; $tries++ ) {
 			$host = $this->_buckets[$hv % $this->_bucketcount];
 			$sock = $this->sock_to_host( $host );
 			if ( is_resource( $sock ) ) {
@@ -912,7 +912,7 @@ class MWMemcached {
 		while ( 1 ) {
 			$decl = $this->_fgets( $sock );
 
-			if( $decl === false ) {
+			if ( $decl === false ) {
 				/*
 				 * If nothing can be read, something is wrong because we know exactly when
 				 * to stop reading (right after "END") and we return right after that.
@@ -1026,9 +1026,9 @@ class MWMemcached {
 
 		$len = strlen( $val );
 
-		if ( $this->_have_zlib && $this->_compress_enable &&
-			$this->_compress_threshold && $len >= $this->_compress_threshold )
-		{
+		if ( $this->_have_zlib && $this->_compress_enable
+			&& $this->_compress_threshold && $len >= $this->_compress_threshold
+		) {
 			$c_val = gzcompress( $val, 9 );
 			$c_len = strlen( $c_val );
 
@@ -1123,7 +1123,7 @@ class MWMemcached {
 	function _fwrite( $sock, $buf ) {
 		$bytesWritten = 0;
 		$bufSize = strlen( $buf );
-		while ( $bytesWritten < $bufSize  ) {
+		while ( $bytesWritten < $bufSize ) {
 			$result = fwrite( $sock, $buf );
 			$data = stream_get_meta_data( $sock );
 			if ( $data['timed_out'] ) {

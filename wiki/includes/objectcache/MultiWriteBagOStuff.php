@@ -43,7 +43,7 @@ class MultiWriteBagOStuff extends BagOStuff {
 	 */
 	public function __construct( $params ) {
 		if ( !isset( $params['caches'] ) ) {
-			throw new MWException( __METHOD__.': the caches parameter is required' );
+			throw new MWException( __METHOD__ . ': the caches parameter is required' );
 		}
 
 		$this->caches = array();
@@ -177,6 +177,16 @@ class MultiWriteBagOStuff extends BagOStuff {
 	 */
 	public function merge( $key, closure $callback, $exptime = 0, $attempts = 10 ) {
 		return $this->doWrite( 'merge', $key, $callback, $exptime );
+	}
+
+	public function getLastError() {
+		return isset( $this->caches[0] ) ? $this->caches[0]->getLastError() : self::ERR_NONE;
+	}
+
+	public function clearLastError() {
+		if ( isset( $this->caches[0] ) ) {
+			$this->caches[0]->clearLastError();
+		}
 	}
 
 	/**

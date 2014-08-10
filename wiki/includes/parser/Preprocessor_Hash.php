@@ -287,9 +287,11 @@ class Preprocessor_Hash implements Preprocessor {
 				}
 				// Handle comments
 				if ( isset( $matches[2] ) && $matches[2] == '!--' ) {
-					// To avoid leaving blank lines, when a comment is both preceded
-					// and followed by a newline (ignoring spaces), trim leading and
-					// trailing spaces and one of the newlines.
+
+					// To avoid leaving blank lines, when a sequence of
+					// space-separated comments is both preceded and followed by
+					// a newline (ignoring spaces), then
+					// trim leading and trailing spaces and the trailing newline.
 
 					// Find the end
 					$endPos = strpos( $text, '-->', $i + 4 );
@@ -300,28 +302,53 @@ class Preprocessor_Hash implements Preprocessor {
 						$i = $lengthText;
 					} else {
 						// Search backwards for leading whitespace
-						$wsStart = $i ? ( $i - strspn( $revText, ' ', $lengthText - $i ) ) : 0;
+						$wsStart = $i ? ( $i - strspn( $revText, " \t", $lengthText - $i ) ) : 0;
+
 						// Search forwards for trailing whitespace
 						// $wsEnd will be the position of the last space (or the '>' if there's none)
-						$wsEnd = $endPos + 2 + strspn( $text, ' ', $endPos + 3 );
+						$wsEnd = $endPos + 2 + strspn( $text, " \t", $endPos + 3 );
+
+						// Keep looking forward as long as we're finding more
+						// comments.
+						$comments = array( array( $wsStart, $wsEnd ) );
+						while ( substr( $text, $wsEnd + 1, 4 ) == '<!--' ) {
+							$c = strpos( $text, '-->', $wsEnd + 4 );
+							if ( $c === false ) {
+								break;
+							}
+							$c = $c + 2 + strspn( $text, " \t", $c + 3 );
+							$comments[] = array( $wsEnd + 1, $c );
+							$wsEnd = $c;
+						}
+
 						// Eat the line if possible
 						// TODO: This could theoretically be done if $wsStart == 0, i.e. for comments at
 						// the overall start. That's not how Sanitizer::removeHTMLcomments() did it, but
 						// it's a possible beneficial b/c break.
 						if ( $wsStart > 0 && substr( $text, $wsStart - 1, 1 ) == "\n"
-							&& substr( $text, $wsEnd + 1, 1 ) == "\n" )
-						{
-							$startPos = $wsStart;
-							$endPos = $wsEnd + 1;
+							&& substr( $text, $wsEnd + 1, 1 ) == "\n"
+						) {
 							// Remove leading whitespace from the end of the accumulator
 							// Sanity check first though
 							$wsLength = $i - $wsStart;
 							if ( $wsLength > 0
 								&& $accum->lastNode instanceof PPNode_Hash_Text
-								&& substr( $accum->lastNode->value, -$wsLength ) === str_repeat( ' ', $wsLength ) )
-							{
+								&& strspn( $accum->lastNode->value, " \t", -$wsLength ) === $wsLength
+							) {
 								$accum->lastNode->value = substr( $accum->lastNode->value, 0, -$wsLength );
 							}
+
+							// Dump all but the last comment to the accumulator
+							foreach ( $comments as $j => $com ) {
+								$startPos = $com[0];
+								$endPos = $com[1] + 1;
+								if ( $j == ( count( $comments ) - 1 ) ) {
+									break;
+								}
+								$inner = substr( $text, $startPos, $endPos - $startPos );
+								$accum->addNodeWithText( 'comment', $inner );
+							}
+
 							// Do a line-start run next time to look for headings after the comment
 							$fakeLineStart = true;
 						} else {
@@ -332,7 +359,7 @@ class Preprocessor_Hash implements Preprocessor {
 
 						if ( $stack->top ) {
 							$part = $stack->top->getCurrentPart();
-							if ( !(isset( $part->commentEnd ) && $part->commentEnd == $wsStart - 1 )) {
+							if ( !( isset( $part->commentEnd ) && $part->commentEnd == $wsStart - 1 ) ) {
 								$part->visualEnd = $wsStart;
 							}
 							// Else comments abutting, no change in visual end
@@ -367,7 +394,7 @@ class Preprocessor_Hash implements Preprocessor {
 				}
 
 				$tagStartPos = $i;
-				if ( $text[$tagEndPos-1] == '/' ) {
+				if ( $text[$tagEndPos - 1] == '/' ) {
 					// Short end tag
 					$attrEnd = $tagEndPos - 1;
 					$inner = null;
@@ -377,8 +404,8 @@ class Preprocessor_Hash implements Preprocessor {
 					$attrEnd = $tagEndPos;
 					// Find closing tag
 					if ( preg_match( "/<\/" . preg_quote( $name, '/' ) . "\s*>/i",
-							$text, $matches, PREG_OFFSET_CAPTURE, $tagEndPos + 1 ) )
-					{
+							$text, $matches, PREG_OFFSET_CAPTURE, $tagEndPos + 1 )
+					) {
 						$inner = substr( $text, $tagEndPos + 1, $matches[0][1] - $tagEndPos - 1 );
 						$i = $matches[0][1] + strlen( $matches[0][0] );
 						$close = $matches[0][0];
@@ -413,9 +440,7 @@ class Preprocessor_Hash implements Preprocessor {
 					$extNode->addChild( PPNode_Hash_Tree::newWithText( 'close', $close ) );
 				}
 				$accum->addNode( $extNode );
-			}
-
-			elseif ( $found == 'line-start' ) {
+			} elseif ( $found == 'line-start' ) {
 				// Is this the start of a heading?
 				// Line break belongs before the heading element in any case
 				if ( $fakeLineStart ) {
@@ -515,7 +540,7 @@ class Preprocessor_Hash implements Preprocessor {
 						'open' => $curChar,
 						'close' => $rule['end'],
 						'count' => $count,
-						'lineStart' => ($i > 0 && $text[$i-1] == "\n"),
+						'lineStart' => ( $i > 0 && $text[$i - 1] == "\n" ),
 					);
 
 					$stack->push( $piece );
@@ -591,9 +616,19 @@ class Preprocessor_Hash implements Preprocessor {
 								$lastNode = $node;
 							}
 							if ( !$node ) {
+								if ( $cacheable ) {
+									wfProfileOut( __METHOD__ . '-cache-miss' );
+									wfProfileOut( __METHOD__ . '-cacheable' );
+								}
+								wfProfileOut( __METHOD__ );
 								throw new MWException( __METHOD__ . ': eqpos not found' );
 							}
 							if ( $node->name !== 'equals' ) {
+								if ( $cacheable ) {
+									wfProfileOut( __METHOD__ . '-cache-miss' );
+									wfProfileOut( __METHOD__ . '-cacheable' );
+								}
+								wfProfileOut( __METHOD__ );
 								throw new MWException( __METHOD__ . ': eqpos is not equals' );
 							}
 							$equalsNode = $node;
@@ -952,7 +987,7 @@ class PPFrame_Hash implements PPFrame {
 
 		while ( count( $iteratorStack ) > 1 ) {
 			$level = count( $outStack ) - 1;
-			$iteratorNode =& $iteratorStack[ $level ];
+			$iteratorNode =& $iteratorStack[$level];
 			$out =& $outStack[$level];
 			$index =& $indexStack[$level];
 
@@ -1025,17 +1060,15 @@ class PPFrame_Hash implements PPFrame {
 					# Remove it in HTML, pre+remove and STRIP_COMMENTS modes
 					if ( $this->parser->ot['html']
 						|| ( $this->parser->ot['pre'] && $this->parser->mOptions->getRemoveComments() )
-						|| ( $flags & PPFrame::STRIP_COMMENTS ) )
-					{
+						|| ( $flags & PPFrame::STRIP_COMMENTS )
+					) {
 						$out .= '';
-					}
-					# Add a strip marker in PST mode so that pstPass2() can run some old-fashioned regexes on the result
-					# Not in RECOVER_COMMENTS mode (extractSections) though
-					elseif ( $this->parser->ot['wiki'] && !( $flags & PPFrame::RECOVER_COMMENTS ) ) {
+					} elseif ( $this->parser->ot['wiki'] && !( $flags & PPFrame::RECOVER_COMMENTS ) ) {
+						# Add a strip marker in PST mode so that pstPass2() can run some old-fashioned regexes on the result
+						# Not in RECOVER_COMMENTS mode (extractSections) though
 						$out .= $this->parser->insertStripItem( $contextNode->firstChild->value );
-					}
-					# Recover the literal comment in RECOVER_COMMENTS and pre+no-remove
-					else {
+					} else {
+						# Recover the literal comment in RECOVER_COMMENTS and pre+no-remove
 						$out .= $contextNode->firstChild->value;
 					}
 				} elseif ( $contextNode->name == 'ignore' ) {
@@ -1352,6 +1385,7 @@ class PPTemplateFrame_Hash extends PPFrame_Hash {
 		$s .= '}';
 		return $s;
 	}
+
 	/**
 	 * Returns true if there are no arguments in this frame
 	 *
@@ -1585,7 +1619,7 @@ class PPNode_Hash_Tree implements PPNode {
 	}
 
 	/**
-	 * @param  $i
+	 * @param $i
 	 * @return bool
 	 */
 	function item( $i ) {
@@ -1617,8 +1651,8 @@ class PPNode_Hash_Tree implements PPNode {
 			if ( $child->name === 'name' ) {
 				$bits['name'] = $child;
 				if ( $child->firstChild instanceof PPNode_Hash_Attr
-					&& $child->firstChild->name === 'index' )
-				{
+					&& $child->firstChild->name === 'index'
+				) {
 					$bits['index'] = $child->firstChild->value;
 				}
 			} elseif ( $child->name === 'value' ) {

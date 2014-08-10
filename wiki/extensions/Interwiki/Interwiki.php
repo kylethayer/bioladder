@@ -30,8 +30,17 @@ $wgInterwikiViewOnly = false;
 $wgExtensionCredits['specialpage'][] = array(
 	'path' => __FILE__,
 	'name' => 'Interwiki',
-	'author' => array( 'Stephanie Amanda Stevens', 'Alexandre Emsenhuber', 'Robin Pepermans', 'Siebrand Mazeland', 'Platonides', 'Raimond Spekking', 'Sam Reed', '...' ),
-	'version' => '2.2 20120425',
+	'author' => array(
+		'Stephanie Amanda Stevens',
+		'Alexandre Emsenhuber',
+		'Robin Pepermans',
+		'Siebrand Mazeland',
+		'Platonides',
+		'Raimond Spekking',
+		'Sam Reed',
+		'...'
+	),
+	'version' => '2.3 20140327',
 	'url' => 'https://www.mediawiki.org/wiki/Extension:Interwiki',
 	'descriptionmsg' => 'interwiki-desc',
 );
@@ -49,6 +58,7 @@ $wgResourceModules['ext.interwiki.specialpage'] = array(
 
 // Set up the new special page
 $dir = dirname( __FILE__ ) . '/';
+$wgMessagesDirs['Interwiki'] = __DIR__ . '/i18n';
 $wgExtensionMessagesFiles['Interwiki'] = $dir . 'Interwiki.i18n.php';
 $wgExtensionMessagesFiles['InterwikiAlias'] = $dir . 'Interwiki.alias.php';
 $wgAutoloadClasses['SpecialInterwiki'] = $dir . 'Interwiki_body.php';
@@ -68,7 +78,7 @@ function setupInterwikiExtension() {
 		// Set up the new log type - interwiki actions are logged to this new log
 		$wgLogTypes[] = 'interwiki';
 		# interwiki, iw_add, iw_delete, iw_edit
-		$wgLogActionsHandlers['interwiki/*']  = 'InterwikiLogFormatter';
+		$wgLogActionsHandlers['interwiki/*'] = 'InterwikiLogFormatter';
 	}
 
 	return true;

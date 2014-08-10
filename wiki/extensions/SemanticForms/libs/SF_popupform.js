@@ -81,7 +81,7 @@ window.ext.popupform = new function() {
 				readystate = iframe.contents()[0].readyState;
 
 				// if dom is built but document not yet displayed
-				if ( readystate === 'interactive' ) {
+				if ( readystate === 'interactive' || readystate === 'complete' ) {
 					needsRender = false; // flag that rendering is already done
 					handleLoadFrame();
 				}
@@ -270,7 +270,7 @@ window.ext.popupform = new function() {
 
 				// TODO: Does this really help?
 				if ( getStyle(this, "display") != "none"
-					&& ( getStyle( this, "width") != "0px" || getStyle( this, "height") != "0px" )
+//					&& ( getStyle( this, "width") != "0px" || getStyle( this, "height") != "0px" )
 					&& ! (
 						( this.offsetLeft + elem.outerWidth(true) < 0 ) ||		// left of document
 						( this.offsetTop + elem.outerHeight(true) < 0 )  || // above document
@@ -316,7 +316,7 @@ window.ext.popupform = new function() {
 		//interval = setInterval(adjustFrameSize, 100);
 
 		var form = content.find("#sfForm");
-		var innerwdw = window.frames['popupform-iframe' + instance];
+		var innerwdw = document.getElementById( 'popupform-iframe' + instance ).contentWindow;
 		var innerJ = innerwdw.jQuery;
 
 		// if we have a form and it is not a RunQuery form

@@ -43,7 +43,7 @@ class MediaWiki_I18N {
 		$value = wfMessage( $value )->text();
 		// interpolate variables
 		$m = array();
-		while( preg_match( '/\$([0-9]*?)/sm', $value, $m ) ) {
+		while ( preg_match( '/\$([0-9]*?)/sm', $value, $m ) ) {
 			list( $src, $var ) = $m;
 			wfSuppressWarnings();
 			$varValue = $this->_context[$var];
@@ -104,7 +104,11 @@ class SkinTemplate extends Skin {
 	 * @param $out OutputPage
 	 */
 	function setupSkinUserCss( OutputPage $out ) {
-		$out->addModuleStyles( array( 'mediawiki.legacy.shared', 'mediawiki.legacy.commonPrint' ) );
+		$out->addModuleStyles( array(
+			'mediawiki.legacy.shared',
+			'mediawiki.legacy.commonPrint',
+			'mediawiki.ui.button'
+		) );
 	}
 
 	/**
@@ -123,38 +127,82 @@ class SkinTemplate extends Skin {
 	}
 
 	/**
-	 * initialize various variables and generate the template
+	 * Generates array of language links for the current page
 	 *
-	 * @param $out OutputPage
+	 * @return array
+	 * @public
 	 */
-	function outputPage( OutputPage $out=null ) {
-		global $wgContLang;
-		global $wgScript, $wgStylePath;
-		global $wgMimeType, $wgJsMimeType;
-		global $wgXhtmlDefaultNamespace, $wgXhtmlNamespaces, $wgHtml5Version;
-		global $wgDisableCounters, $wgSitename, $wgLogo, $wgHideInterlanguageLinks;
-		global $wgMaxCredits, $wgShowCreditsIfMax;
-		global $wgPageShowWatchingUsers;
-		global $wgArticlePath, $wgScriptPath, $wgServer;
-
-		wfProfileIn( __METHOD__ );
-		Profiler::instance()->setTemplated( true );
-
-		$oldContext = null;
-		if ( $out !== null ) {
-			// @todo Add wfDeprecated in 1.20
-			$oldContext = $this->getContext();
-			$this->setContext( $out->getContext() );
+	public function getLanguages() {
+		global $wgHideInterlanguageLinks;
+		if ( $wgHideInterlanguageLinks ) {
+			return array();
 		}
 
-		$out = $this->getOutput();
+		$userLang = $this->getLanguage();
+		$languageLinks = array();
+
+		foreach ( $this->getOutput()->getLanguageLinks() as $languageLinkText ) {
+			$languageLinkParts = explode( ':', $languageLinkText, 2 );
+			$class = 'interlanguage-link interwiki-' . $languageLinkParts[0];
+			unset( $languageLinkParts );
+
+			$languageLinkTitle = Title::newFromText( $languageLinkText );
+			if ( $languageLinkTitle ) {
+				$ilInterwikiCode = $languageLinkTitle->getInterwiki();
+				$ilLangName = Language::fetchLanguageName( $ilInterwikiCode );
+
+				if ( strval( $ilLangName ) === '' ) {
+					$ilLangName = $languageLinkText;
+				} else {
+					$ilLangName = $this->formatLanguageName( $ilLangName );
+				}
+
+				// CLDR extension or similar is required to localize the language name;
+				// otherwise we'll end up with the autonym again.
+				$ilLangLocalName = Language::fetchLanguageName(
+					$ilInterwikiCode,
+					$userLang->getCode()
+				);
+
+				$languageLinkTitleText = $languageLinkTitle->getText();
+				if ( $languageLinkTitleText === '' ) {
+					$ilTitle = wfMessage(
+						'interlanguage-link-title-langonly',
+						$ilLangLocalName
+					)->text();
+				} else {
+					$ilTitle = wfMessage(
+						'interlanguage-link-title',
+						$languageLinkTitleText,
+						$ilLangLocalName
+					)->text();
+				}
+
+				$ilInterwikiCodeBCP47 = wfBCP47( $ilInterwikiCode );
+				$languageLink = array(
+					'href' => $languageLinkTitle->getFullURL(),
+					'text' => $ilLangName,
+					'title' => $ilTitle,
+					'class' => $class,
+					'lang' => $ilInterwikiCodeBCP47,
+					'hreflang' => $ilInterwikiCodeBCP47,
+				);
+				wfRunHooks( 'SkinTemplateGetLanguageLink', array( &$languageLink, $languageLinkTitle, $this->getTitle() ) );
+				$languageLinks[] = $languageLink;
+			}
+		}
+
+		return $languageLinks;
+	}
+
+	protected function setupTemplateForOutput() {
+		wfProfileIn( __METHOD__ );
+
 		$request = $this->getRequest();
 		$user = $this->getUser();
 		$title = $this->getTitle();
 
 		wfProfileIn( __METHOD__ . '-init' );
-		$this->initPage( $out );
-
 		$tpl = $this->setupTemplate( $this->template, 'skins' );
 		wfProfileOut( __METHOD__ . '-init' );
 
@@ -183,6 +231,68 @@ class SkinTemplate extends Skin {
 
 		wfProfileOut( __METHOD__ . '-stuff' );
 
+		wfProfileOut( __METHOD__ );
+
+		return $tpl;
+	}
+
+	/**
+	 * initialize various variables and generate the template
+	 *
+	 * @param $out OutputPage
+	 */
+	function outputPage( OutputPage $out = null ) {
+		wfProfileIn( __METHOD__ );
+		Profiler::instance()->setTemplated( true );
+
+		$oldContext = null;
+		if ( $out !== null ) {
+			// @todo Add wfDeprecated in 1.20
+			$oldContext = $this->getContext();
+			$this->setContext( $out->getContext() );
+		}
+
+		$out = $this->getOutput();
+
+		wfProfileIn( __METHOD__ . '-init' );
+		$this->initPage( $out );
+		wfProfileOut( __METHOD__ . '-init' );
+		$tpl = $this->prepareQuickTemplate( $out );
+		// execute template
+		wfProfileIn( __METHOD__ . '-execute' );
+		$res = $tpl->execute();
+		wfProfileOut( __METHOD__ . '-execute' );
+
+		// result may be an error
+		$this->printOrError( $res );
+
+		if ( $oldContext ) {
+			$this->setContext( $oldContext );
+		}
+
+		wfProfileOut( __METHOD__ );
+	}
+
+	/**
+	 * initialize various variables and generate the template
+	 *
+	 * @since 1.23
+	 * @return QuickTemplate the template to be executed by outputPage
+	 */
+	protected function prepareQuickTemplate() {
+		global $wgContLang, $wgScript, $wgStylePath,
+			$wgMimeType, $wgJsMimeType, $wgXhtmlNamespaces, $wgHtml5Version,
+			$wgDisableCounters, $wgSitename, $wgLogo, $wgMaxCredits,
+			$wgShowCreditsIfMax, $wgPageShowWatchingUsers, $wgArticlePath,
+			$wgScriptPath, $wgServer;
+
+		wfProfileIn( __METHOD__ );
+
+		$title = $this->getTitle();
+		$request = $this->getRequest();
+		$out = $this->getOutput();
+		$tpl = $this->setupTemplateForOutput();
+
 		wfProfileIn( __METHOD__ . '-stuff-head' );
 		if ( !$this->useHeadElement ) {
 			$tpl->set( 'pagecss', false );
@@ -193,7 +303,7 @@ class SkinTemplate extends Skin {
 
 			$tpl->set( 'jsvarurl', false );
 
-			$tpl->setRef( 'xhtmldefaultnamespace', $wgXhtmlDefaultNamespace );
+			$tpl->set( 'xhtmldefaultnamespace', 'http://www.w3.org/1999/xhtml' );
 			$tpl->set( 'xhtmlnamespaces', $wgXhtmlNamespaces );
 			$tpl->set( 'html5version', $wgHtml5Version );
 			$tpl->set( 'headlinks', $out->getHeadLinks() );
@@ -229,10 +339,11 @@ class SkinTemplate extends Skin {
 		}
 
 		$tpl->set( 'catlinks', $this->getCategories() );
-		if( $out->isSyndicated() ) {
+		if ( $out->isSyndicated() ) {
 			$feeds = array();
-			foreach( $out->getSyndicationLinks() as $format => $link ) {
+			foreach ( $out->getSyndicationLinks() as $format => $link ) {
 				$feeds[$format] = array(
+					// Messages: feed-atom, feed-rss
 					'text' => $this->msg( "feed-$format" )->text(),
 					'href' => $link
 				);
@@ -280,7 +391,7 @@ class SkinTemplate extends Skin {
 		$tpl->set( 'rtl', $userLang->isRTL() );
 
 		$tpl->set( 'capitalizeallnouns', $userLang->capitalizeAllNouns() ? ' capitalize-all-nouns' : '' );
-		$tpl->set( 'showjumplinks', $user->getOption( 'showjumplinks' ) );
+		$tpl->set( 'showjumplinks', true ); // showjumplinks preference has been removed
 		$tpl->set( 'username', $this->loggedin ? $this->username : null );
 		$tpl->setRef( 'userpage', $this->userpage );
 		$tpl->setRef( 'userpageurl', $this->userpageUrlDetails['href'] );
@@ -291,6 +402,8 @@ class SkinTemplate extends Skin {
 		// that interface elements are in a different language.
 		$tpl->set( 'userlangattributes', '' );
 		$tpl->set( 'specialpageattributes', '' ); # obsolete
+		// Used by VectorBeta to insert HTML before content but after the heading for the page title. Defaults to empty string.
+		$tpl->set( 'prebodyhtml', '' );
 
 		if ( $userLangCode !== $wgContLang->getHtmlCode() || $userLangDir !== $wgContLang->getDir() ) {
 			$escUserlang = htmlspecialchars( $userLangCode );
@@ -409,36 +522,7 @@ class SkinTemplate extends Skin {
 		$out->mBodytext = Html::rawElement( 'div', $realBodyAttribs, $out->mBodytext );
 		$tpl->setRef( 'bodytext', $out->mBodytext );
 
-		# Language links
-		$language_urls = array();
-
-		if ( !$wgHideInterlanguageLinks ) {
-			foreach( $out->getLanguageLinks() as $languageLinkText ) {
-				$languageLinkParts = explode( ':', $languageLinkText, 2 );
-				$class = 'interwiki-' . $languageLinkParts[0];
-				unset( $languageLinkParts );
-				$languageLinkTitle = Title::newFromText( $languageLinkText );
-				if ( $languageLinkTitle ) {
-					$ilInterwikiCode = $languageLinkTitle->getInterwiki();
-					$ilLangName = Language::fetchLanguageName( $ilInterwikiCode );
-
-					if ( strval( $ilLangName ) === '' ) {
-						$ilLangName = $languageLinkText;
-					} else {
-						$ilLangName = $this->formatLanguageName( $ilLangName );
-					}
-
-					$language_urls[] = array(
-						'href' => $languageLinkTitle->getFullURL(),
-						'text' => $ilLangName,
-						'title' => $languageLinkTitle->getText(),
-						'class' => $class,
-						'lang' => $ilInterwikiCode,
-						'hreflang' => $ilInterwikiCode
-					);
-				}
-			}
-		}
+		$language_urls = $this->getLanguages();
 		if ( count( $language_urls ) ) {
 			$tpl->setRef( 'language_urls', $language_urls );
 		} else {
@@ -469,7 +553,7 @@ class SkinTemplate extends Skin {
 		$tpl->set( 'reporttime', wfReportTime() );
 
 		// original version by hansm
-		if( !wfRunHooks( 'SkinTemplateOutputPageBeforeExec', array( &$this, &$tpl ) ) ) {
+		if ( !wfRunHooks( 'SkinTemplateOutputPageBeforeExec', array( &$this, &$tpl ) ) ) {
 			wfDebug( __METHOD__ . ": Hook SkinTemplateOutputPageBeforeExec broke outputPage execution!\n" );
 		}
 
@@ -487,18 +571,22 @@ class SkinTemplate extends Skin {
 		$tpl->set( 'dataAfterContent', $this->afterContentHook() );
 		wfProfileOut( __METHOD__ . '-stuff5' );
 
-		// execute template
-		wfProfileIn( __METHOD__ . '-execute' );
-		$res = $tpl->execute();
-		wfProfileOut( __METHOD__ . '-execute' );
-
-		// result may be an error
-		$this->printOrError( $res );
-
-		if ( $oldContext ) {
-			$this->setContext( $oldContext );
-		}
 		wfProfileOut( __METHOD__ );
+		return $tpl;
+	}
+
+	/**
+	 * Get the HTML for the p-personal list
+	 * @return string
+	 */
+	public function getPersonalToolsList() {
+		$tpl = $this->setupTemplateForOutput();
+		$tpl->set( 'personal_urls', $this->buildPersonalUrls() );
+		$html = '';
+		foreach ( $tpl->getPersonalTools() as $key => $item ) {
+			$html .= $tpl->makeListItem( $key, $item );
+		}
+		return $html;
 	}
 
 	/**
@@ -544,8 +632,6 @@ class SkinTemplate extends Skin {
 	 * @return array
 	 */
 	protected function buildPersonalUrls() {
-		global $wgSecureLogin;
-
 		$title = $this->getTitle();
 		$request = $this->getRequest();
 		$pageurl = $title->getLocalURL();
@@ -568,17 +654,13 @@ class SkinTemplate extends Skin {
 		if ( strval( $page ) !== '' ) {
 			$a['returnto'] = $page;
 			$query = $request->getVal( 'returntoquery', $this->thisquery );
-			if( $query != '' ) {
+			if ( $query != '' ) {
 				$a['returntoquery'] = $query;
 			}
 		}
 
-		if ( $wgSecureLogin && $request->detectProtocol() === 'https' ) {
-			$a['wpStickHTTPS'] = true;
-		}
-
 		$returnto = wfArrayToCgi( $a );
-		if( $this->loggedin ) {
+		if ( $this->loggedin ) {
 			$personal_urls['userpage'] = array(
 				'text' => $this->username,
 				'href' => &$this->userpageUrlDetails['href'],
@@ -599,12 +681,15 @@ class SkinTemplate extends Skin {
 				'href' => $href,
 				'active' => ( $href == $pageurl )
 			);
-			$href = self::makeSpecialUrl( 'Watchlist' );
-			$personal_urls['watchlist'] = array(
-				'text' => $this->msg( 'mywatchlist' )->text(),
-				'href' => $href,
-				'active' => ( $href == $pageurl )
-			);
+
+			if ( $this->getUser()->isAllowed( 'viewmywatchlist' ) ) {
+				$href = self::makeSpecialUrl( 'Watchlist' );
+				$personal_urls['watchlist'] = array(
+					'text' => $this->msg( 'mywatchlist' )->text(),
+					'href' => $href,
+					'active' => ( $href == $pageurl )
+				);
+			}
 
 			# We need to do an explicit check for Special:Contributions, as we
 			# have to match both the title, and the target, which could come
@@ -614,7 +699,7 @@ class SkinTemplate extends Skin {
 			# thickens, because the Title object is altered for special pages,
 			# so it doesn't contain the original alias-with-subpage.
 			$origTitle = Title::newFromText( $request->getText( 'title' ) );
-			if( $origTitle instanceof Title && $origTitle->isSpecialPage() ) {
+			if ( $origTitle instanceof Title && $origTitle->isSpecialPage() ) {
 				list( $spName, $spPar ) = SpecialPageFactory::resolveAlias( $origTitle->getText() );
 				$active = $spName == 'Contributions'
 					&& ( ( $spPar && $spPar == $this->username )
@@ -630,7 +715,7 @@ class SkinTemplate extends Skin {
 				'active' => $active
 			);
 			$personal_urls['logout'] = array(
-				'text' => $this->msg( 'userlogout' )->text(),
+				'text' => $this->msg( 'pt-userlogout' )->text(),
 				'href' => self::makeSpecialUrl( 'Userlogout',
 					// userlogout link must always contain an & character, otherwise we might not be able
 					// to detect a buggy precaching proxy (bug 17790)
@@ -642,27 +727,21 @@ class SkinTemplate extends Skin {
 			$useCombinedLoginLink = $this->useCombinedLoginLink();
 			$loginlink = $this->getUser()->isAllowed( 'createaccount' ) && $useCombinedLoginLink
 				? 'nav-login-createaccount'
-				: 'login';
+				: 'pt-login';
 			$is_signup = $request->getText( 'type' ) == 'signup';
 
-			# anonlogin & login are the same
-			$proto = $wgSecureLogin ? PROTO_HTTPS : null;
-
-			$login_id = $this->showIPinHeader() ? 'anonlogin' : 'login';
 			$login_url = array(
 				'text' => $this->msg( $loginlink )->text(),
-				'href' => self::makeSpecialUrl( 'Userlogin', $returnto, $proto ),
+				'href' => self::makeSpecialUrl( 'Userlogin', $returnto ),
 				'active' => $title->isSpecial( 'Userlogin' ) && ( $loginlink == 'nav-login-createaccount' || !$is_signup ),
-				'class' => $wgSecureLogin ? 'link-https' : ''
 			);
 			$createaccount_url = array(
-				'text' => $this->msg( 'createaccount' )->text(),
-				'href' => self::makeSpecialUrl( 'Userlogin', "$returnto&type=signup", $proto ),
+				'text' => $this->msg( 'pt-createaccount' )->text(),
+				'href' => self::makeSpecialUrl( 'Userlogin', "$returnto&type=signup" ),
 				'active' => $title->isSpecial( 'Userlogin' ) && $is_signup,
-				'class' => $wgSecureLogin ? 'link-https' : ''
 			);
 
-			if( $this->showIPinHeader() ) {
+			if ( $this->showIPinHeader() ) {
 				$href = &$this->userpageUrlDetails['href'];
 				$personal_urls['anonuserpage'] = array(
 					'text' => $this->username,
@@ -684,10 +763,10 @@ class SkinTemplate extends Skin {
 				$personal_urls['createaccount'] = $createaccount_url;
 			}
 
-			$personal_urls[$login_id] = $login_url;
+			$personal_urls['login'] = $login_url;
 		}
 
-		wfRunHooks( 'PersonalUrls', array( &$personal_urls, &$title ) );
+		wfRunHooks( 'PersonalUrls', array( &$personal_urls, &$title, $this ) );
 		wfProfileOut( __METHOD__ );
 		return $personal_urls;
 	}
@@ -705,10 +784,10 @@ class SkinTemplate extends Skin {
 	 */
 	function tabAction( $title, $message, $selected, $query = '', $checkEdit = false ) {
 		$classes = array();
-		if( $selected ) {
+		if ( $selected ) {
 			$classes[] = 'selected';
 		}
-		if( $checkEdit && !$title->isKnown() ) {
+		if ( $checkEdit && !$title->isKnown() ) {
 			$classes[] = 'new';
 			if ( $query !== '' ) {
 				$query = 'action=edit&redlink=1&' . $query;
@@ -733,7 +812,7 @@ class SkinTemplate extends Skin {
 		}
 
 		$result = array();
-		if( !wfRunHooks( 'SkinTemplateTabAction', array( &$this,
+		if ( !wfRunHooks( 'SkinTemplateTabAction', array( &$this,
 				$title, $message, $selected, $checkEdit,
 				&$classes, &$query, &$text, &$result ) ) ) {
 			return $result;
@@ -742,13 +821,13 @@ class SkinTemplate extends Skin {
 		return array(
 			'class' => implode( ' ', $classes ),
 			'text' => $text,
-			'href' => $title->getLocalUrl( $query ),
+			'href' => $title->getLocalURL( $query ),
 			'primary' => true );
 	}
 
 	function makeTalkUrlDetails( $name, $urlaction = '' ) {
 		$title = Title::newFromText( $name );
-		if( !is_object( $title ) ) {
+		if ( !is_object( $title ) ) {
 			throw new MWException( __METHOD__ . " given invalid pagename $name" );
 		}
 		$title = $title->getTalkPage();
@@ -761,7 +840,7 @@ class SkinTemplate extends Skin {
 
 	function makeArticleUrlDetails( $name, $urlaction = '' ) {
 		$title = Title::newFromText( $name );
-		$title= $title->getSubjectPage();
+		$title = $title->getSubjectPage();
 		self::checkTitle( $title, $name );
 		return array(
 			'href' => $title->getLocalURL( $urlaction ),
@@ -831,7 +910,7 @@ class SkinTemplate extends Skin {
 		wfRunHooks( 'SkinTemplatePreventOtherActiveTabs', array( &$this, &$preventActiveTabs ) );
 
 		// Checks if page is some kind of content
-		if( $title->canExist() ) {
+		if ( $title->canExist() ) {
 			// Gets page objects for the related namespaces
 			$subjectPage = $title->getSubjectPage();
 			$talkPage = $title->getTalkPage();
@@ -865,8 +944,11 @@ class SkinTemplate extends Skin {
 			$content_navigation['namespaces'][$talkId]['context'] = 'talk';
 
 			if ( $userCanRead ) {
+				$isForeignFile = $title->inNamespace( NS_FILE ) && $this->canUseWikiPage() &&
+					$this->getWikiPage() instanceof WikiFilePage && !$this->getWikiPage()->isLocal();
+
 				// Adds view view link
-				if ( $title->exists() ) {
+				if ( $title->exists() || $isForeignFile ) {
 					$content_navigation['views']['view'] = $this->tabAction(
 						$isTalk ? $talkPage : $subjectPage,
 						array( "$skname-view-view", 'view' ),
@@ -874,6 +956,19 @@ class SkinTemplate extends Skin {
 					);
 					// signal to hide this from simple content_actions
 					$content_navigation['views']['view']['redundant'] = true;
+				}
+
+				// If it is a non-local file, show a link to the file in its own repository
+				if ( $isForeignFile ) {
+					$file = $this->getWikiPage()->getFile();
+					$content_navigation['views']['view-foreign'] = array(
+						'class' => '',
+						'text' => wfMessageFallback( "$skname-view-foreign", 'view-foreign' )->
+							setContext( $this->getContext() )->
+							params( $file->getRepo()->getDisplayName() )->text(),
+						'href' => $file->getDescriptionUrl(),
+						'primary' => false,
+					);
 				}
 
 				wfProfileIn( __METHOD__ . '-edit' );
@@ -890,13 +985,16 @@ class SkinTemplate extends Skin {
 						&& ( ( $isTalk && $this->isRevisionCurrent() ) || $out->showNewSectionLink() );
 					$section = $request->getVal( 'section' );
 
-					$msgKey = $title->exists() || ( $title->getNamespace() == NS_MEDIAWIKI && $title->getDefaultMessageText() !== false ) ?
-						'edit' : 'create';
+					if ( $title->exists() || ( $title->getNamespace() == NS_MEDIAWIKI && $title->getDefaultMessageText() !== false ) ) {
+						$msgKey = $isForeignFile ? 'edit-local' : 'edit';
+					} else {
+						$msgKey = $isForeignFile ? 'create-local' : 'create';
+					}
 					$content_navigation['views']['edit'] = array(
 						'class' => ( $isEditing && ( $section !== 'new' || !$showNewSection ) ? 'selected' : '' ) . $isTalkClass,
 						'text' => wfMessageFallback( "$skname-view-$msgKey", $msgKey )->setContext( $this->getContext() )->text(),
 						'href' => $title->getLocalURL( $this->editUrlOptions() ),
-						'primary' => true, // don't collapse this in vector
+						'primary' => !$isForeignFile, // don't collapse this in vector
 					);
 
 					// section link
@@ -966,7 +1064,9 @@ class SkinTemplate extends Skin {
 					}
 				}
 
-				if ( $title->getNamespace() !== NS_MEDIAWIKI && $title->quickUserCan( 'protect', $user ) && $title->getRestrictionTypes() ) {
+				if ( $title->quickUserCan( 'protect', $user ) && $title->getRestrictionTypes() &&
+					MWNamespace::getRestrictionLevels( $title->getNamespace(), $user ) !== array( '' )
+				) {
 					$mode = $title->isProtected() ? 'unprotect' : 'protect';
 					$content_navigation['actions'][$mode] = array(
 						'class' => ( $onPage && $action == $mode ) ? 'selected' : false,
@@ -978,7 +1078,7 @@ class SkinTemplate extends Skin {
 				wfProfileOut( __METHOD__ . '-live' );
 
 				// Checks if the user is logged in
-				if ( $this->loggedin ) {
+				if ( $this->loggedin && $user->isAllowedAll( 'viewmywatchlist', 'editmywatchlist' ) ) {
 					/**
 					 * The following actions use messages which, if made particular to
 					 * the any specific skins, would break the Ajax code which makes this
@@ -1018,21 +1118,16 @@ class SkinTemplate extends Skin {
 						$params = array();
 					}
 					// Loops over each variant
-					foreach( $variants as $code ) {
+					foreach ( $variants as $code ) {
 						// Gets variant name from language code
 						$varname = $pageLang->getVariantname( $code );
-						// Checks if the variant is marked as disabled
-						if( $varname == 'disable' ) {
-							// Skips this variant
-							continue;
-						}
 						// Appends variant link
 						$content_navigation['variants'][] = array(
 							'class' => ( $code == $preferred ) ? 'selected' : false,
 							'text' => $varname,
 							'href' => $title->getLocalURL( array( 'variant' => $code ) + $params ),
-							'lang' => $code,
-							'hreflang' => $code
+							'lang' => wfBCP47( $code ),
+							'hreflang' => wfBCP47( $code ),
 						);
 					}
 				}
@@ -1126,7 +1221,8 @@ class SkinTemplate extends Skin {
 				}
 
 				if ( isset( $content_actions[$key] ) ) {
-					wfDebug( __METHOD__ . ": Found a duplicate key for $key while flattening content_navigation into content_actions." );
+					wfDebug( __METHOD__ . ": Found a duplicate key for $key while flattening " .
+						"content_navigation into content_actions.\n" );
 					continue;
 				}
 
@@ -1156,9 +1252,9 @@ class SkinTemplate extends Skin {
 
 		$nav_urls = array();
 		$nav_urls['mainpage'] = array( 'href' => self::makeMainPageUrl() );
-		if( $wgUploadNavigationUrl ) {
+		if ( $wgUploadNavigationUrl ) {
 			$nav_urls['upload'] = array( 'href' => $wgUploadNavigationUrl );
-		} elseif( UploadBase::isEnabled() && UploadBase::isAllowed( $this->getUser() ) === true ) {
+		} elseif ( UploadBase::isEnabled() && UploadBase::isAllowed( $this->getUser() ) === true ) {
 			$nav_urls['upload'] = array( 'href' => self::makeSpecialUrl( 'Upload' ) );
 		} else {
 			$nav_urls['upload'] = false;
@@ -1178,15 +1274,15 @@ class SkinTemplate extends Skin {
 
 		// A print stylesheet is attached to all pages, but nobody ever
 		// figures that out. :)  Add a link...
-		if ( $out->isArticle() ) {
-			if ( !$out->isPrintable() ) {
-				$nav_urls['print'] = array(
-					'text' => $this->msg( 'printableversion' )->text(),
-					'href' => $this->getTitle()->getLocalURL(
-						$request->appendQueryValue( 'printable', 'yes', true ) )
-				);
-			}
+		if ( !$out->isPrintable() && ( $out->isArticle() || $this->getTitle()->isSpecialPage() ) ) {
+			$nav_urls['print'] = array(
+				'text' => $this->msg( 'printableversion' )->text(),
+				'href' => $this->getTitle()->getLocalURL(
+					$request->appendQueryValue( 'printable', 'yes', true ) )
+			);
+		}
 
+		if ( $out->isArticle() ) {
 			// Also add a "permalink" while we're at it
 			$revid = $this->getRevisionId();
 			if ( $revid ) {
@@ -1203,7 +1299,7 @@ class SkinTemplate extends Skin {
 
 		if ( $out->isArticleRelated() ) {
 			$nav_urls['whatlinkshere'] = array(
-				'href' => SpecialPage::getTitleFor( 'Whatlinkshere', $this->thispage )->getLocalUrl()
+				'href' => SpecialPage::getTitleFor( 'Whatlinkshere', $this->thispage )->getLocalURL()
 			);
 
 			$nav_urls['info'] = array(
@@ -1213,7 +1309,7 @@ class SkinTemplate extends Skin {
 
 			if ( $this->getTitle()->getArticleID() ) {
 				$nav_urls['recentchangeslinked'] = array(
-					'href' => SpecialPage::getTitleFor( 'Recentchangeslinked', $this->thispage )->getLocalUrl()
+					'href' => SpecialPage::getTitleFor( 'Recentchangeslinked', $this->thispage )->getLocalURL()
 				);
 			}
 		}
@@ -1243,11 +1339,14 @@ class SkinTemplate extends Skin {
 				);
 			}
 
-			$sur = new UserrightsPage;
-			if ( $sur->userCanExecute( $this->getUser() ) ) {
-				$nav_urls['userrights'] = array(
-					'href' => self::makeSpecialUrlSubpage( 'Userrights', $rootUser )
-				);
+			if ( !$user->isAnon() ) {
+				$sur = new UserrightsPage;
+				$sur->setContext( $this->getContext() );
+				if ( $sur->userCanExecute( $this->getUser() ) ) {
+					$nav_urls['userrights'] = array(
+						'href' => self::makeSpecialUrlSubpage( 'Userrights', $rootUser )
+					);
+				}
 			}
 		}
 
@@ -1262,10 +1361,6 @@ class SkinTemplate extends Skin {
 	 */
 	function getNameSpaceKey() {
 		return $this->getTitle()->getNamespaceKey();
-	}
-
-	public function commonPrintStylesheet() {
-		return false;
 	}
 }
 
@@ -1290,6 +1385,21 @@ abstract class QuickTemplate {
 	 */
 	public function set( $name, $value ) {
 		$this->data[$name] = $value;
+	}
+
+	/**
+	 * Gets the template data requested
+	 * @since 1.22
+	 * @param string $name Key for the data
+	 * @param mixed $default Optional default (or null)
+	 * @return mixed The value of the data requested or the deafult
+	 */
+	public function get( $name, $default = null ) {
+		if ( isset( $this->data[$name] ) ) {
+			return $this->data[$name];
+		} else {
+			return $default;
+		}
 	}
 
 	/**
@@ -1318,13 +1428,6 @@ abstract class QuickTemplate {
 	 */
 	function text( $str ) {
 		echo htmlspecialchars( $this->data[$str] );
-	}
-
-	/**
-	 * @private
-	 */
-	function jstext( $str ) {
-		echo Xml::escapeJsString( $this->data[$str] );
 	}
 
 	/**
@@ -1384,6 +1487,20 @@ abstract class QuickTemplate {
 	 */
 	public function getSkin() {
 		return $this->data['skin'];
+	}
+
+	/**
+	 * Fetch the output of a QuickTemplate and return it
+	 *
+	 * @since 1.23
+	 * @return String
+	 */
+	public function getHTML() {
+		ob_start();
+		$this->execute();
+		$html = ob_get_contents();
+		ob_end_clean();
+		return $html;
 	}
 }
 
@@ -1492,7 +1609,7 @@ abstract class BaseTemplate extends QuickTemplate {
 	 */
 	function getPersonalTools() {
 		$personal_tools = array();
-		foreach ( $this->data['personal_urls'] as $key => $plink ) {
+		foreach ( $this->get( 'personal_urls' ) as $key => $plink ) {
 			# The class on a personal_urls item is meant to go on the <a> instead
 			# of the <li> so we have to use a single item "links" array instead
 			# of using most of the personal_url's keys directly.
@@ -1505,9 +1622,10 @@ abstract class BaseTemplate extends QuickTemplate {
 			if ( isset( $plink['active'] ) ) {
 				$ptool['active'] = $plink['active'];
 			}
-			foreach ( array( 'href', 'class', 'text' ) as $k ) {
-				if ( isset( $plink[$k] ) )
+			foreach ( array( 'href', 'class', 'text', 'dir' ) as $k ) {
+				if ( isset( $plink[$k] ) ) {
 					$ptool['links'][0][$k] = $plink[$k];
+				}
 			}
 			$personal_tools[$key] = $ptool;
 		}
@@ -1546,39 +1664,39 @@ abstract class BaseTemplate extends QuickTemplate {
 			case 'SEARCH':
 				// Search is a special case, skins should custom implement this
 				$boxes[$boxName] = array(
-					'id'        => 'p-search',
-					'header'    => $this->getMsg( 'search' )->text(),
+					'id' => 'p-search',
+					'header' => $this->getMsg( 'search' )->text(),
 					'generated' => false,
-					'content'   => true,
+					'content' => true,
 				);
 				break;
 			case 'TOOLBOX':
 				$msgObj = $this->getMsg( 'toolbox' );
 				$boxes[$boxName] = array(
-					'id'        => 'p-tb',
-					'header'    => $msgObj->exists() ? $msgObj->text() : 'toolbox',
+					'id' => 'p-tb',
+					'header' => $msgObj->exists() ? $msgObj->text() : 'toolbox',
 					'generated' => false,
-					'content'   => $this->getToolbox(),
+					'content' => $this->getToolbox(),
 				);
 				break;
 			case 'LANGUAGES':
 				if ( $this->data['language_urls'] ) {
 					$msgObj = $this->getMsg( 'otherlanguages' );
 					$boxes[$boxName] = array(
-						'id'        => 'p-lang',
-						'header'    => $msgObj->exists() ? $msgObj->text() : 'otherlanguages',
+						'id' => 'p-lang',
+						'header' => $msgObj->exists() ? $msgObj->text() : 'otherlanguages',
 						'generated' => false,
-						'content'   => $this->data['language_urls'],
+						'content' => $this->data['language_urls'],
 					);
 				}
 				break;
 			default:
 				$msgObj = $this->getMsg( $boxName );
 				$boxes[$boxName] = array(
-					'id'        => "p-$boxName",
-					'header'    => $msgObj->exists() ? $msgObj->text() : $boxName,
+					'id' => "p-$boxName",
+					'header' => $msgObj->exists() ? $msgObj->text() : $boxName,
 					'generated' => true,
-					'content'   => $content,
+					'content' => $content,
 				);
 				break;
 			}
@@ -1618,10 +1736,10 @@ abstract class BaseTemplate extends QuickTemplate {
 		} else {
 			if ( $hookContents ) {
 				$boxes['TOOLBOXEND'] = array(
-					'id'        => 'p-toolboxend',
-					'header'    => $boxes['TOOLBOX']['header'],
+					'id' => 'p-toolboxend',
+					'header' => $boxes['TOOLBOX']['header'],
 					'generated' => false,
-					'content'   => "<ul>{$hookContents}</ul>",
+					'content' => "<ul>{$hookContents}</ul>",
 				);
 				// HACK: Make sure that TOOLBOXEND is sorted next to TOOLBOX
 				$boxes2 = array();
@@ -1640,6 +1758,19 @@ abstract class BaseTemplate extends QuickTemplate {
 		}
 
 		return $boxes;
+	}
+
+	/**
+	 * @param string $name
+	 */
+	protected function renderAfterPortlet( $name ) {
+		$content = '';
+		wfRunHooks( 'BaseTemplateAfterPortlet', array( $this, $name, &$content ) );
+
+		if ( $content !== '' ) {
+			echo "<div class='after-portlet after-portlet-$name'>$content</div>";
+		}
+
 	}
 
 	/**
@@ -1662,6 +1793,10 @@ abstract class BaseTemplate extends QuickTemplate {
 	 * If an "id" or "single-id" (if you don't want the actual id to be output
 	 * on the link) is present it will be used to generate a tooltip and
 	 * accesskey for the link.
+	 *
+	 * The keys "context" and "primary" are ignored; these keys are used
+	 * internally by skins and are not supposed to be included in the HTML
+	 * output.
 	 *
 	 * If you don't want an accesskey, set $item['tooltiponly'] = true;
 	 *
@@ -1703,7 +1838,7 @@ abstract class BaseTemplate extends QuickTemplate {
 
 		if ( isset( $item['href'] ) || isset( $options['link-fallback'] ) ) {
 			$attrs = $item;
-			foreach ( array( 'single-id', 'text', 'msg', 'tooltiponly' ) as $k ) {
+			foreach ( array( 'single-id', 'text', 'msg', 'tooltiponly', 'context', 'primary' ) as $k ) {
 				unset( $attrs[$k] );
 			}
 
@@ -1744,7 +1879,7 @@ abstract class BaseTemplate extends QuickTemplate {
 	 *
 	 * @param $key string, usually a key from the list you are generating this link from.
 	 * @param $item array, of list item data containing some of a specific set of keys.
-	 * The "id" and "class" keys will be used as attributes for the list item,
+	 * The "id", "class" and "itemtitle" keys will be used as attributes for the list item,
 	 * if "active" contains a value of true a "active" class will also be appended to class.
 	 *
 	 * @param $options array
@@ -1761,21 +1896,23 @@ abstract class BaseTemplate extends QuickTemplate {
 	 * list item directly so they will not be passed to makeLink
 	 * (however the link will still support a tooltip and accesskey from it)
 	 * If you need an id or class on a single link you should include a "links"
-	 * array with just one link item inside of it.
+	 * array with just one link item inside of it. If you want to add a title
+	 * to the list item itself, you can set "itemtitle" to the value.
 	 * $options is also passed on to makeLink calls
 	 *
 	 * @return string
 	 */
 	function makeListItem( $key, $item, $options = array() ) {
 		if ( isset( $item['links'] ) ) {
-			$html = '';
+			$links = array();
 			foreach ( $item['links'] as $linkKey => $link ) {
-				$html .= $this->makeLink( $linkKey, $link, $options );
+				$links[] = $this->makeLink( $linkKey, $link, $options );
 			}
+			$html = implode( ' ', $links );
 		} else {
 			$link = $item;
 			// These keys are used by makeListItem and shouldn't be passed on to the link
-			foreach ( array( 'id', 'class', 'active', 'tag' ) as $k ) {
+			foreach ( array( 'id', 'class', 'active', 'tag', 'itemtitle' ) as $k ) {
 				unset( $link[$k] );
 			}
 			if ( isset( $item['id'] ) && !isset( $item['single-id'] ) ) {
@@ -1800,6 +1937,9 @@ abstract class BaseTemplate extends QuickTemplate {
 			$attrs['class'] .= ' active';
 			$attrs['class'] = trim( $attrs['class'] );
 		}
+		if ( isset( $item['itemtitle'] ) ) {
+			$attrs['title'] = $item['itemtitle'];
+		}
 		return Html::rawElement( isset( $options['tag'] ) ? $options['tag'] : 'li', $attrs, $html );
 	}
 
@@ -1807,14 +1947,15 @@ abstract class BaseTemplate extends QuickTemplate {
 		$realAttrs = array(
 			'type' => 'search',
 			'name' => 'search',
-			'value' => isset( $this->data['search'] ) ? $this->data['search'] : '',
+			'placeholder' => wfMessage( 'searchsuggest-search' )->text(),
+			'value' => $this->get( 'search', '' ),
 		);
 		$realAttrs = array_merge( $realAttrs, Linker::tooltipAndAccesskeyAttribs( 'search' ), $attrs );
 		return Html::element( 'input', $realAttrs );
 	}
 
 	function makeSearchButton( $mode, $attrs = array() ) {
-		switch( $mode ) {
+		switch ( $mode ) {
 			case 'go':
 			case 'fulltext':
 				$realAttrs = array(
@@ -1866,14 +2007,14 @@ abstract class BaseTemplate extends QuickTemplate {
 	 * @return array|mixed
 	 */
 	function getFooterLinks( $option = null ) {
-		$footerlinks = $this->data['footerlinks'];
+		$footerlinks = $this->get( 'footerlinks' );
 
 		// Reduce footer links down to only those which are being used
 		$validFooterLinks = array();
-		foreach( $footerlinks as $category => $links ) {
+		foreach ( $footerlinks as $category => $links ) {
 			$validFooterLinks[$category] = array();
-			foreach( $links as $link ) {
-				if( isset( $this->data[$link] ) && $this->data[$link] ) {
+			foreach ( $links as $link ) {
+				if ( isset( $this->data[$link] ) && $this->data[$link] ) {
 					$validFooterLinks[$category][] = $link;
 				}
 			}
@@ -1906,7 +2047,7 @@ abstract class BaseTemplate extends QuickTemplate {
 	 */
 	function getFooterIcons( $option = null ) {
 		// Generate additional footer icons
-		$footericons = $this->data['footericons'];
+		$footericons = $this->get( 'footericons' );
 
 		if ( $option == 'icononly' ) {
 			// Unset any icons which don't have an image
@@ -1939,9 +2080,10 @@ abstract class BaseTemplate extends QuickTemplate {
 	 * body and html tags.
 	 */
 	function printTrail() { ?>
+<?php echo MWDebug::getDebugHTML( $this->getSkin()->getContext() ); ?>
 <?php $this->html( 'bottomscripts' ); /* JS call to runBodyOnloadHook */ ?>
 <?php $this->html( 'reporttime' ) ?>
-<?php echo MWDebug::getDebugHTML( $this->getSkin()->getContext() );
+<?php
 	}
 
 }

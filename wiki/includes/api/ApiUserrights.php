@@ -38,12 +38,13 @@ class ApiUserrights extends ApiBase {
 		$user = $this->getUrUser();
 
 		$form = new UserrightsPage;
+		$form->setContext( $this->getContext() );
 		$r['user'] = $user->getName();
 		$r['userid'] = $user->getId();
-		list( $r['added'], $r['removed'] ) =
-			$form->doSaveUserGroups(
-				$user, (array)$params['add'],
-				(array)$params['remove'], $params['reason'] );
+		list( $r['added'], $r['removed'] ) = $form->doSaveUserGroups(
+			$user, (array)$params['add'],
+			(array)$params['remove'], $params['reason']
+		);
 
 		$result = $this->getResult();
 		$result->setIndexedTagName( $r['added'], 'group' );
@@ -60,18 +61,20 @@ class ApiUserrights extends ApiBase {
 		}
 
 		$params = $this->extractRequestParams();
+		$this->requireOnlyOneParameter( $params, 'user', 'userid' );
+
+		$user = isset( $params['user'] ) ? $params['user'] : '#' . $params['userid'];
 
 		$form = new UserrightsPage;
-		$status = $form->fetchUser( $params['user'] );
+		$form->setContext( $this->getContext() );
+		$status = $form->fetchUser( $user );
 		if ( !$status->isOK() ) {
-			$errors = $status->getErrorsArray();
-			$this->dieUsageMsg( $errors[0] );
-		} else {
-			$user = $status->value;
+			$this->dieStatus( $status );
 		}
 
-		$this->mUser = $user;
-		return $user;
+		$this->mUser = $status->value;
+
+		return $status->value;
 	}
 
 	public function mustBePosted() {
@@ -83,10 +86,12 @@ class ApiUserrights extends ApiBase {
 	}
 
 	public function getAllowedParams() {
-		return array (
+		return array(
 			'user' => array(
 				ApiBase::PARAM_TYPE => 'string',
-				ApiBase::PARAM_REQUIRED => true
+			),
+			'userid' => array(
+				ApiBase::PARAM_TYPE => 'integer',
 			),
 			'add' => array(
 				ApiBase::PARAM_TYPE => User::getAllGroups(),
@@ -109,6 +114,7 @@ class ApiUserrights extends ApiBase {
 	public function getParamDescription() {
 		return array(
 			'user' => 'User name',
+			'userid' => 'User id',
 			'add' => 'Add the user to these groups',
 			'remove' => 'Remove the user from these groups',
 			'token' => 'A userrights token previously retrieved through list=users',
@@ -117,7 +123,7 @@ class ApiUserrights extends ApiBase {
 	}
 
 	public function getDescription() {
-		return 'Add/remove a user to/from groups';
+		return 'Add/remove a user to/from groups.';
 	}
 
 	public function needsToken() {
@@ -130,7 +136,8 @@ class ApiUserrights extends ApiBase {
 
 	public function getExamples() {
 		return array(
-			'api.php?action=userrights&user=FooBot&add=bot&remove=sysop|bureaucrat&token=123ABC'
+			'api.php?action=userrights&user=FooBot&add=bot&remove=sysop|bureaucrat&token=123ABC',
+			'api.php?action=userrights&userid=123&add=bot&remove=sysop|bureaucrat&token=123ABC'
 		);
 	}
 

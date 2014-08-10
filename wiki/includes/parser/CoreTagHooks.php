@@ -77,7 +77,7 @@ class CoreTagHooks {
 	 */
 	static function html( $content, $attributes, $parser ) {
 		global $wgRawHtml;
-		if( $wgRawHtml ) {
+		if ( $wgRawHtml ) {
 			return array( $content, 'markerType' => 'nowiki' );
 		} else {
 			throw new MWException( '<html> extension tag encountered unexpectedly' );
@@ -107,7 +107,7 @@ class CoreTagHooks {
 	 * Renders a thumbnail list of the given images, with optional captions.
 	 * Full syntax documented on the wiki:
 	 *
-	 *   http://www.mediawiki.org/wiki/Help:Images#Gallery_syntax
+	 *   https://www.mediawiki.org/wiki/Help:Images#Gallery_syntax
 	 *
 	 * @todo break Parser::renderImageGallery out here too.
 	 *

@@ -52,7 +52,7 @@ abstract class SMWLanguage {
 	static protected $enDatatypeAliases = array(
 		'URL'                   => '_uri',
 		'Page'                  => '_wpg',
-		'String'                => '_str',
+		'String'                => '_txt',
 		'Text'                  => '_txt',
 		'Code'                  => '_cod',
 		'Boolean'               => '_boo',
@@ -91,6 +91,9 @@ abstract class SMWLanguage {
 		'Has query format'  => '_ASKFO',
 		'Has query size'    => '_ASKSI',
 		'Has query depth'   => '_ASKDE',
+		'Has query duration' => '_ASKDU',
+		'Has media type'     => '_MEDIA',
+		'Has mime type'      => '_MIME',
 	);
 
 	public function __construct() {

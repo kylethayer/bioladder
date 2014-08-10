@@ -92,14 +92,14 @@ abstract class ResourceLoaderWikiModule extends ResourceLoaderModule {
 		$content = $revision->getContent( Revision::RAW );
 
 		if ( !$content ) {
-			wfDebug( __METHOD__ . "failed to load content of JS/CSS page!\n" );
+			wfDebugLog( 'resourceloader', __METHOD__ . ': failed to load content of JS/CSS page!' );
 			return null;
 		}
 
 		$model = $content->getModel();
 
 		if ( $model !== CONTENT_MODEL_CSS && $model !== CONTENT_MODEL_JAVASCRIPT ) {
-			wfDebug( __METHOD__ . "bad content model $model for JS/CSS page!\n" );
+			wfDebugLog( 'resourceloader', __METHOD__ . ': bad content model $model for JS/CSS page!' );
 			return null;
 		}
 
@@ -180,8 +180,24 @@ abstract class ResourceLoaderWikiModule extends ResourceLoaderModule {
 		if ( count( $mtimes ) ) {
 			$modifiedTime = max( $modifiedTime, max( $mtimes ) );
 		}
-		$modifiedTime = max( $modifiedTime, $this->getMsgBlobMtime( $context->getLanguage() ) );
+		$modifiedTime = max(
+			$modifiedTime,
+			$this->getMsgBlobMtime( $context->getLanguage() ),
+			$this->getDefinitionMtime( $context )
+		);
 		return $modifiedTime;
+	}
+
+	/**
+	 * Get the definition summary for this module.
+	 *
+	 * @return Array
+	 */
+	public function getDefinitionSummary( ResourceLoaderContext $context ) {
+		return array(
+			'class' => get_class( $this ),
+			'pages' => $this->getPages( $context ),
+		);
 	}
 
 	/**

@@ -1,8 +1,16 @@
 <?php
-/**
- * @file
- * @ingroup SMWDataItems
- */
+
+namespace SMW;
+
+use SMWDataItem;
+use SMWDIUri;
+use SMWDIWikiPage;
+use SMWLanguage;
+
+use InvalidArgumentException;
+use RuntimeException;
+use SMW\InvalidPropertyException;
+use SMW\InvalidPredefinedPropertyException;
 
 /**
  * This class implements Property data items.
@@ -16,7 +24,37 @@
  * @author Markus Krötzsch
  * @ingroup SMWDataItems
  */
-class SMWDIProperty extends SMWDataItem {
+class DIProperty extends SMWDataItem {
+
+	// Property subobject data item ID
+	const TYPE_SUBOBJECT  = '_SOBJ';
+	// Property improper value data item ID
+	const TYPE_ERROR      = '_ERRP';
+	// Property instance of a category
+	const TYPE_CATEGORY = '_INST';
+	// Property "subcategory of"
+	const TYPE_SUBCATEGORY = '_SUBC';
+	// Property sort key of a page
+	const TYPE_SORTKEY = '_SKEY';
+	// Property modification date
+	const TYPE_MODIFICATION_DATE = '_MDAT';
+	// Property "creation date"
+	const TYPE_CREATION_DATE = '_CDAT';
+	// Property "last editor is"
+	const TYPE_LAST_EDITOR = '_LEDT';
+	// Property "is a new page"
+	const TYPE_NEW_PAGE = '_NEWP';
+	// Property "has type"
+	const TYPE_HAS_TYPE = '_TYPE';
+	// Property "corresponds to"
+	const TYPE_CONVERSION = '_CONV';
+	// Property "has query"
+	const TYPE_ASKQUERY = '_ASK';
+
+	// Property "has media type"
+	const TYPE_MEDIA = '_MEDIA';
+	// Property "has mime type"
+	const TYPE_MIME = '_MIME';
 
 	/**
 	 * Array for assigning types to predefined properties. Each
@@ -32,58 +70,58 @@ class SMWDIProperty extends SMWDataItem {
 	 *
 	 * @var array
 	 */
-	static protected $m_prop_types;
+	static private $m_prop_types;
 
 	/**
 	 * Array with entries "property id" => "property label"
 	 * @var array
 	 */
-	static protected $m_prop_labels;
+	static private $m_prop_labels;
 
 	/**
 	 * Array with entries "property alias" => "property id"
 	 * @var array
 	 */
-	static protected $m_prop_aliases;
+	static private $m_prop_aliases;
 
 	/**
 	 * Either an internal SMW property key (starting with "_") or the DB
 	 * key of a property page in the wiki.
 	 * @var string
 	 */
-	protected $m_key;
+	private $m_key;
 
 	/**
 	 * Whether to take the inverse of this property or not.
 	 * @var boolean
 	 */
-	protected $m_inverse;
+	private $m_inverse;
 
 	/**
 	 * Cache for property type ID.
 	 * @var string
 	 */
-	protected $m_proptypeid;
+	private $m_proptypeid;
 
 	/**
 	 * Initialise a property. This constructor checks that keys of
 	 * predefined properties do really exist (in the current configuration
 	 * of the wiki). No check is performed to see if a user label is in
 	 * fact the label or alias of a predefined property. If this should be
-	 * done, the function SMWDIProperty::newFromUserLabel() can be used.
+	 * done, the function self::newFromUserLabel() can be used.
 	 *
 	 * @param $key string key for the property (internal SMW key or wikipage DB key)
 	 * @param $inverse boolean states if the inverse of the property is constructed
 	 */
 	public function __construct( $key, $inverse = false ) {
 		if ( ( $key === '' ) || ( $key{0} == '-' ) ) {
-			throw new SMWDataItemException( "Illegal property key \"$key\"." );
+			throw new InvalidPropertyException( "Illegal property key \"$key\"." );
 		}
 
 		if ( $key{0} == '_' ) {
-			SMWDIProperty::initPropertyRegistration();
-			if ( !array_key_exists( $key, SMWDIProperty::$m_prop_types ) ) {
-				throw new SMWDataItemException( "There is no predefined property with \"$key\"." );
+			self::initPropertyRegistration();
+			if ( !array_key_exists( $key, self::$m_prop_types ) ) {
+				throw new InvalidPredefinedPropertyException( "There is no predefined property with \"$key\"." );
 			}
 		}
 
@@ -126,8 +164,8 @@ class SMWDIProperty extends SMWDataItem {
 	 */
 	public function isShown() {
 		return ( ( $this->isUserDefined() ) ||
-		         ( array_key_exists( $this->m_key, SMWDIProperty::$m_prop_types ) &&
-		           SMWDIProperty::$m_prop_types[$this->m_key][1] ) );
+		         ( array_key_exists( $this->m_key, self::$m_prop_types ) &&
+		           self::$m_prop_types[$this->m_key][1] ) );
 	}
 
 	/**
@@ -181,9 +219,35 @@ class SMWDIProperty extends SMWDataItem {
 
 		try {
 			return new SMWDIWikiPage( $dbkey, SMW_NS_PROPERTY, '', $subobjectName );
-		} catch ( SMWDataItemException $e ) {
+		} catch ( DataItemException $e ) {
 			return null;
 		}
+	}
+
+	/**
+	 * @since  2.0
+	 *
+	 * @return self
+	 * @throws RuntimeException
+	 * @throws InvalidArgumentException
+	 */
+	public function setPropertyTypeId( $propertyTypeId ) {
+
+		if ( !DataTypeRegistry::getInstance()->isKnownTypeId( $propertyTypeId ) ) {
+			throw new RuntimeException( "{$propertyTypeId} is an unknown type id" );
+		}
+
+		if ( $this->isUserDefined() && $this->m_proptypeid === null ) {
+			$this->m_proptypeid = $propertyTypeId;
+			return $this;
+		}
+
+		if ( !$this->isUserDefined() && $propertyTypeId === self::getPredefinedPropertyTypeId( $this->m_key ) ) {
+			$this->m_proptypeid = $propertyTypeId;
+			return $this;
+		}
+
+		throw new InvalidArgumentException( 'Property type can not be altered for a predefined object' );
 	}
 
 	/**
@@ -200,7 +264,7 @@ class SMWDIProperty extends SMWDataItem {
 		if ( !isset( $this->m_proptypeid ) ) {
 			if ( $this->isUserDefined() ) { // normal property
 				$diWikiPage = new SMWDIWikiPage( $this->getKey(), SMW_NS_PROPERTY, '' );
-				$typearray = smwfGetStore()->getPropertyValues( $diWikiPage, new SMWDIProperty( '_TYPE' ) );
+				$typearray = \SMW\StoreFactory::getStore()->getPropertyValues( $diWikiPage, new self( '_TYPE' ) );
 
 				if ( count( $typearray ) >= 1 ) { // some types given, pick one (hopefully unique)
 					$typeDataItem = reset( $typearray );
@@ -237,7 +301,7 @@ class SMWDIProperty extends SMWDataItem {
 	 *
 	 * @param string $serialization
 	 *
-	 * @return SMWDIProperty
+	 * @return DIProperty
 	 */
 	public static function doUnserialize( $serialization ) {
 		$inverse = false;
@@ -247,15 +311,15 @@ class SMWDIProperty extends SMWDataItem {
 			$inverse = true;
 		}
 
-		return new SMWDIProperty( $serialization, $inverse );
+		return new self( $serialization, $inverse );
 	}
 
 	/**
 	 * Construct a property from a user-supplied label. The main difference
-	 * to the normal constructor of SMWDIProperty is that it is checked
+	 * to the normal constructor of DIProperty is that it is checked
 	 * whether the label refers to a known predefined property.
 	 * Note that this function only gives access to the registry data that
-	 * SMWDIProperty stores, but does not do further parsing of user input.
+	 * DIProperty stores, but does not do further parsing of user input.
 	 * For example, '-' as first character is not interpreted for inverting
 	 * a property. Likewise, no normalization of title strings is done. To
 	 * process wiki input, SMWPropertyValue should be used.
@@ -263,15 +327,15 @@ class SMWDIProperty extends SMWDataItem {
 	 * @param $label string label for the property
 	 * @param $inverse boolean states if the inverse of the property is constructed
 	 *
-	 * @return SMWDIProperty object
+	 * @return DIProperty object
 	 */
 	public static function newFromUserLabel( $label, $inverse = false ) {
-		$id = SMWDIProperty::findPropertyID( $label );
+		$id = self::findPropertyID( $label );
 
 		if ( $id === false ) {
-			return new SMWDIProperty( str_replace( ' ', '_', $label ), $inverse );
+			return new self( str_replace( ' ', '_', $label ), $inverse );
 		} else {
-			return new SMWDIProperty( $id, $inverse );
+			return new self( $id, $inverse );
 		}
 	}
 
@@ -286,13 +350,13 @@ class SMWDIProperty extends SMWDataItem {
 	 * @return mixed string property ID or false
 	 */
 	public static function findPropertyID( $label, $useAlias = true ) {
-		SMWDIProperty::initPropertyRegistration();
-		$id = array_search( $label, SMWDIProperty::$m_prop_labels );
+		self::initPropertyRegistration();
+		$id = array_search( $label, self::$m_prop_labels );
 
 		if ( $id !== false ) {
 			return $id;
-		} elseif ( $useAlias && array_key_exists( $label, SMWDIProperty::$m_prop_aliases ) ) {
-			return SMWDIProperty::$m_prop_aliases[$label];
+		} elseif ( $useAlias && array_key_exists( $label, self::$m_prop_aliases ) ) {
+			return self::$m_prop_aliases[$label];
 		} else {
 			return false;
 		}
@@ -309,9 +373,9 @@ class SMWDIProperty extends SMWDataItem {
 	 * @return string type ID
 	 */
 	public static function getPredefinedPropertyTypeId( $key ) {
-		SMWDIProperty::initPropertyRegistration();
-		if ( array_key_exists( $key, SMWDIProperty::$m_prop_types ) ) {
-			return SMWDIProperty::$m_prop_types[$key][0];
+		self::initPropertyRegistration();
+		if ( array_key_exists( $key, self::$m_prop_types ) ) {
+			return self::$m_prop_types[$key][0];
 		} else {
 			return '';
 		}
@@ -327,9 +391,9 @@ class SMWDIProperty extends SMWDataItem {
 	 * @return string
 	 */
 	static public function findPropertyLabel( $id ) {
-		SMWDIProperty::initPropertyRegistration();
-		if ( array_key_exists( $id, SMWDIProperty::$m_prop_labels ) ) {
-			return SMWDIProperty::$m_prop_labels[$id];
+		self::initPropertyRegistration();
+		if ( array_key_exists( $id, self::$m_prop_labels ) ) {
+			return self::$m_prop_labels[$id];
 		} else { // incomplete translation (language bug) or deliberately invisible property
 			return '';
 		}
@@ -339,52 +403,61 @@ class SMWDIProperty extends SMWDataItem {
 	 * Set up predefined properties, including their label, aliases, and
 	 * typing information.
 	 */
-	static protected function initPropertyRegistration() {
-		if ( is_array( SMWDIProperty::$m_prop_types ) ) {
+	static private function initPropertyRegistration() {
+		if ( is_array( self::$m_prop_types ) ) {
 			return; // init happened before
 		}
 
+		/**
+		 * @var SMWLanguage $smwgContLang
+		 */
 		global $smwgContLang, $smwgUseCategoryHierarchy;
+
 		$datatypeLabels = $smwgContLang->getDatatypeLabels();
-		SMWDIProperty::$m_prop_labels  = $smwgContLang->getPropertyLabels() + $datatypeLabels;
-		SMWDIProperty::$m_prop_aliases = $smwgContLang->getPropertyAliases() + $smwgContLang->getDatatypeAliases();
+
+		self::$m_prop_labels  = $smwgContLang->getPropertyLabels() + $datatypeLabels;
+		self::$m_prop_aliases = $smwgContLang->getPropertyAliases() + $smwgContLang->getDatatypeAliases();
+
 		// Setup built-in predefined properties.
 		// NOTE: all ids must start with underscores. The translation
 		// for each ID, if any, is defined in the language files.
 		// Properties without translation cannot be entered by or
 		// displayed to users, whatever their "show" value below.
-		SMWDIProperty::$m_prop_types = array(
-				'_TYPE'  =>  array( '__typ', true ), // "has type"
+		self::$m_prop_types = array(
+				self::TYPE_HAS_TYPE =>  array( '__typ', true ), // "has type"
 				'_URI'   =>  array( '__spu', true ), // "equivalent URI"
-				'_INST'  =>  array( '__sin', false ), // instance of a category
+				self::TYPE_CATEGORY =>  array( '__sin', false ), // instance of a category
 				'_UNIT'  =>  array( '__sps', true ), // "displays unit"
 				'_IMPO'  =>  array( '__imp', true ), // "imported from"
-				'_CONV'  =>  array( '__sps', true ), // "corresponds to"
+				self::TYPE_CONVERSION =>  array( '__sps', true ), // "corresponds to"
 				'_SERV'  =>  array( '__sps', true ), // "provides service"
 				'_PVAL'  =>  array( '__sps', true ), // "allows value"
 				'_REDI'  =>  array( '__red', true ), // redirects to some page
 				'_SUBP'  =>  array( '__sup', true ), // "subproperty of"
-				'_SUBC'  =>  array( '__suc', !$smwgUseCategoryHierarchy ), // "subcategory of"
+				self::TYPE_SUBCATEGORY =>  array( '__suc', !$smwgUseCategoryHierarchy ), // "subcategory of"
 				'_CONC'  =>  array( '__con', false ), // associated concept
-				'_MDAT'  =>  array( '_dat', false ), // "modification date"
-				'_CDAT'  =>  array( '_dat', false ), // "creation date"
-				'_NEWP'  =>  array( '_boo', false ), // "is a new page"
-				'_LEDT'  =>  array( '_wpg', false ), // "last editor is"
-				'_ERRP'  =>  array( '_wpp', false ), // "has improper value for"
+				self::TYPE_MODIFICATION_DATE =>  array( '_dat', false ), // "modification date"
+				self::TYPE_CREATION_DATE =>  array( '_dat', false ), // "creation date"
+				self::TYPE_NEW_PAGE =>  array( '_boo', false ), // "is a new page"
+				self::TYPE_LAST_EDITOR =>  array( '_wpg', false ), // "last editor is"
+				self::TYPE_ERROR  =>  array( '_wpp', false ), // "has improper value for"
 				'_LIST'  =>  array( '__pls', true ), // "has fields"
-				'_SKEY'  =>  array( '__key', false ), // sort key of a page
+				self::TYPE_SORTKEY =>  array( '__key', false ), // sort key of a page
 				'_SF_DF' => array( '__spf', true ), // Semantic Form's default form property
 				'_SF_AF' => array( '__spf', true ),  // Semantic Form's alternate form property
-				'_SOBJ'  =>  array( '_wpg', true ), // "has subobject"
-				'_ASK'   =>  array( '_wpg', false ), // "has query"
+				self::TYPE_SUBOBJECT =>  array( '__sob', true ), // "has subobject"
+				self::TYPE_ASKQUERY  =>  array( '__sob', false ), // "has query"
 				'_ASKST' =>  array( '_cod', true ), // "has query string"
-				'_ASKFO' =>  array( '_str', true ), // "has query format"
+				'_ASKFO' =>  array( '_txt', true ), // "has query format"
 				'_ASKSI' =>  array( '_num', true ), // "has query size"
 				'_ASKDE' =>  array( '_num', true ), // "has query depth"
+				'_ASKDU' =>  array( '_num', true ), // "has query duration"
+				self::TYPE_MEDIA => array( '_txt', true ), // "has media type"
+				self::TYPE_MIME  => array( '_txt', true ), // "has mime type"
 			);
 
 		foreach ( $datatypeLabels as $typeid => $label ) {
-			SMWDIProperty::$m_prop_types[$typeid] = array( $typeid, true );
+			self::$m_prop_types[$typeid] = array( $typeid, true );
 		}
 
 		wfRunHooks( 'smwInitProperties' );
@@ -401,20 +474,20 @@ class SMWDIProperty extends SMWDataItem {
 	 * @param $label mixed string user label or false (internal property)
 	 * @param $show boolean only used if label is given, see isShown()
 	 *
-	 * @note See SMWDIProperty::isShown() for information about $show.
+	 * @note See self::isShown() for information about $show.
 	 */
 	static public function registerProperty( $id, $typeid, $label = false, $show = false ) {
-		SMWDIProperty::$m_prop_types[$id] = array( $typeid, $show );
+		self::$m_prop_types[$id] = array( $typeid, $show );
 
 		if ( $label != false ) {
-			SMWDIProperty::$m_prop_labels[$id] = $label;
+			self::$m_prop_labels[$id] = $label;
 		}
 	}
 
 	/**
 	 * Add a new alias label to an existing property ID. Note that every ID
 	 * should have a primary label, either provided by SMW or registered
-	 * with SMWDIProperty::registerProperty(). This function should be
+	 * with self::registerProperty(). This function should be
 	 * called from within the hook 'smwInitDatatypes' only.
 	 *
 	 * @param $id string id of a property
@@ -425,13 +498,14 @@ class SMWDIProperty extends SMWDataItem {
 	 * alias.
 	 */
 	static public function registerPropertyAlias( $id, $label ) {
-		SMWDIProperty::$m_prop_aliases[$label] = $id;
+		self::$m_prop_aliases[$label] = $id;
 	}
 
-	public function equals( $di ) {
+	public function equals( SMWDataItem $di ) {
 		if ( $di->getDIType() !== SMWDataItem::TYPE_PROPERTY ) {
 			return false;
 		}
+
 		return $di->getKey() === $this->m_key;
 	}
 }

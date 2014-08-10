@@ -1,4 +1,8 @@
 <?php
+
+use SMW\MediaWiki\Jobs\UpdateJob;
+use SMW\Reporter\MessageReporter;
+
 /**
  * @file
  * @ingroup SMWStore
@@ -15,7 +19,7 @@
  * @since 1.8
  * @ingroup SMWStore
  */
-class SMWSQLStore3SetupHandlers {
+class SMWSQLStore3SetupHandlers implements MessageReporter {
 
 	/**
 	 * The store used by this setupHandler
@@ -31,13 +35,12 @@ class SMWSQLStore3SetupHandlers {
 
 	public function setup( $verbose = true ) {
 		$this->reportProgress( "Setting up standard database configuration for SMW ...\n\n", $verbose );
-		$this->reportProgress( "Selected storage engine is \"SMWSQLStore\" (or an extension thereof)\n\n", $verbose );
+		$this->reportProgress( "Selected storage engine is \"SMWSQLStore3\" (or an extension thereof)\n\n", $verbose );
 
-		$db = wfGetDB( DB_MASTER );
+		$db = $this->store->getDatabase()->acquireWriteConnection();
 
 		$this->setupTables( $verbose, $db );
 		$this->setupPredefinedProperties( $verbose, $db );
-		$this->refreshPropertyStatistics( $verbose, $db );
 
 		return true;
 	}
@@ -63,7 +66,7 @@ class SMWSQLStore3SetupHandlers {
 			't' => SMWSQLHelpers::getStandardDBType( 'title' ),
 			'l' => SMWSQLHelpers::getStandardDBType( 'blob' ),
 			'f' => ( $wgDBtype == 'postgres' ? 'DOUBLE PRECISION' : 'DOUBLE' ),
-			'i' => ( $wgDBtype == 'postgres' ? 'INTEGER' : 'INT(8)' ),
+			'i' => ( $wgDBtype == 'postgres' ? 'bigint' : 'INT(8)' ),
 			'j' => ( $wgDBtype == 'postgres' || $wgDBtype == 'sqlite' ? 'INTEGER' : 'INT(8) UNSIGNED' ),
 			'p' => SMWSQLHelpers::getStandardDBType( 'id' ),
 			'n' => SMWSQLHelpers::getStandardDBType( 'namespace' ),
@@ -127,7 +130,7 @@ class SMWSQLStore3SetupHandlers {
 			SMWSQLStore3::PROPERTY_STATISTICS_TABLE,
 			array(
 				'p_id' => $dbtypes['p'],
-				'usage_count' => $dbtypes['j']
+				'usage_count' => ( $wgDBtype == 'postgres' ?  $dbtypes['i'] :  $dbtypes['j'] )
 			),
 			$db,
 			$reportTo
@@ -138,7 +141,7 @@ class SMWSQLStore3SetupHandlers {
 		// Set up all property tables as defined:
 		$this->setupPropertyTables( $dbtypes, $db, $reportTo );
 
-		$this->reportProgress( "Database initialised successfully.\n\n", $verbose );
+		$this->reportProgress( "Database initialized successfully.\n\n", $verbose );
 	}
 
 	/**
@@ -152,7 +155,7 @@ class SMWSQLStore3SetupHandlers {
 	protected function setupPropertyTables( array $dbtypes, $db, SMWSQLStore3SetupHandlers $reportTo = null ) {
 		$addedCustomTypeSignatures = false;
 
-		foreach ( SMWSQLStore3::getPropertyTables() as $proptable ) {
+		foreach ( $this->store->getPropertyTables() as $proptable ) {
 			$diHandler = $this->store->getDataItemHandlerForDIType( $proptable->getDiType() );
 
 			// Prepare indexes. By default, property-value tables
@@ -212,7 +215,7 @@ class SMWSQLStore3SetupHandlers {
 	 * allows us to safe DB calls when certain data is needed. At the same time, the entries in the DB
 	 * make sure that DB-based functions work as with all other properties.
 	 */
-	protected function setupPredefinedProperties( $verbose, $db ) {
+	protected function setupPredefinedProperties( $verbose, DatabaseBase $db ) {
 		global $wgDBtype;
 
 		$this->reportProgress( "Setting up internal property indices ...\n", $verbose );
@@ -265,72 +268,17 @@ class SMWSQLStore3SetupHandlers {
 		$this->reportProgress( " done.\n", $verbose );
 
 		if ( $wgDBtype == 'postgres' ) {
-			$this->reportProgress( " ... updating smw_ids_smw_id_seq sequence accordingly.\n", $verbose );
+			$sequenceIndex = SMWSql3SmwIds::tableName . '_smw_id_seq';
+
+			$this->reportProgress( " ... updating {$sequenceIndex} sequence accordingly.\n", $verbose );
 
 			$max = $db->selectField( SMWSql3SmwIds::tableName, 'max(smw_id)', array(), __METHOD__ );
 			$max += 1;
 
-			$db->query( "ALTER SEQUENCE smw_ids_smw_id_seq RESTART WITH {$max}", __METHOD__ );
+			$db->query( "ALTER SEQUENCE {$sequenceIndex} RESTART WITH {$max}", __METHOD__ );
 		}
 
-		$this->reportProgress( "Internal properties initialised successfully.\n", $verbose );
-	}
-
-	/**
-	 * Update the usage count in the property statistics table for all
-	 * properties. This function also initialises the required entry for
-	 * all properties that have IDs in the SMW IDs table.
-	 *
-	 * @since 1.8
-	 * @param boolean $verbose
-	 * @param DatabaseBase $dbw used for writing
-	 */
-	protected function refreshPropertyStatistics( $verbose, $dbw ) {
-		$this->reportProgress( "Updating property statistics. This may take a while.\n", $verbose );
-
-		$res = $dbw->select(
-				SMWSql3SmwIds::tableName,
-				array( 'smw_id', 'smw_title' ),
-				array( 'smw_namespace' => SMW_NS_PROPERTY  ),
-				__METHOD__
-		);
-
-		$propertyTables = SMWSQLStore3::getPropertyTables();
-
-		foreach ( $res as $row ) {
-			$this->reportProgress( '.', $verbose );
-
-			$usageCount = 0;
-			foreach ( $propertyTables as $propertyTable ) {
-
-				if ( ( $propertyTable->isFixedPropertyTable() ) &&
-					( $propertyTable->getFixedProperty() != $row->smw_title ) ) {
-					// This table cannot store values for this property
-					continue;
-				}
-
-				$propRow = $dbw->selectRow(
-						$propertyTable->getName(),
-						'Count(*) as count',
-						$propertyTable->isFixedPropertyTable() ? array() : array('p_id' => $row->smw_id ),
-						__METHOD__
-				);
-				$usageCount += $propRow->count;
-			}
-
-			$dbw->replace(
-				SMWSQLStore3::PROPERTY_STATISTICS_TABLE,
-				'p_id',
-				array(
-					'p_id' => $row->smw_id,
-					'usage_count' => $usageCount
-				),
-				__METHOD__
-			);
-		}
-
-		$this->reportProgress( "\nUpdated statistics for {$res->numRows()} Properties.\n", $verbose );
-		$dbw->freeResult( $res );
+		$this->reportProgress( "Internal properties initialized successfully.\n", $verbose );
 	}
 
 	public function drop( $verbose = true ) {
@@ -340,7 +288,7 @@ class SMWSQLStore3SetupHandlers {
 		$dbw = wfGetDB( DB_MASTER );
 		$tables = array( SMWSql3SmwIds::tableName, SMWSQLStore3::CONCEPT_CACHE_TABLE, SMWSQLStore3::PROPERTY_STATISTICS_TABLE );
 
-		foreach ( SMWSQLStore3::getPropertyTables() as $proptable ) {
+		foreach ( $this->store->getPropertyTables() as $proptable ) {
 			$tables[] = $proptable->getName();
 		}
 
@@ -426,11 +374,11 @@ class SMWSQLStore3SetupHandlers {
 				$title = Title::makeTitleSafe( $row->smw_namespace, $titleKey );
 
 				if ( $title !== null && !$title->exists() ) {
-					$updatejobs[] = new SMWUpdateJob( $title );
+					$updatejobs[] = new UpdateJob( $title );
 				}
 			} elseif ( $row->smw_iw == SMW_SQL3_SMWIW_OUTDATED ) { // remove outdated internal object references
 				$dbw = wfGetDB( DB_MASTER );
-				foreach ( SMWSQLStore3::getPropertyTables() as $proptable ) {
+				foreach ( $this->store->getPropertyTables() as $proptable ) {
 					if ( $proptable->usesIdSubject() ) {
 						$dbw->delete( $proptable->getName(), array( 's_id' => $row->smw_id ), __METHOD__ );
 					}
@@ -440,7 +388,7 @@ class SMWSQLStore3SetupHandlers {
 			} elseif ( $titleKey != '' ) { // "normal" interwiki pages or outdated internal objects -- delete
 				$diWikiPage = new SMWDIWikiPage( $titleKey, $row->smw_namespace, $row->smw_iw );
 				$emptySemanticData = new SMWSemanticData( $diWikiPage );
-				$this->store->doDataUpdate( $emptySemanticData );
+				$this->store->updateData( $emptySemanticData );
 			}
 		}
 		$dbr->freeResult( $res );
@@ -485,4 +433,16 @@ class SMWSQLStore3SetupHandlers {
 			flush();
 		}
 	}
+
+	/**
+	 * @see MessageReporter::reportMessage
+	 *
+	 * @since 1.9
+	 *
+	 * @param string $message
+	 */
+	public function reportMessage( $message ) {
+		$this->reportProgress( $message );
+	}
+
 }

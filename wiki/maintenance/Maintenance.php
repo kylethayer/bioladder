@@ -23,7 +23,7 @@
 // Make sure we're on PHP5.3.2 or better
 if ( !function_exists( 'version_compare' ) || version_compare( PHP_VERSION, '5.3.2' ) < 0 ) {
 	// We need to use dirname( __FILE__ ) here cause __DIR__ is PHP5.3+
-	require_once( dirname( __FILE__ ) . '/../includes/PHPVersionError.php' );
+	require_once dirname( __FILE__ ) . '/../includes/PHPVersionError.php';
 	wfPHPVersionError( 'cli' );
 }
 
@@ -54,8 +54,8 @@ abstract class Maintenance {
 	 * Constants for DB access type
 	 * @see Maintenance::getDbType()
 	 */
-	const DB_NONE  = 0;
-	const DB_STD   = 1;
+	const DB_NONE = 0;
+	const DB_STD = 1;
 	const DB_ADMIN = 2;
 
 	// Const for getStdin()
@@ -115,13 +115,6 @@ abstract class Maintenance {
 	public $fileHandle;
 
 	/**
-	 * List of all the core maintenance scripts. This is added
-	 * to scripts added by extensions in $wgMaintenanceScripts
-	 * and returned by getMaintenanceScripts()
-	 */
-	protected static $mCoreScripts = null;
-
-	/**
 	 * Default constructor. Children should call this *first* if implementing
 	 * their own constructors
 	 */
@@ -153,7 +146,7 @@ abstract class Maintenance {
 			return false; // last call should be to this function
 		}
 		$includeFuncs = array( 'require_once', 'require', 'include', 'include_once' );
-		for( $i=1; $i < $count; $i++ ) {
+		for ( $i = 1; $i < $count; $i++ ) {
 			if ( !in_array( $bt[$i]['function'], $includeFuncs ) ) {
 				return false; // previous calls should all be "requires"
 			}
@@ -327,7 +320,7 @@ abstract class Maintenance {
 		}
 		if ( $channel === null ) {
 			$this->cleanupChanneled();
-			print( $out );
+			print $out;
 		} else {
 			$out = preg_replace( '/\n\z/', '', $out );
 			$this->outputChanneled( $out, $channel );
@@ -426,9 +419,10 @@ abstract class Maintenance {
 		$this->addOption( 'server', "The protocol and server name to use in URLs, e.g. " .
 				"http://en.wikipedia.org. This is sometimes necessary because " .
 				"server name detection may fail in command line scripts.", false, true );
+		$this->addOption( 'profiler', 'Set to "text" or "trace" to show profiling output', false, true );
 
 		# Save generic options to display them separately in help
-		$this->mGenericParameters = $this->mParams ;
+		$this->mGenericParameters = $this->mParams;
 
 		# Script dependant options:
 
@@ -452,11 +446,11 @@ abstract class Maintenance {
 	 */
 	public function runChild( $maintClass, $classFile = null ) {
 		// Make sure the class is loaded first
-		if ( !MWInit::classExists( $maintClass ) ) {
+		if ( !class_exists( $maintClass ) ) {
 			if ( $classFile ) {
-				require_once( $classFile );
+				require_once $classFile;
 			}
-			if ( !MWInit::classExists( $maintClass ) ) {
+			if ( !class_exists( $maintClass ) ) {
 				$this->error( "Cannot spawn child: $maintClass" );
 			}
 		}
@@ -476,15 +470,20 @@ abstract class Maintenance {
 	 * Do some sanity checking and basic setup
 	 */
 	public function setup() {
-		global $wgCommandLineMode, $wgRequestTime;
+		global $IP, $wgCommandLineMode, $wgRequestTime;
 
 		# Abort if called from a web server
 		if ( isset( $_SERVER ) && isset( $_SERVER['REQUEST_METHOD'] ) ) {
 			$this->error( 'This script must be run from the command line', true );
 		}
 
+		if ( $IP === null ) {
+			$this->error( "\$IP not set, aborting!\n" .
+				'(Did you forget to call parent::__construct() in your maintenance script?)', 1 );
+		}
+
 		# Make sure we can handle script parameters
-		if ( !function_exists( 'hphp_thread_set_warmup_enabled' ) && !ini_get( 'register_argc_argv' ) ) {
+		if ( !defined( 'HPHP_VERSION' ) && !ini_get( 'register_argc_argv' ) ) {
 			$this->error( 'Cannot get command line arguments, register_argc_argv is set to false', true );
 		}
 
@@ -515,7 +514,7 @@ abstract class Maintenance {
 		$wgCommandLineMode = true;
 
 		# Turn off output buffering if it's on
-		while( ob_get_level() > 0 ) {
+		while ( ob_get_level() > 0 ) {
 			ob_end_flush();
 		}
 
@@ -634,7 +633,7 @@ abstract class Maintenance {
 			} elseif ( substr( $arg, 0, 1 ) == '-' ) {
 				# Short options
 				for ( $p = 1; $p < strlen( $arg ); $p++ ) {
-					$option = $arg { $p } ;
+					$option = $arg { $p };
 					if ( !isset( $this->mParams[$option] ) && isset( $this->mShortParamsMap[$option] ) ) {
 						$option = $this->mShortParamsMap[$option];
 					}
@@ -712,7 +711,7 @@ abstract class Maintenance {
 	 * @param $force boolean Whether to force the help to show, default false
 	 */
 	protected function maybeHelp( $force = false ) {
-		if( !$force && !$this->hasOption( 'help' ) ) {
+		if ( !$force && !$this->hasOption( 'help' ) ) {
 			return;
 		}
 
@@ -743,8 +742,9 @@ abstract class Maintenance {
 				} else {
 					$output .= '[' . $arg['name'] . ']';
 				}
-				if ( $k < count( $this->mArgList ) - 1 )
+				if ( $k < count( $this->mArgList ) - 1 ) {
 					$output .= ' ';
+				}
 			}
 		}
 		$this->output( "$output\n\n" );
@@ -765,7 +765,7 @@ abstract class Maintenance {
 		$this->output( "\n" );
 
 		$scriptDependantParams = $this->mDependantParameters;
-		if( count($scriptDependantParams) > 0 ) {
+		if ( count( $scriptDependantParams ) > 0 ) {
 			$this->output( "Script dependant parameters:\n" );
 			// Parameters description
 			foreach ( $scriptDependantParams as $par => $info ) {
@@ -780,7 +780,6 @@ abstract class Maintenance {
 			$this->output( "\n" );
 		}
 
-
 		// Script specific parameters not defined on construction by
 		// Maintenance::addDefaultParams()
 		$scriptSpecificParams = array_diff_key(
@@ -790,7 +789,7 @@ abstract class Maintenance {
 			$this->mGenericParameters,
 			$this->mDependantParameters
 		);
-		if( count($scriptSpecificParams) > 0 ) {
+		if ( count( $scriptSpecificParams ) > 0 ) {
 			$this->output( "Script specific parameters:\n" );
 			// Parameters description
 			foreach ( $scriptSpecificParams as $par => $info ) {
@@ -806,7 +805,7 @@ abstract class Maintenance {
 		}
 
 		// Print arguments
-		if( count( $this->mArgList ) > 0 ) {
+		if ( count( $this->mArgList ) > 0 ) {
 			$this->output( "Arguments:\n" );
 			// Arguments description
 			foreach ( $this->mArgList as $info ) {
@@ -839,7 +838,7 @@ abstract class Maintenance {
 		$wgCommandLineMode = true;
 
 		# Override $wgServer
-		if( $this->hasOption( 'server') ) {
+		if ( $this->hasOption( 'server' ) ) {
 			$wgServer = $this->getOption( 'server', $wgServer );
 		}
 
@@ -876,6 +875,16 @@ abstract class Maintenance {
 		$wgShowSQLErrors = true;
 		@set_time_limit( 0 );
 		$this->adjustMemoryLimit();
+
+		// Per-script profiling; useful for debugging
+		$forcedProfiler = $this->getOption( 'profiler' );
+		if ( $forcedProfiler === 'text' ) {
+			Profiler::setInstance( new ProfilerSimpleText( array() ) );
+			Profiler::instance()->setTemplated( true );
+		} elseif ( $forcedProfiler === 'trace' ) {
+			Profiler::setInstance( new ProfilerSimpleTrace( array() ) );
+			Profiler::instance()->setTemplated( true );
+		}
 	}
 
 	/**
@@ -906,7 +915,7 @@ abstract class Maintenance {
 
 		if ( isset( $this->mOptions['conf'] ) ) {
 			$settingsFile = $this->mOptions['conf'];
-		} elseif ( defined("MW_CONFIG_FILE") ) {
+		} elseif ( defined( "MW_CONFIG_FILE" ) ) {
 			$settingsFile = MW_CONFIG_FILE;
 		} else {
 			$settingsFile = "$IP/LocalSettings.php";
@@ -992,52 +1001,6 @@ abstract class Maintenance {
 	}
 
 	/**
-	 * Get the list of available maintenance scripts. Note
-	 * that if you call this _before_ calling doMaintenance
-	 * you won't have any extensions in it yet
-	 * @return Array
-	 */
-	public static function getMaintenanceScripts() {
-		global $wgMaintenanceScripts;
-		return $wgMaintenanceScripts + self::getCoreScripts();
-	}
-
-	/**
-	 * Return all of the core maintenance scripts
-	 * @return array
-	 */
-	protected static function getCoreScripts() {
-		if ( !self::$mCoreScripts ) {
-			$paths = array(
-				__DIR__,
-				__DIR__ . '/language',
-				__DIR__ . '/storage',
-			);
-			self::$mCoreScripts = array();
-			foreach ( $paths as $p ) {
-				$handle = opendir( $p );
-				while ( ( $file = readdir( $handle ) ) !== false ) {
-					if ( $file == 'Maintenance.php' ) {
-						continue;
-					}
-					$file = $p . '/' . $file;
-					if ( is_dir( $file ) || !strpos( $file, '.php' ) ||
-						( strpos( file_get_contents( $file ), '$maintClass' ) === false ) ) {
-						continue;
-					}
-					require( $file );
-					$vars = get_defined_vars();
-					if ( array_key_exists( 'maintClass', $vars ) ) {
-						self::$mCoreScripts[$vars['maintClass']] = $file;
-					}
-				}
-				closedir( $handle );
-			}
-		}
-		return self::$mCoreScripts;
-	}
-
-	/**
 	 * Returns a database to be used by current maintenance script. It can be set by setDB().
 	 * If not set, wfGetDB() will be used.
 	 * This function has the same parameters as wfGetDB()
@@ -1076,7 +1039,7 @@ abstract class Maintenance {
 	 * @param &$db DatabaseBase object
 	 */
 	private function unlockSearchindex( &$db ) {
-		$db->unlockTables(  __CLASS__ . '::' . __METHOD__ );
+		$db->unlockTables( __CLASS__ . '::' . __METHOD__ );
 	}
 
 	/**
@@ -1143,8 +1106,7 @@ abstract class Maintenance {
 			$title = $titleObj->getPrefixedDBkey();
 			$this->output( "$title..." );
 			# Update searchindex
-			# TODO: pass the Content object to SearchUpdate, let the search engine decide how to deal with it.
-			$u = new SearchUpdate( $pageId, $titleObj->getText(), $rev->getContent()->getTextForSearchIndex() );
+			$u = new SearchUpdate( $pageId, $titleObj->getText(), $rev->getContent() );
 			$u->doUpdate();
 			$this->output( "\n" );
 		}
@@ -1160,7 +1122,7 @@ abstract class Maintenance {
 	 * @return bool
 	 */
 	public static function posix_isatty( $fd ) {
-		if ( !MWInit::functionExists( 'posix_isatty' ) ) {
+		if ( !function_exists( 'posix_isatty' ) ) {
 			return !$fd;
 		} else {
 			return posix_isatty( $fd );
@@ -1190,7 +1152,9 @@ abstract class Maintenance {
 					$st = fgets( STDIN, 1024 );
 				}
 			}
-			if ( $st === false ) return false;
+			if ( $st === false ) {
+				return false;
+			}
 			$resp = trim( $st );
 			return $resp;
 		}
@@ -1256,9 +1220,9 @@ abstract class LoggedUpdateMaintenance extends Maintenance {
 		$db = $this->getDB( DB_MASTER );
 		$key = $this->getUpdateKey();
 
-		if ( !$this->hasOption( 'force' ) &&
-			$db->selectRow( 'updatelog', '1', array( 'ul_key' => $key ), __METHOD__ ) )
-		{
+		if ( !$this->hasOption( 'force' )
+			&& $db->selectRow( 'updatelog', '1', array( 'ul_key' => $key ), __METHOD__ )
+		) {
 			$this->output( "..." . $this->updateSkippedMessage() . "\n" );
 			return true;
 		}
@@ -1267,9 +1231,7 @@ abstract class LoggedUpdateMaintenance extends Maintenance {
 			return false;
 		}
 
-		if (
-			$db->insert( 'updatelog', array( 'ul_key' => $key ), __METHOD__, 'IGNORE' ) )
-		{
+		if ( $db->insert( 'updatelog', array( 'ul_key' => $key ), __METHOD__, 'IGNORE' ) ) {
 			return true;
 		} else {
 			$this->output( $this->updatelogFailedMessage() . "\n" );

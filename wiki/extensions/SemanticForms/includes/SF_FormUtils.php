@@ -102,7 +102,7 @@ END;
 			$attrs['disabled'] = true;
 		}
 		$text = "\t" . Xml::check( 'wpMinoredit', $checked, $attrs ) . "\n";
-		$text .= "\t" . Html::element( 'label', array(
+		$text .= "\t" . Html::rawElement( 'label', array(
 			'for' => 'wpMinoredit',
 			'title' => $tooltip
 		), $label ) . "\n";
@@ -137,8 +137,8 @@ END;
 			$attrs['disabled'] = true;
 		}
 		$text = "\t" . Xml::check( 'wpWatchthis', $is_checked, $attrs ) . "\n";
-		$tooltip = wfMessage( 'tooltip-watch' )->escaped();
-		$text .= "\t" . Html::element( 'label', array(
+		$tooltip = wfMessage( 'tooltip-watch' )->text();
+		$text .= "\t" . Html::rawElement( 'label', array(
 			'for' => 'wpWatchthis',
 			'title' => $tooltip
 		), $label ) . "\n";
@@ -256,7 +256,7 @@ END;
 			}
 			$cancel = "<a href=\"javascript:history.go(-$stepsBack);\">$label</a>";
 		} else {
-			$cancel = smwfGetLinker()->link( $wgTitle, $label, array(), array(), 'known' );
+			$cancel = Linker::link( $wgTitle, $label, array(), array(), 'known' );
 		}
 		return "\t\t" . Html::rawElement( 'span', array( 'class' => 'editHelp' ), $cancel ) . "\n";
 	}
@@ -465,8 +465,6 @@ END;
 				// rarely changed forms automatically (after one day per
 				// default). Instead the cache is purged on storing/purging a
 				// form definition.
-				// A side effect of this is, that there is no need to
-				// distinguish between MW <1.17 and >=1.17.
 
 				// store form definition with current user options
 				$cache->set( $cachekey, $output->getText() );
@@ -548,4 +546,46 @@ END;
 		}
 	}
 
+	/*
+	 * Get section header HTML
+	 */
+	static function headerHTML( $header_name , $header_level = 2 ) {
+
+		global $sfgTabIndex;
+
+		$sfgTabIndex++;
+		$text = "";
+
+		if ( !is_numeric( $header_level ) ) {
+			// The default header level is set to 2
+			$header_level = 2;
+		}
+
+		$header_level = min( $header_level, 6 );
+		$elementName = 'h'. $header_level;
+		$text = Html::rawElement( $elementName, array(), $header_name );
+		return $text;
+	}
+
+	/**
+	 * Get the changed index if a new template or section was
+	 * inserted before the end, or one was deleted in the form
+	 */
+	static function getChangedIndex( $i, $new_item_loc, $deleted_item_loc ) {
+		$old_i = $i;
+		if ( $new_item_loc != null ) {
+			if ( $i > $new_item_loc ) {
+				$old_i = $i - 1;
+			} elseif ( $i == $new_item_loc ) {
+				// it's the new template; it shouldn't
+				// get any query-string data
+				$old_i = - 1;
+			}
+		} elseif ( $deleted_item_loc != null ) {
+			if ( $i >= $deleted_item_loc ) {
+				$old_i = $i + 1;
+			}
+		}
+		return $old_i;
+	}
 }

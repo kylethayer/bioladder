@@ -23,7 +23,7 @@
  * @author Rob Church <robchur@gmail.com>
  */
 
-require_once( __DIR__ . '/Maintenance.php' );
+require_once __DIR__ . '/Maintenance.php';
 
 /**
  * Maintenance script to re-initialise or update the site statistics table
@@ -48,7 +48,7 @@ class InitSiteStats extends Maintenance {
 		$edits = $counter->edits();
 		$this->output( "{$edits}\nCounting number of articles..." );
 
-		$good  = $counter->articles();
+		$good = $counter->articles();
 		$this->output( "{$good}\nCounting total pages..." );
 
 		$pages = $counter->pages();
@@ -66,23 +66,21 @@ class InitSiteStats extends Maintenance {
 			$this->output( "{$views}\n" );
 		}
 
+		if ( $this->hasOption( 'update' ) ) {
+			$this->output( "\nUpdating site statistics..." );
+			$counter->refresh();
+			$this->output( "done.\n" );
+		}
+
 		if ( $this->hasOption( 'active' ) ) {
-			$this->output( "Counting active users..." );
+			$this->output( "\nCounting and updating active users..." );
 			$active = SiteStatsUpdate::cacheUpdate( wfGetDB( DB_MASTER ) );
 			$this->output( "{$active}\n" );
 		}
 
-		$this->output( "\nUpdating site statistics..." );
-
-		if ( $this->hasOption( 'update' ) ) {
-			$counter->update();
-		} else {
-			$counter->refresh();
-		}
-
-		$this->output( "done.\n" );
+		$this->output( "\nDone.\n" );
 	}
 }
 
 $maintClass = "InitSiteStats";
-require_once( RUN_MAINTENANCE_IF_MAIN );
+require_once RUN_MAINTENANCE_IF_MAIN;

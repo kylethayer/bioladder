@@ -3,7 +3,7 @@
  * Oracle search engine
  *
  * Copyright © 2004 Brion Vibber <brion@pobox.com>
- * http://www.mediawiki.org/
+ * https://www.mediawiki.org/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,42 +28,36 @@
  * Search engine hook base class for Oracle (ConText).
  * @ingroup Search
  */
-class SearchOracle extends SearchEngine {
+class SearchOracle extends SearchDatabase {
 
-	private $reservedWords = array ('ABOUT' => 1,
-									'ACCUM' => 1,
-									'AND' => 1,
-									'BT' => 1,
-									'BTG' => 1,
-									'BTI' => 1,
-									'BTP' => 1,
-									'FUZZY' => 1,
-									'HASPATH' => 1,
-									'INPATH' => 1,
-									'MINUS' => 1,
-									'NEAR' => 1,
-									'NOT' => 1,
-									'NT' => 1,
-									'NTG' => 1,
-									'NTI' => 1,
-									'NTP' => 1,
-									'OR' => 1,
-									'PT' => 1,
-									'RT' => 1,
-									'SQE' => 1,
-									'SYN' => 1,
-									'TR' => 1,
-									'TRSYN' => 1,
-									'TT' => 1,
-									'WITHIN' => 1);
-
-	/**
-	 * Creates an instance of this class
-	 * @param $db DatabasePostgres: database object
-	 */
-	function __construct( $db ) {
-		parent::__construct( $db );
-	}
+	private $reservedWords = array(
+		'ABOUT' => 1,
+		'ACCUM' => 1,
+		'AND' => 1,
+		'BT' => 1,
+		'BTG' => 1,
+		'BTI' => 1,
+		'BTP' => 1,
+		'FUZZY' => 1,
+		'HASPATH' => 1,
+		'INPATH' => 1,
+		'MINUS' => 1,
+		'NEAR' => 1,
+		'NOT' => 1,
+		'NT' => 1,
+		'NTG' => 1,
+		'NTI' => 1,
+		'NTP' => 1,
+		'OR' => 1,
+		'PT' => 1,
+		'RT' => 1,
+		'SQE' => 1,
+		'SYN' => 1,
+		'TR' => 1,
+		'TRSYN' => 1,
+		'TT' => 1,
+		'WITHIN' => 1,
+	);
 
 	/**
 	 * Perform a full text search query and return a result set.
@@ -72,8 +66,9 @@ class SearchOracle extends SearchEngine {
 	 * @return SqlSearchResultSet
 	 */
 	function searchText( $term ) {
-		if ( $term == '' )
+		if ( $term == '' ) {
 			return new SqlSearchResultSet( false, '' );
+		}
 
 		$resultSet = $this->db->resultObject( $this->db->query( $this->getQuery( $this->filter( $term ), true ) ) );
 		return new SqlSearchResultSet( $resultSet, $this->searchTerms );
@@ -86,23 +81,12 @@ class SearchOracle extends SearchEngine {
 	 * @return SqlSearchResultSet
 	 */
 	function searchTitle( $term ) {
-		if ( $term == '' )
+		if ( $term == '' ) {
 			return new SqlSearchResultSet( false, '' );
+		}
 
 		$resultSet = $this->db->resultObject( $this->db->query( $this->getQuery( $this->filter( $term ), false ) ) );
 		return new MySQLSearchResultSet( $resultSet, $this->searchTerms );
-	}
-
-	/**
-	 * Return a partial WHERE clause to exclude redirects, if so set
-	 * @return String
-	 */
-	function queryRedirect() {
-		if ( $this->showRedirects ) {
-			return '';
-		} else {
-			return 'AND page_is_redirect=0';
-		}
 	}
 
 	/**
@@ -110,8 +94,9 @@ class SearchOracle extends SearchEngine {
 	 * @return String
 	 */
 	function queryNamespaces() {
-		if( is_null( $this->namespaces ) )
+		if ( is_null( $this->namespaces ) ) {
 			return '';
+		}
 		if ( !count( $this->namespaces ) ) {
 			$namespaces = '0';
 		} else {
@@ -150,7 +135,6 @@ class SearchOracle extends SearchEngine {
 	 */
 	function getQuery( $filteredTerm, $fulltext ) {
 		return $this->queryLimit( $this->queryMain( $filteredTerm, $fulltext ) . ' ' .
-			$this->queryRedirect() . ' ' .
 			$this->queryNamespaces() . ' ' .
 			$this->queryRanking( $filteredTerm, $fulltext ) . ' ' );
 	}
@@ -195,23 +179,24 @@ class SearchOracle extends SearchEngine {
 		$searchon = '';
 		if ( preg_match_all( '/([-+<>~]?)(([' . $lc . ']+)(\*?)|"[^"]*")/',
 				$filteredText, $m, PREG_SET_ORDER ) ) {
-			foreach( $m as $terms ) {
+			foreach ( $m as $terms ) {
 				// Search terms in all variant forms, only
 				// apply on wiki with LanguageConverter
 				$temp_terms = $wgContLang->autoConvertToAllVariants( $terms[2] );
-				if( is_array( $temp_terms )) {
-					$temp_terms = array_unique( array_values( $temp_terms ));
-					foreach( $temp_terms as $t ) {
-						$searchon .= ($terms[1] == '-' ? ' ~' : ' & ') . $this->escapeTerm( $t );
+				if ( is_array( $temp_terms ) ) {
+					$temp_terms = array_unique( array_values( $temp_terms ) );
+					foreach ( $temp_terms as $t ) {
+						$searchon .= ( $terms[1] == '-' ? ' ~' : ' & ' ) . $this->escapeTerm( $t );
 					}
 				}
 				else {
-					$searchon .= ($terms[1] == '-' ? ' ~' : ' & ') . $this->escapeTerm( $terms[2] );
+					$searchon .= ( $terms[1] == '-' ? ' ~' : ' & ' ) . $this->escapeTerm( $terms[2] );
 				}
 				if ( !empty( $terms[3] ) ) {
 					$regexp = preg_quote( $terms[3], '/' );
-					if ( $terms[4] )
+					if ( $terms[4] ) {
 						$regexp .= "[0-9A-Za-z_]+";
+					}
 				} else {
 					$regexp = preg_quote( str_replace( '"', '', $terms[2] ), '/' );
 				}
@@ -227,11 +212,12 @@ class SearchOracle extends SearchEngine {
 	private function escapeTerm( $t ) {
 		global $wgContLang;
 		$t = $wgContLang->normalizeForSearch( $t );
-		$t = isset( $this->reservedWords[strtoupper( $t )] ) ? '{'.$t.'}' : $t;
-		$t = preg_replace('/^"(.*)"$/', '($1)', $t);
-		$t = preg_replace('/([-&|])/', '\\\\$1', $t);
+		$t = isset( $this->reservedWords[strtoupper( $t )] ) ? '{' . $t . '}' : $t;
+		$t = preg_replace( '/^"(.*)"$/', '($1)', $t );
+		$t = preg_replace( '/([-&|])/', '\\\\$1', $t );
 		return $t;
 	}
+
 	/**
 	 * Create or update the search index record for the given page.
 	 * Title and text should be pre-processed.
@@ -273,7 +259,7 @@ class SearchOracle extends SearchEngine {
 
 		$dbw->update( 'searchindex',
 			array( 'si_title' => $title ),
-			array( 'si_page'  => $id ),
+			array( 'si_page' => $id ),
 			'SearchOracle::updateTitle',
 			array() );
 	}

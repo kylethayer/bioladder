@@ -16,7 +16,7 @@
 class SMWConceptValue extends SMWDataValue {
 
 	protected function parseUserValue( $value ) {
-		throw new Exception( 'Concepts cannot be initialised from user-provided strings. This should not happen.' );
+		throw new Exception( 'Concepts cannot be initialized from user-provided strings. This should not happen.' );
 	}
 
 	/**
@@ -35,7 +35,7 @@ class SMWConceptValue extends SMWDataValue {
 	}
 
 	protected function clear() {
-		$this->m_dataitem = new SMWDIConcept( '', '', 0, -1, -1, $this->m_typeid );
+		$this->m_dataitem = new \SMW\DIConcept( '', '', 0, -1, -1, $this->m_typeid );
 	}
 
 	public function getShortWikiText( $linked = null ) {

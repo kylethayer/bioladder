@@ -72,9 +72,8 @@ class Preprocessor_DOM implements Preprocessor {
 		$xml = "<list>";
 
 		foreach ( $values as $k => $val ) {
-
 			if ( is_int( $k ) ) {
-				$xml .= "<part><name index=\"$k\"/><value>" . htmlspecialchars( $val ) ."</value></part>";
+				$xml .= "<part><name index=\"$k\"/><value>" . htmlspecialchars( $val ) . "</value></part>";
 			} else {
 				$xml .= "<part><name>" . htmlspecialchars( $k ) . "</name>=<value>" . htmlspecialchars( $val ) . "</value></part>";
 			}
@@ -149,19 +148,16 @@ class Preprocessor_DOM implements Preprocessor {
 					wfDebugLog( "Preprocessor", "Loaded preprocessor XML from memcached (key $cacheKey)" );
 				}
 			}
-		}
-		if ( $xml === false ) {
-			if ( $cacheable ) {
+			if ( $xml === false ) {
 				wfProfileIn( __METHOD__ . '-cache-miss' );
 				$xml = $this->preprocessToXml( $text, $flags );
 				$cacheValue = sprintf( "%08d", self::CACHE_VERSION ) . $xml;
 				$wgMemc->set( $cacheKey, $cacheValue, 86400 );
 				wfProfileOut( __METHOD__ . '-cache-miss' );
 				wfDebugLog( "Preprocessor", "Saved preprocessor XML to memcached (key $cacheKey)" );
-			} else {
-				$xml = $this->preprocessToXml( $text, $flags );
 			}
-
+		} else {
+			$xml = $this->preprocessToXml( $text, $flags );
 		}
 
 		// Fail if the number of elements exceeds acceptable limits
@@ -169,6 +165,10 @@ class Preprocessor_DOM implements Preprocessor {
 		$this->parser->mGeneratedPPNodeCount += substr_count( $xml, '<' );
 		$max = $this->parser->mOptions->getMaxGeneratedPPNodeCount();
 		if ( $this->parser->mGeneratedPPNodeCount > $max ) {
+			if ( $cacheable ) {
+				wfProfileOut( __METHOD__ . '-cacheable' );
+			}
+			wfProfileOut( __METHOD__ );
 			throw new MWException( __METHOD__ . ': generated node count limit exceeded' );
 		}
 
@@ -182,16 +182,21 @@ class Preprocessor_DOM implements Preprocessor {
 			$xml = UtfNormal::cleanUp( $xml );
 			// 1 << 19 == XML_PARSE_HUGE, needed so newer versions of libxml2 don't barf when the XML is >256 levels deep
 			$result = $dom->loadXML( $xml, 1 << 19 );
-			if ( !$result ) {
-				throw new MWException( __METHOD__ . ' generated invalid XML' );
-			}
 		}
-		$obj = new PPNode_DOM( $dom->documentElement );
+		if ( $result ) {
+			$obj = new PPNode_DOM( $dom->documentElement );
+		}
 		wfProfileOut( __METHOD__ . '-loadXML' );
+
 		if ( $cacheable ) {
 			wfProfileOut( __METHOD__ . '-cacheable' );
 		}
+
 		wfProfileOut( __METHOD__ );
+
+		if ( !$result ) {
+			throw new MWException( __METHOD__ . ' generated invalid XML' );
+		}
 		return $obj;
 	}
 
@@ -355,9 +360,11 @@ class Preprocessor_DOM implements Preprocessor {
 				}
 				// Handle comments
 				if ( isset( $matches[2] ) && $matches[2] == '!--' ) {
-					// To avoid leaving blank lines, when a comment is both preceded
-					// and followed by a newline (ignoring spaces), trim leading and
-					// trailing spaces and one of the newlines.
+
+					// To avoid leaving blank lines, when a sequence of
+					// space-separated comments is both preceded and followed by
+					// a newline (ignoring spaces), then
+					// trim leading and trailing spaces and the trailing newline.
 
 					// Find the end
 					$endPos = strpos( $text, '-->', $i + 4 );
@@ -368,25 +375,52 @@ class Preprocessor_DOM implements Preprocessor {
 						$i = $lengthText;
 					} else {
 						// Search backwards for leading whitespace
-						$wsStart = $i ? ( $i - strspn( $revText, ' ', $lengthText - $i ) ) : 0;
+						$wsStart = $i ? ( $i - strspn( $revText, " \t", $lengthText - $i ) ) : 0;
+
 						// Search forwards for trailing whitespace
 						// $wsEnd will be the position of the last space (or the '>' if there's none)
-						$wsEnd = $endPos + 2 + strspn( $text, ' ', $endPos + 3 );
+						$wsEnd = $endPos + 2 + strspn( $text, " \t", $endPos + 3 );
+
+						// Keep looking forward as long as we're finding more
+						// comments.
+						$comments = array( array( $wsStart, $wsEnd ) );
+						while ( substr( $text, $wsEnd + 1, 4 ) == '<!--' ) {
+							$c = strpos( $text, '-->', $wsEnd + 4 );
+							if ( $c === false ) {
+								break;
+							}
+							$c = $c + 2 + strspn( $text, " \t", $c + 3 );
+							$comments[] = array( $wsEnd + 1, $c );
+							$wsEnd = $c;
+						}
+
 						// Eat the line if possible
 						// TODO: This could theoretically be done if $wsStart == 0, i.e. for comments at
 						// the overall start. That's not how Sanitizer::removeHTMLcomments() did it, but
 						// it's a possible beneficial b/c break.
 						if ( $wsStart > 0 && substr( $text, $wsStart - 1, 1 ) == "\n"
-							&& substr( $text, $wsEnd + 1, 1 ) == "\n" )
-						{
-							$startPos = $wsStart;
-							$endPos = $wsEnd + 1;
+							&& substr( $text, $wsEnd + 1, 1 ) == "\n"
+						) {
 							// Remove leading whitespace from the end of the accumulator
 							// Sanity check first though
 							$wsLength = $i - $wsStart;
-							if ( $wsLength > 0 && substr( $accum, -$wsLength ) === str_repeat( ' ', $wsLength ) ) {
+							if ( $wsLength > 0
+								&& strspn( $accum, " \t", -$wsLength ) === $wsLength
+							) {
 								$accum = substr( $accum, 0, -$wsLength );
 							}
+
+							// Dump all but the last comment to the accumulator
+							foreach ( $comments as $j => $com ) {
+								$startPos = $com[0];
+								$endPos = $com[1] + 1;
+								if ( $j == ( count( $comments ) - 1 ) ) {
+									break;
+								}
+								$inner = substr( $text, $startPos, $endPos - $startPos );
+								$accum .= '<comment>' . htmlspecialchars( $inner ) . '</comment>';
+							}
+
 							// Do a line-start run next time to look for headings after the comment
 							$fakeLineStart = true;
 						} else {
@@ -397,7 +431,7 @@ class Preprocessor_DOM implements Preprocessor {
 
 						if ( $stack->top ) {
 							$part = $stack->top->getCurrentPart();
-							if ( !(isset( $part->commentEnd ) && $part->commentEnd == $wsStart - 1 )) {
+							if ( !( isset( $part->commentEnd ) && $part->commentEnd == $wsStart - 1 ) ) {
 								$part->visualEnd = $wsStart;
 							}
 							// Else comments abutting, no change in visual end
@@ -432,7 +466,7 @@ class Preprocessor_DOM implements Preprocessor {
 				}
 
 				$tagStartPos = $i;
-				if ( $text[$tagEndPos-1] == '/' ) {
+				if ( $text[$tagEndPos - 1] == '/' ) {
 					$attrEnd = $tagEndPos - 1;
 					$inner = null;
 					$i = $tagEndPos + 1;
@@ -441,8 +475,8 @@ class Preprocessor_DOM implements Preprocessor {
 					$attrEnd = $tagEndPos;
 					// Find closing tag
 					if ( preg_match( "/<\/" . preg_quote( $name, '/' ) . "\s*>/i",
-							$text, $matches, PREG_OFFSET_CAPTURE, $tagEndPos + 1 ) )
-					{
+							$text, $matches, PREG_OFFSET_CAPTURE, $tagEndPos + 1 )
+					) {
 						$inner = substr( $text, $tagEndPos + 1, $matches[0][1] - $tagEndPos - 1 );
 						$i = $matches[0][1] + strlen( $matches[0][0] );
 						$close = '<close>' . htmlspecialchars( $matches[0][0] ) . '</close>';
@@ -569,7 +603,7 @@ class Preprocessor_DOM implements Preprocessor {
 						'open' => $curChar,
 						'close' => $rule['end'],
 						'count' => $count,
-						'lineStart' => ($i > 0 && $text[$i-1] == "\n"),
+						'lineStart' => ( $i > 0 && $text[$i - 1] == "\n" ),
 					);
 
 					$stack->push( $piece );
@@ -746,7 +780,7 @@ class PPDStack {
 			$class = $this->elementClass;
 			$this->stack[] = new $class( $data );
 		}
-		$this->top = $this->stack[ count( $this->stack ) - 1 ];
+		$this->top = $this->stack[count( $this->stack ) - 1];
 		$this->accum =& $this->top->getAccum();
 	}
 
@@ -757,7 +791,7 @@ class PPDStack {
 		$temp = array_pop( $this->stack );
 
 		if ( count( $this->stack ) ) {
-			$this->top = $this->stack[ count( $this->stack ) - 1 ];
+			$this->top = $this->stack[count( $this->stack ) - 1];
 			$this->accum =& $this->top->getAccum();
 		} else {
 			$this->top = self::$false;
@@ -1014,11 +1048,13 @@ class PPFrame_DOM implements PPFrame {
 
 		while ( count( $iteratorStack ) > 1 ) {
 			$level = count( $outStack ) - 1;
-			$iteratorNode =& $iteratorStack[ $level ];
+			$iteratorNode =& $iteratorStack[$level];
 			$out =& $outStack[$level];
 			$index =& $indexStack[$level];
 
-			if ( $iteratorNode instanceof PPNode_DOM ) $iteratorNode = $iteratorNode->node;
+			if ( $iteratorNode instanceof PPNode_DOM ) {
+				$iteratorNode = $iteratorNode->node;
+			}
 
 			if ( is_array( $iteratorNode ) ) {
 				if ( $index >= count( $iteratorNode ) ) {
@@ -1105,17 +1141,15 @@ class PPFrame_DOM implements PPFrame {
 					# Remove it in HTML, pre+remove and STRIP_COMMENTS modes
 					if ( $this->parser->ot['html']
 						|| ( $this->parser->ot['pre'] && $this->parser->mOptions->getRemoveComments() )
-						|| ( $flags & PPFrame::STRIP_COMMENTS ) )
-					{
+						|| ( $flags & PPFrame::STRIP_COMMENTS )
+					) {
 						$out .= '';
-					}
-					# Add a strip marker in PST mode so that pstPass2() can run some old-fashioned regexes on the result
-					# Not in RECOVER_COMMENTS mode (extractSections) though
-					elseif ( $this->parser->ot['wiki'] && !( $flags & PPFrame::RECOVER_COMMENTS ) ) {
+					} elseif ( $this->parser->ot['wiki'] && !( $flags & PPFrame::RECOVER_COMMENTS ) ) {
+						# Add a strip marker in PST mode so that pstPass2() can run some old-fashioned regexes on the result
+						# Not in RECOVER_COMMENTS mode (extractSections) though
 						$out .= $this->parser->insertStripItem( $contextNode->textContent );
-					}
-					# Recover the literal comment in RECOVER_COMMENTS and pre+no-remove
-					else {
+					} else {
+						# Recover the literal comment in RECOVER_COMMENTS and pre+no-remove
 						$out .= $contextNode->textContent;
 					}
 				} elseif ( $contextNode->nodeName == 'ignore' ) {
@@ -1148,9 +1182,7 @@ class PPFrame_DOM implements PPFrame {
 
 					# Insert a heading marker only for <h> children of <root>
 					# This is to stop extractSections from going over multiple tree levels
-					if ( $contextNode->parentNode->nodeName == 'root'
-					  && $this->parser->ot['html'] )
-					{
+					if ( $contextNode->parentNode->nodeName == 'root' && $this->parser->ot['html'] ) {
 						# Insert heading index marker
 						$headingIndex = $contextNode->getAttribute( 'i' );
 						$titleText = $this->title->getPrefixedDBkey();
@@ -1206,7 +1238,9 @@ class PPFrame_DOM implements PPFrame {
 		$first = true;
 		$s = '';
 		foreach ( $args as $root ) {
-			if ( $root instanceof PPNode_DOM ) $root = $root->node;
+			if ( $root instanceof PPNode_DOM ) {
+				$root = $root->node;
+			}
 			if ( !is_array( $root ) && !( $root instanceof DOMNodeList ) ) {
 				$root = array( $root );
 			}

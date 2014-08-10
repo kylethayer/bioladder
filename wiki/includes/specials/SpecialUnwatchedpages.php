@@ -44,17 +44,20 @@ class UnwatchedpagesPage extends QueryPage {
 	}
 
 	function getQueryInfo() {
-		return array (
-			'tables' => array ( 'page', 'watchlist' ),
-			'fields' => array ( 'namespace' => 'page_namespace',
-					'title' => 'page_title',
-					'value' => 'page_namespace' ),
-			'conds' => array ( 'wl_title IS NULL',
-					'page_is_redirect' => 0,
-					"page_namespace != '" . NS_MEDIAWIKI .
-					"'" ),
-			'join_conds' => array ( 'watchlist' => array (
-				'LEFT JOIN', array ( 'wl_title = page_title',
+		return array(
+			'tables' => array( 'page', 'watchlist' ),
+			'fields' => array(
+				'namespace' => 'page_namespace',
+				'title' => 'page_title',
+				'value' => 'page_namespace'
+			),
+			'conds' => array(
+				'wl_title IS NULL',
+				'page_is_redirect' => 0,
+				"page_namespace != '" . NS_MEDIAWIKI . "'"
+			),
+			'join_conds' => array( 'watchlist' => array(
+				'LEFT JOIN', array( 'wl_title = page_title',
 					'wl_namespace = page_namespace' ) ) )
 		);
 	}
@@ -68,8 +71,8 @@ class UnwatchedpagesPage extends QueryPage {
 	}
 
 	/**
-	 * @param $skin Skin
-	 * @param $result
+	 * @param Skin $skin
+	 * @param object $result Result row
 	 * @return string
 	 */
 	function formatResult( $skin, $result ) {

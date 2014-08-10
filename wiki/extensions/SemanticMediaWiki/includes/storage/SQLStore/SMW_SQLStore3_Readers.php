@@ -1,9 +1,6 @@
 <?php
-/**
- * @file
- * @ingroup SMWStore
- * @since 1.8
- */
+
+use SMW\DataTypeRegistry;
 
 /**
  * Class to provide all basic read methods for SMWSQLStore3.
@@ -56,7 +53,7 @@ class SMWSQLStore3Readers {
 
 		$propertyTableHashes = $this->store->smwIds->getPropertyTableHashes( $sid );
 
-		foreach ( SMWSQLStore3::getPropertyTables() as $tid => $proptable ) {
+		foreach ( $this->store->getPropertyTables() as $tid => $proptable ) {
 			if ( !array_key_exists( $proptable->getName(), $propertyTableHashes ) ) {
 				continue;
 			}
@@ -64,7 +61,7 @@ class SMWSQLStore3Readers {
 			if ( $filter !== false ) {
 				$relevant = false;
 				foreach ( $filter as $typeId ) {
-					$diType = SMWDataValueFactory::getDataItemId( $typeId );
+					$diType = DataTypeRegistry::getInstance()->getDataItemId( $typeId );
 					$relevant = $relevant || ( $proptable->getDiType() == $diType );
 					if ( $relevant ) break;
 				}
@@ -174,24 +171,24 @@ class SMWSQLStore3Readers {
 				$result = $this->store->applyRequestOptions( array( $sortKeyDi ), $requestoptions );
 			} else {
 				$propTableId = $this->store->findPropertyTableID( $property );
-				$proptables = SMWSQLStore3::getPropertyTables();
+				$proptables =  $this->store->getPropertyTables();
 				$sd = $this->getSemanticDataFromTable( $sid, $subject, $proptables[$propTableId] );
 				$result = $this->store->applyRequestOptions( $sd->getPropertyValues( $property ), $requestoptions );
 			}
 		} else { // no subject given, get all values for the given property
 			$pid = $this->store->smwIds->getSMWPropertyID( $property );
-			$tableid = SMWSQLStore3::findPropertyTableID( $property );
+			$tableid =  $this->store->findPropertyTableID( $property );
 
 			if ( ( $pid == 0 ) || ( $tableid === '' ) ) {
 				wfProfileOut( "SMWSQLStore3::getPropertyValues (SMW)" );
 				return array();
 			}
 
-			$proptables = SMWSQLStore3::getPropertyTables();
+			$proptables =  $this->store->getPropertyTables();
 			$data = $this->fetchSemanticData( $pid, $property, $proptables[$tableid], false, $requestoptions );
 			$result = array();
 			$propertyTypeId = $property->findPropertyTypeID();
-			$propertyDiId = SMWDataValueFactory::getDataItemId( $propertyTypeId );
+			$propertyDiId = DataTypeRegistry::getInstance()->getDataItemId( $propertyTypeId );
 
 			foreach ( $data as $dbkeys ) {
 				try {
@@ -259,12 +256,13 @@ class SMWSQLStore3Readers {
 
 		wfProfileIn( "SMWSQLStore3::fetchSemanticData-" . $proptable->getName() .  " (SMW)" );
 		$result = array();
-		$db = wfGetDB( DB_SLAVE );
+		$db = $this->store->getDatabase();
 
 		$diHandler = $this->store->getDataItemHandlerForDIType( $proptable->getDiType() );
 
 		// ***  First build $from, $select, and $where for the DB query  ***//
-		$from   = $db->tableName( $proptable->getName() ); // always use actual table
+		$from = $db->tableName( $proptable->getName() ); // always use actual table
+
 		$select = '';
 		$where  = '';
 
@@ -321,7 +319,7 @@ class SMWSQLStore3Readers {
 		}
 
 		// ***  Now execute the query and read the results  ***//
-		$res = $db->select( $from, $select, $where, 'SMW::getSemanticData',
+		$res = $db->select( $from, $select, $where, __METHOD__,
 				( $usedistinct ?
 					$this->store->getSQLOptions( $requestoptions, $valueField ) + array( 'DISTINCT' ) :
 					$this->store->getSQLOptions( $requestoptions, $valueField )
@@ -382,16 +380,16 @@ class SMWSQLStore3Readers {
 		// First build $select, $from, and $where for the DB query
 		$where = $from = '';
 		$pid = $this->store->smwIds->getSMWPropertyID( $property );
-		$tableid = SMWSQLStore3::findPropertyTableID( $property );
+		$tableid =  $this->store->findPropertyTableID( $property );
 
 		if ( ( $pid == 0 ) || ( $tableid === '' ) ) {
 			wfProfileOut( "SMWSQLStoreLight::getPropertySubjects (SMW)" );
 			return array();
 		}
 
-		$proptables = SMWSQLStore3::getPropertyTables();
+		$proptables =  $this->store->getPropertyTables();
 		$proptable = $proptables[$tableid];
-		$db = wfGetDB( DB_SLAVE );
+		$db = $this->store->getDatabase();
 
 		if ( $proptable->usesIdSubject() ) { // join with ID table to get title data
 			$from = $db->tableName( SMWSql3SmwIds::tableName ) . " INNER JOIN " . $db->tableName( $proptable->getName() ) . " AS t1 ON t1.s_id=smw_id";
@@ -411,8 +409,7 @@ class SMWSQLStore3Readers {
 		$result = array();
 		$res = $db->select( $from, 'DISTINCT ' . $select,
 		                    $where . $this->store->getSQLConditions( $requestoptions, 'smw_sortkey', 'smw_sortkey', $where !== '' ),
-		                    'SMW::getPropertySubjects',
-		                    $this->store->getSQLOptions( $requestoptions, 'smw_sortkey' ) );
+		                    __METHOD__, $this->store->getSQLOptions( $requestoptions, 'smw_sortkey' ) );
 
 		$diHandler = $this->store->getDataItemHandlerForDIType( SMWDataItem::TYPE_WIKIPAGE );
 
@@ -454,16 +451,16 @@ class SMWSQLStore3Readers {
 	 * @param integer $tableindex
 	 */
 	protected function prepareValueQuery( &$from, &$where, $proptable, $value, $tableindex = 1 ) {
-		$db = wfGetDB( DB_SLAVE );
+		$db = $this->store->getDatabase();
 
 		if ( $value instanceof SMWDIContainer ) { // recursive handling of containers
 			$keys = array_keys( $proptable->getFields( $this->store ) );
 			$joinfield = "t$tableindex." . reset( $keys ); // this must be a type 'p' object
-			$proptables = SMWSQLStore3::getPropertyTables();
+			$proptables =  $this->store->getPropertyTables();
 			$semanticData = $value->getSemanticData();
 
 			foreach ( $semanticData->getProperties() as $subproperty ) {
-				$tableid = SMWSQLStore3::findPropertyTableID( $subproperty );
+				$tableid =  $this->store->findPropertyTableID( $subproperty );
 				$subproptable = $proptables[$tableid];
 
 				foreach ( $semanticData->getPropertyValues( $subproperty ) as $subvalue ) {
@@ -509,35 +506,41 @@ class SMWSQLStore3Readers {
 	}
 
 	/**
-	 * @see SMWStore::getProperties
+	 * @see Store::getProperties
 	 *
 	 * @param SMWDIWikiPage $subject
-	 * @param SMWRequestOptions $requestoptions
+	 * @param SMWRequestOptions|null $requestOptions
+	 *
+	 * @return SMWDataItem[]
 	 */
-	public function getProperties( SMWDIWikiPage $subject, $requestoptions = null ) {
+	public function getProperties( SMWDIWikiPage $subject, $requestOptions = null ) {
 		wfProfileIn( "SMWSQLStore3::getProperties (SMW)" );
-		$sid = $this->store->smwIds->getSMWPageID( $subject->getDBkey(), $subject->getNamespace(), $subject->getInterwiki(), $subject->getSubobjectName() );
+		$sid = $this->store->smwIds->getSMWPageID(
+			$subject->getDBkey(),
+			$subject->getNamespace(),
+			$subject->getInterwiki(),
+			$subject->getSubobjectName()
+		);
 
 		if ( $sid == 0 ) { // no id, no page, no properties
 			wfProfileOut( "SMWSQLStore3::getProperties (SMW)" );
 			return array();
 		}
 
-		$db = wfGetDB( DB_SLAVE );
+		$db = $this->store->getDatabase();
 		$result = array();
 
-		if ( $requestoptions !== null ) { // potentially need to get more results, since options apply to union
-			$suboptions = clone $requestoptions;
-			$suboptions->limit = $requestoptions->limit + $requestoptions->offset;
+		// potentially need to get more results, since options apply to union
+		if ( $requestOptions !== null ) {
+			$suboptions = clone $requestOptions;
+			$suboptions->limit = $requestOptions->limit + $requestOptions->offset;
 			$suboptions->offset = 0;
 		} else {
 			$suboptions = null;
 		}
 
-		foreach ( SMWSQLStore3::getPropertyTables() as $proptable ) {
-			$from = $db->tableName( $proptable->getName() );
-
-			if ( $proptable->usesIdSubject() ) {
+		foreach ( $this->store->getPropertyTables() as $propertyTable ) {
+			if ( $propertyTable->usesIdSubject() ) {
 				$where = 's_id=' . $db->addQuotes( $sid );
 			} elseif ( $subject->getInterwiki() === '' ) {
 				$where = 's_title=' . $db->addQuotes( $subject->getDBkey() ) . ' AND s_namespace=' . $db->addQuotes( $subject->getNamespace() );
@@ -545,28 +548,42 @@ class SMWSQLStore3Readers {
 				continue;
 			}
 
-			if ( !$proptable->isFixedPropertyTable() ) { // select all properties
+			if ( $propertyTable->isFixedPropertyTable() ) {
+				// just check if subject occurs in table
+				$res = $db->select(
+					$propertyTable->getName(),
+					'*',
+					$where,
+					__METHOD__,
+					array( 'LIMIT' => 1 )
+				);
+
+				if ( $db->numRows( $res ) > 0 ) {
+					$result[] = new SMWDIProperty( $propertyTable->getFixedProperty() );
+				}
+
+
+			} else {
+				// select all properties
+				$from = $db->tableName( $propertyTable->getName() );
+
 				$from .= " INNER JOIN " . $db->tableName( SMWSql3SmwIds::tableName ) . " ON smw_id=p_id";
 				$res = $db->select( $from, 'DISTINCT smw_title,smw_sortkey',
 					// (select sortkey since it might be used in ordering (needed by Postgres))
 					$where . $this->store->getSQLConditions( $suboptions, 'smw_sortkey', 'smw_sortkey' ),
-					'SMW::getProperties', $this->store->getSQLOptions( $suboptions, 'smw_sortkey' ) );
+					__METHOD__, $this->store->getSQLOptions( $suboptions, 'smw_sortkey' ) );
 
 				foreach ( $res as $row ) {
 					$result[] = new SMWDIProperty( $row->smw_title );
-				}
-			} else { // just check if subject occurs in table
-				$res = $db->select( $from, '*', $where, 'SMW::getProperties', array( 'LIMIT' => 1 ) );
-
-				if ( $db->numRows( $res ) > 0 ) {
-					$result[] = new SMWDIProperty( $proptable->getFixedProperty() );
 				}
 			}
 
 			$db->freeResult( $res );
 		}
 
-		$result = $this->store->applyRequestOptions( $result, $requestoptions ); // apply options to overall result
+		// apply options to overall result
+		$result = $this->store->applyRequestOptions( $result, $requestOptions );
+
 		wfProfileOut( "SMWSQLStore3::getProperties (SMW)" );
 
 		return $result;
@@ -586,7 +603,7 @@ class SMWSQLStore3Readers {
 	public function getInProperties( SMWDataItem $value, $requestoptions = null ) {
 		wfProfileIn( "SMWSQLStore3::getInProperties (SMW)" );
 
-		$db = wfGetDB( DB_SLAVE );
+		$db = $this->store->getDatabase();
 		$result = array();
 
 		// Potentially need to get more results, since options apply to union.
@@ -600,7 +617,7 @@ class SMWSQLStore3Readers {
 
 		$diType = $value->getDIType();
 
-		foreach ( SMWSQLStore3::getPropertyTables() as $proptable ) {
+		foreach ( $this->store->getPropertyTables() as $proptable ) {
 			if ( $diType != $proptable->getDiType() ) {
 				continue;
 			}
@@ -613,7 +630,7 @@ class SMWSQLStore3Readers {
 				$res = $db->select( $from, 'DISTINCT smw_title,smw_sortkey',
 						// select sortkey since it might be used in ordering (needed by Postgres)
 						$where . $this->store->getSQLConditions( $suboptions, 'smw_sortkey', 'smw_sortkey', $where !== '' ),
-						'SMW::getInProperties', $this->store->getSQLOptions( $suboptions, 'smw_sortkey' ) );
+						__METHOD__, $this->store->getSQLOptions( $suboptions, 'smw_sortkey' ) );
 
 				foreach ( $res as $row ) {
 					try {
@@ -625,7 +642,7 @@ class SMWSQLStore3Readers {
 			} else {
 				$from = $db->tableName( $proptable->getName() ) . " AS t1";
 				$this->prepareValueQuery( $from, $where, $proptable, $value, 1 );
-				$res = $db->select( $from, '*', $where, 'SMW::getInProperties', array( 'LIMIT' => 1 ) );
+				$res = $db->select( $from, '*', $where, __METHOD__, array( 'LIMIT' => 1 ) );
 
 				if ( $db->numRows( $res ) > 0 ) {
 					$result[] = new SMWDIProperty( $proptable->getFixedProperty() );

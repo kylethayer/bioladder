@@ -1,18 +1,21 @@
 <?php
-/**
- * @file
- * @ingroup SMWDataItems
- */
+
+namespace SMW;
+
+use SMW\DataItemException;
+use SMWDataItem;
+use SMWWikiPageValue;
+use Title;
 
 /**
  * This class implements wiki page data items.
  *
  * @since 1.6
+ * @ingroup SMWDataItems
  *
  * @author Markus Krötzsch
- * @ingroup SMWDataItems
  */
-class SMWDIWikiPage extends SMWDataItem {
+class DIWikiPage extends SMWDataItem {
 
 	/**
 	 * MediaWiki DB key string
@@ -49,13 +52,13 @@ class SMWDIWikiPage extends SMWDataItem {
 	 * @param string $interwiki
 	 * @param string $subobjectname
 	 */
-	public function __construct( $dbkey, $namespace, $interwiki, $subobjectname = '' ) {
+	public function __construct( $dbkey, $namespace, $interwiki = '', $subobjectname = '' ) {
 		// Check if the provided value holds an integer
 		// (it can be of type string or float as well, as long as the value is an int)
 		if ( !ctype_digit( ltrim( (string)$namespace, '-' ) ) ) {
-			throw new SMWDataItemException( "Given namespace '$namespace' is not an integer." );
+			throw new DataItemException( "Given namespace '$namespace' is not an integer." );
 		}
-		
+
 		$this->m_dbkey = $dbkey;
 		$this->m_namespace = (int)$namespace; // really make this an integer
 		$this->m_interwiki = $interwiki;
@@ -93,22 +96,18 @@ class SMWDIWikiPage extends SMWDataItem {
 	}
 
 	/**
-	 * Create a MediaWiki Title object for this SMWDIWikiPage. The result
+	 * Create a MediaWiki Title object for this DIWikiPage. The result
 	 * can be null if an error occurred.
 	 *
-	 * @todo From MW 1.17 on, makeTitleSafe supports interwiki prefixes.
-	 * This function can be simplified when compatibility to MW 1.16 is
-	 * dropped.
-	 * @return mixed Title or null
+	 * @return Title|null
 	 */
 	public function getTitle() {
-		if ( $this->m_interwiki === '' ) {
-			return Title::makeTitleSafe( $this->m_namespace, $this->m_dbkey, $this->m_subobjectname );
-		} else { // TODO inefficient; incomplete for fragments (see above commment)
-			$datavalue = new SMWWikiPageValue( '_wpg' );
-			$datavalue->setDataItem( $this );
-			return Title::newFromText( $datavalue->getPrefixedText() );
-		}
+		return Title::makeTitleSafe(
+			$this->m_namespace,
+			$this->m_dbkey,
+			$this->m_subobjectname,
+			$this->m_interwiki
+		);
 	}
 
 	public function getSerialization() {
@@ -126,29 +125,33 @@ class SMWDIWikiPage extends SMWDataItem {
 	}
 
 	/**
-	 * Create a data item from the provided serialization string and type
-	 * ID.
-	 * @return SMWDIWikiPage
+	 * Create a data item from the provided serialization string and type ID.
+	 *
+	 * @param string $serialization
+	 *
+	 * @return DIWikiPage
+	 * @throws DataItemException
 	 */
 	public static function doUnserialize( $serialization ) {
 		$parts = explode( '#', $serialization, 4 );
+
 		if ( count( $parts ) == 3 ) {
-			return new SMWDIWikiPage( $parts[0], intval( $parts[1] ), $parts[2] );
+			return new self( $parts[0], intval( $parts[1] ), $parts[2] );
 		} elseif ( count( $parts ) == 4 ) {
-			return new SMWDIWikiPage( $parts[0], intval( $parts[1] ), $parts[2], $parts[3] );
+			return new self( $parts[0], intval( $parts[1] ), $parts[2], $parts[3] );
 		} else {
-			throw new SMWDataItemException( "Unserialization failed: the string \"$serialization\" was not understood." );
-		} 
+			throw new DataItemException( "Unserialization failed: the string \"$serialization\" was not understood." );
+		}
 	}
 
 	/**
 	 * Create a data item from a MediaWiki Title.
 	 *
 	 * @param $title Title
-	 * @return SMWDIWikiPage
+	 * @return DIWikiPage
 	 */
 	public static function newFromTitle( Title $title ) {
-		return new SMWDIWikiPage(
+		return new self(
 			$title->getDBkey(),
 			$title->getNamespace(),
 			$title->getInterwiki(),
@@ -156,10 +159,12 @@ class SMWDIWikiPage extends SMWDataItem {
 		);
 	}
 
-	public function equals( $di ) {
+	public function equals( SMWDataItem $di ) {
 		if ( $di->getDIType() !== SMWDataItem::TYPE_WIKIPAGE ) {
 			return false;
 		}
+
 		return $di->getSerialization() === $this->getSerialization();
 	}
 }
+

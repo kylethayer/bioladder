@@ -76,7 +76,9 @@ class CategoryViewer extends ContextSource {
 	 * @param array $until An array with 3 keys for until of each section (since 1.17)
 	 * @param $query Array
 	 */
-	function __construct( $title, IContextSource $context, $from = array(), $until = array(), $query = array() ) {
+	function __construct( $title, IContextSource $context, $from = array(),
+		$until = array(), $query = array()
+	) {
 		global $wgCategoryPagingLimit;
 		$this->title = $title;
 		$this->setContext( $context );
@@ -141,8 +143,17 @@ class CategoryViewer extends ContextSource {
 		$this->children = array();
 		$this->children_start_char = array();
 		if ( $this->showGallery ) {
-			$this->gallery = new ImageGallery();
+			// Note that null for mode is taken to mean use default.
+			$mode = $this->getRequest()->getVal( 'gallerymode', null );
+			try {
+				$this->gallery = ImageGalleryBase::factory( $mode );
+			} catch ( MWException $e ) {
+				// User specified something invalid, fallback to default.
+				$this->gallery = ImageGalleryBase::factory();
+			}
+
 			$this->gallery->setHideBadImages();
+			$this->gallery->setContext( $this->getContext() );
 		} else {
 			$this->imgsNoGallery = array();
 			$this->imgsNoGallery_start_char = array();
@@ -170,15 +181,6 @@ class CategoryViewer extends ContextSource {
 
 		$this->children_start_char[] =
 			$this->getSubcategorySortChar( $cat->getTitle(), $sortkey );
-	}
-
-	/**
-	 * Add a subcategory to the internal lists, using a title object
-	 * @deprecated since 1.17 kept for compatibility, use addSubcategoryObject instead
-	 */
-	function addSubcategory( Title $title, $sortkey, $pageLength ) {
-		wfDeprecated( __METHOD__, '1.17' );
-		$this->addSubcategoryObject( Category::newFromTitle( $title ), $sortkey, $pageLength );
 	}
 
 	/**
@@ -423,7 +425,12 @@ class CategoryViewer extends ContextSource {
 			$countmsg = $this->getCountMessage( $rescnt, $dbcnt, 'file' );
 
 			$r .= "<div id=\"mw-category-media\">\n";
-			$r .= '<h2>' . $this->msg( 'category-media-header', wfEscapeWikiText( $this->title->getText() ) )->text() . "</h2>\n";
+			$r .= '<h2>' .
+				$this->msg(
+					'category-media-header',
+					wfEscapeWikiText( $this->title->getText() )
+				)->text() .
+				"</h2>\n";
 			$r .= $countmsg;
 			$r .= $this->getSectionPagingLinks( 'file' );
 			if ( $this->showGallery ) {
@@ -442,12 +449,14 @@ class CategoryViewer extends ContextSource {
 	 * of the output.
 	 *
 	 * @param string $type 'page', 'subcat', or 'file'
-	 * @return String: HTML output, possibly empty if there are no other pages
+	 * @return string HTML output, possibly empty if there are no other pages
 	 */
 	private function getSectionPagingLinks( $type ) {
 		if ( isset( $this->until[$type] ) && $this->until[$type] !== null ) {
 			return $this->pagingLinks( $this->nextPage[$type], $this->until[$type], $type );
-		} elseif ( $this->nextPage[$type] !== null || ( isset( $this->from[$type] ) && $this->from[$type] !== null ) ) {
+		} elseif ( $this->nextPage[$type] !== null
+			|| ( isset( $this->from[$type] ) && $this->from[$type] !== null )
+		) {
 			return $this->pagingLinks( $this->from[$type], $this->nextPage[$type], $type );
 		} else {
 			return '';
@@ -526,7 +535,10 @@ class CategoryViewer extends ContextSource {
 
 			$first = true;
 			foreach ( $colContents as $char => $articles ) {
-				$ret .= '<h3>' . htmlspecialchars( $char );
+				# Change space to non-breaking space to keep headers aligned
+				$h3char = $char === ' ' ? '&#160;' : htmlspecialchars( $char );
+
+				$ret .= '<h3>' . $h3char;
 				if ( $first && $char === $prevchar ) {
 					# We're continuing a previous chunk at the top of a new
 					# column, so add " cont." after the letter.
@@ -559,7 +571,8 @@ class CategoryViewer extends ContextSource {
 	static function shortList( $articles, $articles_start_char ) {
 		$r = '<h3>' . htmlspecialchars( $articles_start_char[0] ) . "</h3>\n";
 		$r .= '<ul><li>' . $articles[0] . '</li>';
-		for ( $index = 1; $index < count( $articles ); $index++ ) {
+		$articleCount = count( $articles );
+		for ( $index = 1; $index < $articleCount; $index++ ) {
 			if ( $articles_start_char[$index] != $articles_start_char[$index - 1] ) {
 				$r .= "</ul><h3>" . htmlspecialchars( $articles_start_char[$index] ) . "</h3>\n<ul>";
 			}
@@ -615,8 +628,8 @@ class CategoryViewer extends ContextSource {
 	 * Takes a title, and adds the fragment identifier that
 	 * corresponds to the correct segment of the category.
 	 *
-	 * @param Title $title: The title (usually $this->title)
-	 * @param string $section: Which section
+	 * @param Title $title The title (usually $this->title)
+	 * @param string $section Which section
 	 * @throws MWException
 	 * @return Title
 	 */
@@ -645,28 +658,23 @@ class CategoryViewer extends ContextSource {
 	 * returned?  This function says what. Each type is considered independently
 	 * of the other types.
 	 *
-	 * Note for grepping: uses the messages category-article-count,
-	 * category-article-count-limited, category-subcat-count,
-	 * category-subcat-count-limited, category-file-count,
-	 * category-file-count-limited.
-	 *
 	 * @param int $rescnt The number of items returned by our database query.
 	 * @param int $dbcnt The number of items according to the category table.
 	 * @param string $type 'subcat', 'article', or 'file'
-	 * @return String: A message giving the number of items, to output to HTML.
+	 * @return string A message giving the number of items, to output to HTML.
 	 */
 	private function getCountMessage( $rescnt, $dbcnt, $type ) {
-		# There are three cases:
-		#   1) The category table figure seems sane.  It might be wrong, but
-		#      we can't do anything about it if we don't recalculate it on ev-
-		#      ery category view.
-		#   2) The category table figure isn't sane, like it's smaller than the
-		#      number of actual results, *but* the number of results is less
-		#      than $this->limit and there's no offset.  In this case we still
-		#      know the right figure.
-		#   3) We have no idea.
+		// There are three cases:
+		//   1) The category table figure seems sane.  It might be wrong, but
+		//      we can't do anything about it if we don't recalculate it on ev-
+		//      ery category view.
+		//   2) The category table figure isn't sane, like it's smaller than the
+		//      number of actual results, *but* the number of results is less
+		//      than $this->limit and there's no offset.  In this case we still
+		//      know the right figure.
+		//   3) We have no idea.
 
-		# Check if there's a "from" or "until" for anything
+		// Check if there's a "from" or "until" for anything
 
 		// This is a little ugly, but we seem to use different names
 		// for the paging types then for the messages.
@@ -686,19 +694,22 @@ class CategoryViewer extends ContextSource {
 		if ( $dbcnt == $rescnt ||
 			( ( $rescnt == $this->limit || $fromOrUntil ) && $dbcnt > $rescnt )
 		) {
-			# Case 1: seems sane.
+			// Case 1: seems sane.
 			$totalcnt = $dbcnt;
 		} elseif ( $rescnt < $this->limit && !$fromOrUntil ) {
-			# Case 2: not sane, but salvageable.  Use the number of results.
-			# Since there are fewer than 200, we can also take this opportunity
-			# to refresh the incorrect category table entry -- which should be
-			# quick due to the small number of entries.
+			// Case 2: not sane, but salvageable.  Use the number of results.
+			// Since there are fewer than 200, we can also take this opportunity
+			// to refresh the incorrect category table entry -- which should be
+			// quick due to the small number of entries.
 			$totalcnt = $rescnt;
 			$this->cat->refreshCounts();
 		} else {
-			# Case 3: hopeless.  Don't give a total count at all.
+			// Case 3: hopeless.  Don't give a total count at all.
+			// Messages: category-subcat-count-limited, category-article-count-limited,
+			// category-file-count-limited
 			return $this->msg( "category-$type-count-limited" )->numParams( $rescnt )->parseAsBlock();
 		}
+		// Messages: category-subcat-count, category-article-count, category-file-count
 		return $this->msg( "category-$type-count" )->numParams( $rescnt, $totalcnt )->parseAsBlock();
 	}
 }

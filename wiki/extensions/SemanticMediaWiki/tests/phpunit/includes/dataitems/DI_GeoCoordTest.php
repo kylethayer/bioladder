@@ -3,7 +3,8 @@
 namespace SMW\Tests;
 
 /**
- * Tests for the SMWDIGeoCoord class.
+ * @covers SMWDIGeoCoord
+ * @covers SMWDataItem
  *
  * @file
  * @since 1.8
@@ -40,8 +41,8 @@ class SMWDIGeoCoordTest extends DataItemTest {
 	 */
 	public function constructorProvider() {
 		return array(
-			array( true, array( 'lat'=>83.34, 'lon'=>38.44, 'alt'=>54 ) ),
-			array( true, array( 'lat'=>42.43, 'lon'=>33.32 ) ),
+			array( array( 'lat' => 83.34, 'lon' => 38.44, 'alt' => 54 ) ),
+			array( array( 'lat' => 42.43, 'lon' => 33.32 ) ),
 		);
 	}
 

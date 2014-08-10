@@ -65,6 +65,7 @@ class MagicWord {
 	var $mId, $mSynonyms, $mCaseSensitive;
 	var $mRegex = '';
 	var $mRegexStart = '';
+	var $mRegexStartToEnd = '';
 	var $mBaseRegex = '';
 	var $mVariableRegex = '';
 	var $mVariableStartToEndRegex = '';
@@ -124,6 +125,7 @@ class MagicWord {
 		'revisionyear',
 		'revisiontimestamp',
 		'revisionuser',
+		'revisionsize',
 		'subpagename',
 		'subpagenamee',
 		'talkspace',
@@ -138,6 +140,8 @@ class MagicWord {
 		'numberofactiveusers',
 		'numberofpages',
 		'currentversion',
+		'rootpagename',
+		'rootpagenamee',
 		'basepagename',
 		'basepagenamee',
 		'currenttimestamp',
@@ -146,10 +150,11 @@ class MagicWord {
 		'contentlanguage',
 		'numberofadmins',
 		'numberofviews',
+		'cascadingsources',
 	);
 
 	/* Array of caching hints for ParserCache */
-	static public $mCacheTTLs = array (
+	static public $mCacheTTLs = array(
 		'currentmonth' => 86400,
 		'currentmonth1' => 86400,
 		'currentmonthname' => 86400,
@@ -308,9 +313,9 @@ class MagicWord {
 		$this->mId = $id;
 		$wgContLang->getMagic( $this );
 		if ( !$this->mSynonyms ) {
-			$this->mSynonyms = array( 'dkjsagfjsgashfajsh' );
+			$this->mSynonyms = array( 'brionmademeputthishere' );
+			wfProfileOut( __METHOD__ );
 			throw new MWException( "Error: invalid magic word '$id'" );
-			#wfDebugLog( 'exception', "Error: invalid magic word '$id'\n" );
 		}
 		wfProfileOut( __METHOD__ );
 	}
@@ -326,14 +331,16 @@ class MagicWord {
 		usort( $synonyms, array( $this, 'compareStringLength' ) );
 
 		$escSyn = array();
-		foreach ( $synonyms as $synonym )
+		foreach ( $synonyms as $synonym ) {
 			// In case a magic word contains /, like that's going to happen;)
 			$escSyn[] = preg_quote( $synonym, '/' );
+		}
 		$this->mBaseRegex = implode( '|', $escSyn );
 
 		$case = $this->mCaseSensitive ? '' : 'iu';
 		$this->mRegex = "/{$this->mBaseRegex}/{$case}";
 		$this->mRegexStart = "/^(?:{$this->mBaseRegex})/{$case}";
+		$this->mRegexStartToEnd = "/^(?:{$this->mBaseRegex})$/{$case}";
 		$this->mVariableRegex = str_replace( "\\$1", "(.*?)", $this->mRegex );
 		$this->mVariableStartToEndRegex = str_replace( "\\$1", "(.*?)",
 			"/^(?:{$this->mBaseRegex})$/{$case}" );
@@ -381,8 +388,9 @@ class MagicWord {
 	 * @return string
 	 */
 	function getRegexCase() {
-		if ( $this->mRegex === '' )
+		if ( $this->mRegex === '' ) {
 			$this->initRegex();
+		}
 
 		return $this->mCaseSensitive ? '' : 'iu';
 	}
@@ -397,6 +405,19 @@ class MagicWord {
 			$this->initRegex();
 		}
 		return $this->mRegexStart;
+	}
+
+	/**
+	 * Gets a regex matching the word from start to end of a string
+	 *
+	 * @return string
+	 * @since 1.23
+	 */
+	function getRegexStartToEnd() {
+		if ( $this->mRegexStartToEnd == '' ) {
+			$this->initRegex();
+		}
+		return $this->mRegexStartToEnd;
 	}
 
 	/**
@@ -431,6 +452,18 @@ class MagicWord {
 	 */
 	function matchStart( $text ) {
 		return (bool)preg_match( $this->getRegexStart(), $text );
+	}
+
+	/**
+	 * Returns true if the text matched the word
+	 *
+	 * @param $text string
+	 *
+	 * @return bool
+	 * @since 1.23
+	 */
+	function matchStartToEnd( $text ) {
+		return (bool)preg_match( $this->getRegexStartToEnd(), $text );
 	}
 
 	/**
@@ -479,7 +512,7 @@ class MagicWord {
 	}
 
 	/**
-	 * @param  $text
+	 * @param $text
 	 * @return bool
 	 */
 	function matchStartAndRemove( &$text ) {
@@ -509,7 +542,7 @@ class MagicWord {
 	 */
 	function replace( $replacement, $subject, $limit = -1 ) {
 		$res = preg_replace( $this->getRegex(), StringUtils::escapeRegexReplacement( $replacement ), $subject, $limit );
-		$this->mModified = !($res === $subject);
+		$this->mModified = $res !== $subject;
 		return $res;
 	}
 
@@ -525,7 +558,7 @@ class MagicWord {
 	 */
 	function substituteCallback( $text, $callback ) {
 		$res = preg_replace_callback( $this->getVariableRegex(), $callback, $text );
-		$this->mModified = !($res === $text);
+		$this->mModified = $res !== $text;
 		return $res;
 	}
 
@@ -597,14 +630,14 @@ class MagicWord {
 	function replaceMultiple( $magicarr, $subject, &$result ) {
 		$search = array();
 		$replace = array();
-		foreach( $magicarr as $id => $replacement ) {
+		foreach ( $magicarr as $id => $replacement ) {
 			$mw = MagicWord::get( $id );
 			$search[] = $mw->getRegex();
 			$replace[] = $replacement;
 		}
 
 		$result = preg_replace( $search, $replace, $subject );
-		return !($result === $subject);
+		return $result !== $subject;
 	}
 
 	/**
@@ -704,7 +737,9 @@ class MagicWordArray {
 				$magic = MagicWord::get( $name );
 				$case = intval( $magic->isCaseSensitive() );
 				foreach ( $magic->getSynonyms() as $i => $syn ) {
-					$group = "(?P<{$i}_{$name}>" . preg_quote( $syn, '/' ) . ')';
+					// Group name must start with a non-digit in PCRE 8.34+
+					$it = strtr( $i, '0123456789', 'abcdefghij' );
+					$group = "(?P<{$it}_{$name}>" . preg_quote( $syn, '/' ) . ')';
 					if ( $this->baseRegex[$case] === '' ) {
 						$this->baseRegex[$case] = $group;
 					} else {

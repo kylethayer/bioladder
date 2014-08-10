@@ -18,7 +18,7 @@
  * purposes, incomplete dates are completed with defaults (usually using the
  * earliest possible time, i.e. interpreting "2008" as "Jan 1 2008 00:00:00").
  * The information on what was unspecified is kept internally for improving
- * behaviour e.g. for outputs (defaults are not printed when querying for a
+ * behavior e.g. for outputs (defaults are not printed when querying for a
  * value). This largely uses the precision handling of SMWDITime.
  *
  *
@@ -199,7 +199,7 @@ class SMWTimeValue extends SMWDataValue {
 		// * yet "." is an essential date separation character in languages such as German
 		$parsevalue = str_replace( array( '/', '.', '&nbsp;', ',' ), array( '-', ' ', ' ', ' ' ), $string );
 
-		$matches = preg_split( "/([T]?[0-2]?[0-9]:[\:0-9]+[+\-]?[0-2]?[0-9\:]+|[a-z,A-Z]+|[0-9]+|[ ])/u", $parsevalue , -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+		$matches = preg_split( "/([T]?[0-2]?[0-9]:[\:0-9]+[+\-]?[0-2]?[0-9\:]+|[\p{L}]+|[0-9]+|[ ])/u", $parsevalue , -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 		$datecomponents = array();
 		$calendarmodel = $timezoneoffset = $era = $ampm = false;
 		$hours = $minutes = $seconds = $timeoffset = false;
@@ -364,13 +364,19 @@ class SMWTimeValue extends SMWDataValue {
 	 * @return boolean stating whether a month was found
 	 */
 	protected static function parseMonthString( $string, &$monthname ) {
+		/**
+		 * @var SMWLanguage $smwgContLang
+		 */
 		global $smwgContLang;
+
 		$monthnum = $smwgContLang->findMonth( $string ); // takes precedence over English month names!
+
 		if ( $monthnum !== false ) {
 			$monthnum -= 1;
 		} else {
 			$monthnum = array_search( $string, self::$m_months ); // check English names
 		}
+
 		if ( $monthnum !== false ) {
 			$monthname = self::$m_monthsshort[ $monthnum ];
 			return true;
@@ -802,7 +808,11 @@ class SMWTimeValue extends SMWDataValue {
 	 * @todo Internationalize the CE and BCE strings.
 	 */
 	public function getCaptionFromDataitem( SMWDITime $dataitem ) {
+		/**
+		 * @var SMWLanguage $smwgContLang
+		 */
 		global $smwgContLang;
+
 		if ( $dataitem->getYear() > 0 ) {
 			$cestring = '';
 			$result = number_format( $dataitem->getYear(), 0, '.', '' ) . ( $cestring ? ( ' ' . $cestring ) : '' );
@@ -810,15 +820,19 @@ class SMWTimeValue extends SMWDataValue {
 			$bcestring = 'BC';
 			$result = number_format( -( $dataitem->getYear() ), 0, '.', '' ) . ( $bcestring ? ( ' ' . $bcestring ) : '' );
 		}
+
 		if ( $dataitem->getPrecision() >= SMWDITime::PREC_YM ) {
 			$result = $smwgContLang->getMonthLabel( $dataitem->getMonth() ) . " " . $result;
 		}
+
 		if ( $dataitem->getPrecision() >= SMWDITime::PREC_YMD ) {
 			$result = $dataitem->getDay() . " " . $result;
 		}
+
 		if ( $dataitem->getPrecision() >= SMWDITime::PREC_YMDT ) {
 			$result .= " " . $this->getTimeString();
 		}
+
 		return $result;
 	}
 

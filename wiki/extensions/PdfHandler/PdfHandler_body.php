@@ -165,20 +165,52 @@ class PdfHandler extends ImageHandler {
 			return $this->doThumbError( $width, $height, 'thumbnail_dest_directory' );
 		}
 
-		$srcPath = $image->getLocalRefPath();
+		// Thumbnail extraction is very inefficient for large files.
+		// Provide a way to pool count limit the number of downloaders.
+		if ( $image->getSize() >= 1e7 ) { // 10MB
+			$work = new PoolCounterWorkViaCallback( 'GetLocalFileCopy', sha1( $image->getName() ),
+				array(
+					'doWork' => function() use ( $image ) {
+						return $image->getLocalRefPath();
+					}
+				)
+			);
+			$srcPath = $work->execute();
+		} else {
+			$srcPath = $image->getLocalRefPath();
+		}
 
-		$cmd = '(' . wfEscapeShellArg( $wgPdfProcessor );
-		$cmd .= " -sDEVICE=jpeg -sOutputFile=- -dFirstPage={$page} -dLastPage={$page}";
-		$cmd .= " -r{$wgPdfHandlerDpi} -dBATCH -dNOPAUSE -q ". wfEscapeShellArg( $srcPath );
-		$cmd .= " | " . wfEscapeShellArg( $wgPdfPostProcessor );
-		$cmd .= " -depth 8 -resize {$width} - ";
-		$cmd .= wfEscapeShellArg( $dstPath ) . ")";
-		$cmd .= " 2>&1";
+		if ( $srcPath === false ) { // could not download original
+			return $this->doThumbError( $width, $height, 'filemissing' );
+		}
+
+		$cmd = '(' . wfEscapeShellArg(
+			$wgPdfProcessor,
+			"-sDEVICE=jpeg",
+			"-sOutputFile=-",
+			"-dFirstPage={$page}",
+			"-dLastPage={$page}",
+			"-r{$wgPdfHandlerDpi}",
+			"-dBATCH",
+			"-dNOPAUSE",
+			"-q",
+			$srcPath
+		);
+		$cmd .= " | " . wfEscapeShellArg(
+			$wgPdfPostProcessor,
+			"-depth",
+			"8",
+			"-resize",
+			$width,
+			"-",
+			$dstPath
+		);
+		$cmd .= ")";
 
 		wfProfileIn( 'PdfHandler' );
 		wfDebug( __METHOD__ . ": $cmd\n" );
 		$retval = '';
-		$err = wfShellExec( $cmd, $retval );
+		$err = wfShellExecWithStderr( $cmd, $retval );
 		wfProfileOut( 'PdfHandler' );
 
 		$removed = $this->removeBadFile( $dstPath, $retval );
@@ -315,7 +347,7 @@ class PdfHandler extends ImageHandler {
 	 */
 	function pageCount( $image ) {
 		$data = $this->getMetaArray( $image );
-		if ( !$data ) {
+		if ( !$data || !isset( $data['Pages'] ) ) {
 			return false;
 		}
 		return intval( $data['Pages'] );

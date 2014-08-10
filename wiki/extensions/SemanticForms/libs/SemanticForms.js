@@ -232,9 +232,8 @@
 		});
         }
     } else {
-	// Remote autocompletion
-	// Retain compat with 1.17. 1.18 and up can use mw.util.wikiScript( 'api' );
-	var myServer = mw.config.get( 'wgScriptPath' ) + '/api' + mw.config.get( 'wgScriptExtension' );
+	// Remote autocompletion.
+	var myServer = mw.util.wikiScript( 'api' );
 	var data_type = jQuery(this).attr("autocompletedatatype");
 	myServer += "?action=sfautocomplete&format=json&" + data_type + "=" + data_source;
 
@@ -580,9 +579,24 @@ jQuery.fn.showIfCheckedCheckbox = function(initPage) {
  */
 
 // Display an error message on the end of an input.
-jQuery.fn.addErrorMessage = function(msg) {
-	this.append(' ').append( $('<span>').addClass( 'errorMessage' ).text( mw.msg( msg ) ) );
+jQuery.fn.addErrorMessage = function(msg, val) {
+	this.append(' ').append( $('<span>').addClass( 'errorMessage' ).text( mw.msg( msg, val ) ) );
 };
+
+jQuery.fn.validateNumInstances = function() {
+	var minimumInstances = this.attr("minimumInstances");
+	var maximumInstances = this.attr("maximumInstances");
+	var numInstances = this.find("div.multipleTemplateInstance").length;
+	if ( numInstances < minimumInstances ) {
+		this.parent().addErrorMessage( 'sf_too_few_instances_error', minimumInstances );
+		return false;
+	} else if ( numInstances > maximumInstances ) {
+		this.parent().addErrorMessage( 'sf_too_many_instances_error', maximumInstances );
+		return false;
+	} else {
+		return true;
+	}
+}
 
 jQuery.fn.validateMandatoryField = function() {
 	var fieldVal = this.find(".mandatoryField").val();
@@ -711,6 +725,10 @@ window.validateAll = function () {
 	// of any multiple-instance template.
 	jQuery(".multipleTemplateStarter").find("span, div").addClass("hiddenBySF");
 
+	jQuery(".multipleTemplateList").each( function() {
+		if (! jQuery(this).validateNumInstances() ) num_errors += 1;
+	});
+
 	jQuery("span.inputSpan.mandatoryFieldSpan").not(".hiddenBySF").each( function() {
 		if (! jQuery(this).validateMandatoryField() ) num_errors += 1;
 	});
@@ -749,7 +767,8 @@ window.validateAll = function () {
 
 			// if input is not part of multipleTemplateStarter
 			if ( typeof sfdata.validationFunctions[i] !== 'undefined' &&
-				jQuery("#" + sfdata.validationFunctions[i].input).closest(".multipleTemplateStarter").length == 0 ) {
+				jQuery("#" + sfdata.validationFunctions[i].input).closest(".multipleTemplateStarter").length == 0 &&
+				jQuery("#" + sfdata.validationFunctions[i].input).closest(".hiddenBySF").length == 0 ) {
 
 				if (! sfdata.validationFunctions[i].valfunction(
 						sfdata.validationFunctions[i].input,

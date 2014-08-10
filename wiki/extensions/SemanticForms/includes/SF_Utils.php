@@ -14,7 +14,7 @@ class SFUtils {
 	 */
 	public static function linkForSpecialPage( $specialPageName ) {
 		$specialPage = SpecialPageFactory::getPage( $specialPageName );
-		return smwfGetLinker()->link( $specialPage->getTitle(), $specialPage->getDescription() );
+		return Linker::link( $specialPage->getTitle(), $specialPage->getDescription() );
 	}
 
 	/**
@@ -70,6 +70,19 @@ class SFUtils {
 			// MW <= 1.20
 			$article = new Article( $title );
 			return $article->getContent();
+		}
+	}
+
+	/**
+	 * Helper function to get the SMW data store for different versions
+	 * of SMW.
+	 */
+	public static function getSMWStore() {
+		if ( class_exists( '\SMW\StoreFactory' ) ) {
+			// SMW 1.9+
+			return \SMW\StoreFactory::getStore();
+		} else {
+			return smwfGetStore();
 		}
 	}
 
@@ -296,6 +309,7 @@ END;
 
 		$output->addModules( 'ext.semanticforms.main' );
 		$output->addModules( 'ext.semanticforms.fancybox' );
+		$output->addModules( 'ext.semanticforms.dynatree' );
 		$output->addModules( 'ext.semanticforms.imagepreview' );
 		$output->addModules( 'ext.semanticforms.autogrow' );
 		$output->addModules( 'ext.semanticforms.submit' );
@@ -348,7 +362,7 @@ END;
 	public static function getAllValuesForProperty( $property_name ) {
 		global $sfgMaxAutocompleteValues;
 
-		$store = smwfGetStore();
+		$store = SFUtils::getSMWStore();
 		$requestoptions = new SMWRequestOptions();
 		$requestoptions->limit = $sfgMaxAutocompleteValues;
 		$values = self::getSMWPropertyValues( $store, null, $property_name, $requestoptions );
@@ -387,26 +401,33 @@ END;
 					'SORT BY cl_sortkey' );
 				if ( $res ) {
 					while ( $res && $row = $db->fetchRow( $res ) ) {
-						if ( array_key_exists( 'page_title', $row ) ) {
-							$page_namespace = $row['page_namespace'];
-							if ( $page_namespace == NS_CATEGORY ) {
-								$new_category = $row[ 'page_title' ];
-								if ( !in_array( $new_category, $categories ) ) {
-									$newcategories[] = $new_category;
-								}
-							} else {
-								$cur_title = Title::makeTitleSafe( $row['page_namespace'], $row['page_title'] );
-								$cur_value = self::titleString( $cur_title );
-								if ( ! in_array( $cur_value, $pages ) ) {
-									$pages[] = $cur_value;
-								}
-								// return if we've reached the maximum number of allowed values
-								if ( count( $pages ) > $sfgMaxAutocompleteValues ) {
-									// Remove duplicates, and put in alphabetical order.
-									$pages = array_unique( $pages );
-									sort( $pages );
-									return $pages;
-								}
+						if ( !array_key_exists( 'page_title', $row ) ) {
+							continue;
+						}
+						$page_namespace = $row['page_namespace'];
+						$page_name = $row[ 'page_title' ];
+						if ( $page_namespace == NS_CATEGORY ) {
+							if ( !in_array( $page_name, $categories ) ) {
+								$newcategories[] = $page_name;
+							}
+						} else {
+							$cur_title = Title::makeTitleSafe( $page_namespace, $page_name );
+							if ( is_null( $cur_title ) ) {
+								// This can happen if it's
+								// a "phantom" page, in a
+								// namespace that no longer exists.
+								continue;
+							}
+							$cur_value = self::titleString( $cur_title );
+							if ( ! in_array( $cur_value, $pages ) ) {
+								$pages[] = $cur_value;
+							}
+							// return if we've reached the maximum number of allowed values
+							if ( count( $pages ) > $sfgMaxAutocompleteValues ) {
+								// Remove duplicates, and put in alphabetical order.
+								$pages = array_unique( $pages );
+								sort( $pages );
+								return $pages;
 							}
 						}
 					}
@@ -432,7 +453,7 @@ END;
 	public static function getAllPagesForConcept( $conceptName, $substring = null ) {
 		global $sfgMaxAutocompleteValues, $sfgAutocompleteOnAllChars;
 
-		$store = smwfGetStore();
+		$store = SFUtils::getSMWStore();
 
 		$conceptTitle = Title::makeTitleSafe( SMW_NS_CONCEPT, $conceptName );
 
@@ -724,34 +745,21 @@ END;
 	}
 
 	/**
-	 * Compatibility helper function.
-	 * Since 1.18 SpecialPageFactory::getPage should be used.
-	 * SpecialPage::getPage is deprecated in 1.18.
-	 *
-	 * @since 2.3.3
-	 *
-	 * @param string $pageName
-	 *
-	 * @return SpecialPage|null
-	 */
-	public static function getSpecialPage( $pageName ) {
-		$hasFactory = class_exists( 'SpecialPageFactory' ) && method_exists( 'SpecialPageFactory', 'getPage' );
-		return $hasFactory ? SpecialPageFactory::getPage( $pageName ) : SpecialPage::getPage( $pageName );
-	}
-
-	/**
 	* Returns a SQL condition for autocompletion substring value in a column.
 	* @param string $value_column Value column name
 	* @param string $substring Substring to look for
 	* @return SQL condition for use in WHERE clause
 	*
 	* @author Ilmars Poikans
+	* @author Yaron Koren
 	*/
-	public static function getSQLConditionForAutocompleteInColumn( $column, $substring ) {
+	public static function getSQLConditionForAutocompleteInColumn( $column, $substring, $replaceSpaces = true ) {
 		global $sfgAutocompleteOnAllChars;
 
 		$column_value = "LOWER(CONVERT($column USING utf8))";
-		$substring = str_replace( ' ', '_', strtolower( $substring ) );
+		if ( $replaceSpaces ) {
+			$substring = str_replace( ' ', '_', strtolower( $substring ) );
+		}
 		$substring = str_replace( "'", "\'", $substring );
 		$substring = str_replace( '_', '\_', $substring );
 		$substring = str_replace( '%', '\%', $substring );
@@ -759,7 +767,8 @@ END;
 		if ( $sfgAutocompleteOnAllChars ) {
 			return "$column_value LIKE '%$substring%'";
 		} else {
-			return "$column_value LIKE '$substring%' OR $column_value LIKE '%\_$substring%'";
+			$spaceRepresentation = $replaceSpaces ? '\_' : ' ';
+			return "$column_value LIKE '$substring%' OR $column_value LIKE '%" . $spaceRepresentation . $substring . "%'";
 		}
 	}
 
@@ -886,7 +895,7 @@ END;
 			}
 		}
 
-		$ad = SFUtils::getSpecialPage( $specialPageName );
+		$ad = SpecialPageFactory::getPage( $specialPageName );
 		if ( strpos( $inFormName, '/' ) == true ) {
 			$query = array( 'form' => $inFormName, 'target' => $inTargetName );
 			$link_url = $ad->getTitle()->getLocalURL( $query );
@@ -1016,7 +1025,7 @@ END;
 		$queryObj = SMWQueryProcessor::createQuery( $queryString,
 			$processedParams,
 			SMWQueryProcessor::SPECIAL_PAGE, '', $printouts );
-		$res = smwfGetStore()->getQueryResult( $queryObj );
+		$res = SFUtils::getSMWStore()->getQueryResult( $queryObj );
 		$pages = $res->getResults();
 
 		return $pages;
@@ -1038,5 +1047,17 @@ END;
 		$format = '%' . ($hasPadding ? '0' : '') . $numDigits . 'd';
 		return trim( sprintf( $format, $value ) ); // trim needed, when $hasPadding == false
 	}
+
+	/**
+	 * Hook to add PHPUnit test cases.
+	 * From https://www.mediawiki.org/wiki/Manual:PHP_unit_testing/Writing_unit_tests_for_extensions
+	 *
+	 * @return boolean
+	 */
+	 public static function onUnitTestsList( &$files ) {
+		$testDir = dirname( __DIR__ ) . '/tests/phpunit/includes';
+		$files = array_merge( $files, glob( "$testDir/*Test.php" ) );
+		return true;
+	 }
 
 }

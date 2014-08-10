@@ -141,7 +141,6 @@ class SFParserFunctions {
 	static $num_autocompletion_inputs = 0;
 
 	static function registerFunctions( &$parser ) {
-
 		global $wgOut;
 
 		$parser->setFunctionHook( 'forminput', array( 'SFParserFunctions', 'renderFormInput' ) );
@@ -156,11 +155,6 @@ class SFParserFunctions {
 		}
 
 		$parser->setFunctionHook( 'autoedit', array( 'SFParserFunctions', 'renderAutoEdit' ) );
-
-		// load jQuery on MW 1.16
-		if ( is_callable( array( $wgOut, 'includeJQuery' ) ) ) {
-			$wgOut->includeJQuery();
-		}
 
 		return true;
 	}
@@ -228,6 +222,8 @@ class SFParserFunctions {
 				// URL-encoded ampersands, so that the string
 				// doesn't get split up on the '&'.
 				$inQueryStr = str_replace( '&amp;', '%26', $value );
+				// "Decode" any other HTML tags.
+				$inQueryStr = html_entity_decode( $inQueryStr, ENT_QUOTES );
 
 				parse_str($inQueryStr, $arr);
 				$inQueryArr = SFUtils::array_merge_recursive_distinct( $inQueryArr, $arr );
@@ -270,7 +266,7 @@ class SFParserFunctions {
 			}
 		}
 
-		$fs = SFUtils::getSpecialPage( 'FormStart' );
+		$fs = SpecialPageFactory::getPage( 'FormStart' );
 
 		$fs_url = $fs->getTitle()->getLocalURL();
 		$str = <<<END
@@ -570,6 +566,7 @@ END;
 
 					if ( $targetTitle !== null ) {
 						$targetArticle = new Article( $targetTitle );
+						$targetArticle->clear();
 						$editTime = $targetArticle->getTimestamp();
 					}
 

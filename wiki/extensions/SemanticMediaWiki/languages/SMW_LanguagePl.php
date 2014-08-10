@@ -43,7 +43,6 @@ class SMWLanguagePl extends SMWLanguage {
 
 	protected $m_DatatypeLabels = array(
 		'_wpg' => 'Strona', // name of page datatype
-		'_str' => 'Łańcuch znaków',  // name of the string type
 		'_txt' => 'Tekst',  // name of the text type (very long strings)
 		'_cod' => 'Kod',  // name of the (source) code type
 		'_boo' => 'Wartość logiczna',  // name of the boolean type
@@ -63,7 +62,8 @@ class SMWLanguagePl extends SMWLanguage {
 		'URI'                   => '_uri',
 		'Liczba zmiennoprzecinkowa' => '_num',
 		'Liczba całkowita'      => '_num',
-		'Wyliczenie'            => '_str',
+		'Wyliczenie'            => '_txt',
+		'Łańcuch znaków'        => '_txt', // old name of the string type
 	);
 
 	protected $m_SpecialProperties = array(
@@ -89,6 +89,9 @@ class SMWLanguagePl extends SMWLanguage {
 		'_ASKFO'=> 'Query format', // TODO: translate
 		'_ASKSI'=> 'Query size', // TODO: translate
 		'_ASKDE'=> 'Query depth', // TODO: translate
+		'_ASKDU'=> 'Query duration', // TODO: translate
+		'_MEDIA'=> 'Media type',
+		'_MIME' => 'Mime type'
 	);
 
 	protected $m_SpecialPropertyAliases = array(

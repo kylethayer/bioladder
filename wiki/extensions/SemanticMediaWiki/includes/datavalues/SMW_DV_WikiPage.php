@@ -12,7 +12,7 @@
  * namespace, Whether a namespace is fixed is decided based on the
  * type ID when the object is constructed.
  *
- * The short display simulates the behaviour of the MediaWiki "pipe trick"
+ * The short display simulates the behavior of the MediaWiki "pipe trick"
  * but always includes fragments. This can be overwritten by setting a
  * caption, which is also done by default when generating a value from user
  * input. The long display always includes all relevant information. Only if a
@@ -207,7 +207,7 @@ class SMWWikiPageValue extends SMWDataValue {
 	 * Display the value as in getShortWikiText() but create HTML.
 	 * The only difference is that images are not embedded.
 	 *
-	 * @param $linker mixed the Linker object to use or null if no linking is desired
+	 * @param Linker $linker mixed the Linker object to use or null if no linking is desired
 	 * @return string
 	 */
 	public function getShortHTMLText( $linker = null ) {
@@ -219,14 +219,17 @@ class SMWWikiPageValue extends SMWDataValue {
 
 		if ( is_null( $linker ) || $linker === false || !$this->isValid() ||
 				$this->m_outformat == '-' || $this->m_caption === '' ) {
-			return htmlspecialchars( $this->m_caption !== false ? $this->m_caption : $this->getWikiValue() );
+
+			$caption = $this->m_caption === false ? $this->getWikiValue() : $this->m_caption;
+			return htmlspecialchars( $caption );
 		} else {
-			$caption = htmlspecialchars(
-				$this->m_caption !== false ? $this->m_caption : $this->getShortCaptionText() );
+			$caption = $this->m_caption === false ? $this->getShortCaptionText() : $this->m_caption;
+			$caption = htmlspecialchars( $caption );
+
 			if ( $this->getNamespace() == NS_MEDIA ) { // this extra case *is* needed
 				return $linker->makeMediaLinkObj( $this->getTitle(), $caption );
 			} else {
-				return $linker->makeLinkObj( $this->getTitle(), $caption );
+				return $linker->link( $this->getTitle(), $caption );
 			}
 		}
 	}
@@ -280,7 +283,7 @@ class SMWWikiPageValue extends SMWDataValue {
 			return $linker->makeMediaLinkObj( $this->getTitle(),
 				htmlspecialchars( $this->getLongCaptionText() ) );
 		} else { // all others use default linking, no embedding of images here
-			return $linker->makeLinkObj( $this->getTitle(),
+			return $linker->link( $this->getTitle(),
 				htmlspecialchars( $this->getLongCaptionText() ) );
 		}
 	}
@@ -480,7 +483,7 @@ class SMWWikiPageValue extends SMWDataValue {
 	 * @return string sortkey
 	 */
 	public function getSortKey() {
-		return smwfGetStore()->getWikiPageSortKey( $this->m_dataitem );
+		return \SMW\StoreFactory::getStore()->getWikiPageSortKey( $this->m_dataitem );
 	}
 
 	/**
@@ -521,3 +524,9 @@ class SMWWikiPageValue extends SMWDataValue {
 
 }
 
+/**
+ * SMW\WikiPageValue
+ *
+ * @since 1.9
+ */
+class_alias( 'SMWWikiPageValue', 'SMW\WikiPageValue' );

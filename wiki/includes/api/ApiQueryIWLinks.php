@@ -81,19 +81,20 @@ class ApiQueryIWLinks extends ApiQueryBase {
 				$this->addOption( 'ORDER BY', 'iwl_from' . $sort );
 			} else {
 				$this->addOption( 'ORDER BY', array(
-						'iwl_title' . $sort,
-						'iwl_from' . $sort
-				));
+					'iwl_from' . $sort,
+					'iwl_title' . $sort
+				) );
 			}
 		} else {
 			// Don't order by iwl_from if it's constant in the WHERE clause
 			if ( count( $this->getPageSet()->getGoodTitles() ) == 1 ) {
 				$this->addOption( 'ORDER BY', 'iwl_prefix' . $sort );
 			} else {
-				$this->addOption( 'ORDER BY', array (
-						'iwl_from' . $sort,
-						'iwl_prefix' . $sort
-				));
+				$this->addOption( 'ORDER BY', array(
+					'iwl_from' . $sort,
+					'iwl_prefix' . $sort,
+					'iwl_title' . $sort
+				) );
 			}
 		}
 
@@ -105,7 +106,10 @@ class ApiQueryIWLinks extends ApiQueryBase {
 			if ( ++$count > $params['limit'] ) {
 				// We've reached the one extra which shows that
 				// there are additional pages to be had. Stop here...
-				$this->setContinueEnumParameter( 'continue', "{$row->iwl_from}|{$row->iwl_prefix}|{$row->iwl_title}" );
+				$this->setContinueEnumParameter(
+					'continue',
+					"{$row->iwl_from}|{$row->iwl_prefix}|{$row->iwl_title}"
+				);
 				break;
 			}
 			$entry = array( 'prefix' => $row->iwl_prefix );
@@ -120,7 +124,10 @@ class ApiQueryIWLinks extends ApiQueryBase {
 			ApiResult::setContent( $entry, $row->iwl_title );
 			$fit = $this->addPageSubItem( $row->iwl_from, $entry );
 			if ( !$fit ) {
-				$this->setContinueEnumParameter( 'continue', "{$row->iwl_from}|{$row->iwl_prefix}|{$row->iwl_title}" );
+				$this->setContinueEnumParameter(
+					'continue',
+					"{$row->iwl_from}|{$row->iwl_prefix}|{$row->iwl_title}"
+				);
 				break;
 			}
 		}
@@ -178,7 +185,7 @@ class ApiQueryIWLinks extends ApiQueryBase {
 	}
 
 	public function getDescription() {
-		return 'Returns all interwiki links from the given page(s)';
+		return 'Returns all interwiki links from the given page(s).';
 	}
 
 	public function getPossibleErrors() {
@@ -189,7 +196,12 @@ class ApiQueryIWLinks extends ApiQueryBase {
 
 	public function getExamples() {
 		return array(
-			'api.php?action=query&prop=iwlinks&titles=Main%20Page' => 'Get interwiki links from the [[Main Page]]',
+			'api.php?action=query&prop=iwlinks&titles=Main%20Page'
+				=> 'Get interwiki links from the [[Main Page]]',
 		);
+	}
+
+	public function getHelpUrls() {
+		return 'https://www.mediawiki.org/wiki/API:Iwlinks';
 	}
 }

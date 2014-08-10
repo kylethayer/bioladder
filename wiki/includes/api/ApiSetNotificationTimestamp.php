@@ -39,13 +39,19 @@ class ApiSetNotificationTimestamp extends ApiBase {
 		if ( $user->isAnon() ) {
 			$this->dieUsage( 'Anonymous users cannot use watchlist change notifications', 'notloggedin' );
 		}
+		if ( !$user->isAllowed( 'editmywatchlist' ) ) {
+			$this->dieUsage( 'You don\'t have permission to edit your watchlist', 'permissiondenied' );
+		}
 
 		$params = $this->extractRequestParams();
 		$this->requireMaxOneParameter( $params, 'timestamp', 'torevid', 'newerthanrevid' );
 
 		$pageSet = $this->getPageSet();
 		if ( $params['entirewatchlist'] && $pageSet->getDataSource() !== null ) {
-			$this->dieUsage( "Cannot use 'entirewatchlist' at the same time as '{$pageSet->getDataSource()}'", 'multisource' );
+			$this->dieUsage(
+				"Cannot use 'entirewatchlist' at the same time as '{$pageSet->getDataSource()}'",
+				'multisource'
+			);
 		}
 
 		$dbw = wfGetDB( DB_MASTER, 'api' );
@@ -92,7 +98,9 @@ class ApiSetNotificationTimestamp extends ApiBase {
 				__METHOD__
 			);
 
-			$result['notificationtimestamp'] = ( is_null( $timestamp ) ? '' : wfTimestamp( TS_ISO_8601, $timestamp ) );
+			$result['notificationtimestamp'] = is_null( $timestamp )
+				? ''
+				: wfTimestamp( TS_ISO_8601, $timestamp );
 		} else {
 			// First, log the invalid titles
 			foreach ( $pageSet->getInvalidTitles() as $title ) {
@@ -125,7 +133,9 @@ class ApiSetNotificationTimestamp extends ApiBase {
 
 			// Query the results of our update
 			$timestamps = array();
-			$res = $dbw->select( 'watchlist', array( 'wl_namespace', 'wl_title', 'wl_notificationtimestamp' ),
+			$res = $dbw->select(
+				'watchlist',
+				array( 'wl_namespace', 'wl_title', 'wl_notificationtimestamp' ),
 				array( 'wl_user' => $user->getID(), $lb->constructSet( 'wl', $dbw ) ),
 				__METHOD__
 			);
@@ -169,6 +179,7 @@ class ApiSetNotificationTimestamp extends ApiBase {
 		if ( !isset( $this->mPageSet ) ) {
 			$this->mPageSet = new ApiPageSet( $this );
 		}
+
 		return $this->mPageSet;
 	}
 
@@ -207,12 +218,12 @@ class ApiSetNotificationTimestamp extends ApiBase {
 		if ( $flags ) {
 			$result += $this->getPageSet()->getFinalParams( $flags );
 		}
-		return $result;
 
+		return $result;
 	}
 
 	public function getParamDescription() {
-		return $this->getPageSet()->getParamDescription() + array(
+		return $this->getPageSet()->getFinalParamDescription() + array(
 			'entirewatchlist' => 'Work on all watched pages',
 			'timestamp' => 'Timestamp to which to set the notification timestamp',
 			'torevid' => 'Revision to set the notification timestamp to (one page only)',
@@ -268,15 +279,17 @@ class ApiSetNotificationTimestamp extends ApiBase {
 
 	public function getPossibleErrors() {
 		$ps = $this->getPageSet();
+
 		return array_merge(
 			parent::getPossibleErrors(),
-			$ps->getPossibleErrors(),
+			$ps->getFinalPossibleErrors(),
 			$this->getRequireMaxOneParameterErrorMessages(
 				array( 'timestamp', 'torevid', 'newerthanrevid' ) ),
 			$this->getRequireOnlyOneParameterErrorMessages(
 				array_merge( array( 'entirewatchlist' ), array_keys( $ps->getFinalParams() ) ) ),
 			array(
-				array( 'code' => 'notloggedin', 'info' => 'Anonymous users cannot use watchlist change notifications' ),
+				array( 'code' => 'notloggedin', 'info'
+				=> 'Anonymous users cannot use watchlist change notifications' ),
 				array( 'code' => 'multpages', 'info' => 'torevid may only be used with a single page' ),
 				array( 'code' => 'multpages', 'info' => 'newerthanrevid may only be used with a single page' ),
 			)
@@ -285,9 +298,14 @@ class ApiSetNotificationTimestamp extends ApiBase {
 
 	public function getExamples() {
 		return array(
-			'api.php?action=setnotificationtimestamp&entirewatchlist=&token=123ABC' => 'Reset the notification status for the entire watchlist',
-			'api.php?action=setnotificationtimestamp&titles=Main_page&token=123ABC' => 'Reset the notification status for "Main page"',
-			'api.php?action=setnotificationtimestamp&titles=Main_page&timestamp=2012-01-01T00:00:00Z&token=123ABC' => 'Set the notification timestamp for "Main page" so all edits since 1 January 2012 are unviewed',
+			'api.php?action=setnotificationtimestamp&entirewatchlist=&token=123ABC'
+				=> 'Reset the notification status for the entire watchlist',
+			'api.php?action=setnotificationtimestamp&titles=Main_page&token=123ABC'
+				=> 'Reset the notification status for "Main page"',
+			'api.php?action=setnotificationtimestamp&titles=Main_page&' .
+				'timestamp=2012-01-01T00:00:00Z&token=123ABC'
+				=> 'Set the notification timestamp for "Main page" so all edits ' .
+					'since 1 January 2012 are unviewed',
 		);
 	}
 

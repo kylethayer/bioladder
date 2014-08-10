@@ -23,7 +23,7 @@
  * @ingroup Benchmark
  */
 
-require_once( __DIR__ . '/Benchmarker.php' );
+require_once __DIR__ . '/Benchmarker.php';
 
 function bfNormalizeTitleStrTr( $str ) {
 	return strtr( $str, '_', ' ' );
@@ -63,7 +63,6 @@ class bench_strtr_str_replace extends Benchmarker {
 		str_replace( "_", " ", "[[MediaWiki:Some_random_test_page]]");
 	}
 
-
 	function benchstrtr_indirect() {
 		bfNormalizeTitleStrTr( "[[MediaWiki:Some_random_test_page]]" );
 	}
@@ -75,4 +74,4 @@ class bench_strtr_str_replace extends Benchmarker {
 }
 
 $maintClass = 'bench_strtr_str_replace';
-require_once( RUN_MAINTENANCE_IF_MAIN );
+require_once RUN_MAINTENANCE_IF_MAIN;

@@ -3,7 +3,8 @@
 namespace SMW\Tests;
 
 /**
- * Tests for the SMWDINumber class.
+ * @covers SMWDINumber
+ * @covers SMWDataItem
  *
  * @file
  * @since 1.8
@@ -41,11 +42,23 @@ class SMWDINumberTest extends DataItemTest {
 	 */
 	public function constructorProvider() {
 		return array(
-			array( true, 0 ),
-			array( true, 243.35353 ),
-			array( false, 'ohi there' ),
-			array( false, array() ),
-			array( false, true ),
+			array( 0 ),
+			array( 243.35353 ),
+		);
+	}
+
+	/**
+	 * @see DataItemTest::invalidConstructorArgsProvider
+	 *
+	 * @since 1.9
+	 *
+	 * @return array
+	 */
+	public function invalidConstructorArgsProvider() {
+		return array(
+			array( true ),
+			array( array() ),
+			array( 'abc' ),
 		);
 	}
 

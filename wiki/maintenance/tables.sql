@@ -126,7 +126,12 @@ CREATE TABLE /*_*/user (
   -- Meant primarily for heuristic checks to give an impression of whether
   -- the account has been used much.
   --
-  user_editcount int
+  user_editcount int,
+
+  -- Expiration date for user password. Use $user->expirePassword()
+  -- to force a password reset.
+  user_password_expires varbinary(14) DEFAULT NULL
+
 ) /*$wgDBTableOptions*/;
 
 CREATE UNIQUE INDEX /*i*/user_name ON /*_*/user (user_name);
@@ -256,6 +261,11 @@ CREATE TABLE /*_*/page (
   -- of contained templates.
   page_touched binary(14) NOT NULL default '',
 
+  -- This timestamp is updated whenever a page is re-parsed and
+  -- it has all the link tracking tables updated for it. This is
+  -- useful for de-duplicating expensive backlink update jobs.
+  page_links_updated varbinary(14) NULL default NULL,
+
   -- Handy key to revision.rev_id of the current revision.
   -- This may be 0 during page creation, but that shouldn't
   -- happen outside of a transaction... hopefully.
@@ -380,6 +390,8 @@ CREATE TABLE /*_*/text (
 -- fields, with several caveats.
 --
 CREATE TABLE /*_*/archive (
+  -- Primary key
+  ar_id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
   ar_namespace int NOT NULL default 0,
   ar_title varchar(255) binary NOT NULL default '',
 
@@ -445,7 +457,6 @@ CREATE TABLE /*_*/archive (
 
   -- content format, see CONTENT_FORMAT_XXX constants
   ar_content_format varbinary(64) DEFAULT NULL
-
 ) /*$wgDBTableOptions*/;
 
 CREATE INDEX /*i*/name_title_timestamp ON /*_*/archive (ar_namespace,ar_title,ar_timestamp);
@@ -602,6 +613,9 @@ CREATE INDEX /*i*/cat_pages ON /*_*/category (cat_pages);
 -- Track links to external URLs
 --
 CREATE TABLE /*_*/externallinks (
+  -- Primary key
+  el_id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+
   -- page_id of the referring page
   el_from int unsigned NOT NULL default 0,
 
@@ -625,21 +639,6 @@ CREATE TABLE /*_*/externallinks (
 CREATE INDEX /*i*/el_from ON /*_*/externallinks (el_from, el_to(40));
 CREATE INDEX /*i*/el_to ON /*_*/externallinks (el_to(60), el_from);
 CREATE INDEX /*i*/el_index ON /*_*/externallinks (el_index(60));
-
-
---
--- Track external user accounts, if ExternalAuth is used
---
-CREATE TABLE /*_*/external_user (
-  -- Foreign key to user_id
-  eu_local_id int unsigned NOT NULL PRIMARY KEY,
-
-  -- Some opaque identifier provided by the external database
-  eu_external_id varchar(255) binary NOT NULL
-) /*$wgDBTableOptions*/;
-
-CREATE UNIQUE INDEX /*i*/eu_external_id ON /*_*/external_user (eu_external_id);
-
 
 --
 -- Track interlanguage links
@@ -674,7 +673,8 @@ CREATE TABLE /*_*/iwlinks (
 ) /*$wgDBTableOptions*/;
 
 CREATE UNIQUE INDEX /*i*/iwl_from ON /*_*/iwlinks (iwl_from, iwl_prefix, iwl_title);
-CREATE UNIQUE INDEX /*i*/iwl_prefix_title_from ON /*_*/iwlinks (iwl_prefix, iwl_title, iwl_from);
+CREATE INDEX /*i*/iwl_prefix_title_from ON /*_*/iwlinks (iwl_prefix, iwl_title, iwl_from);
+CREATE INDEX /*i*/iwl_prefix_from_title ON /*_*/iwlinks (iwl_prefix, iwl_from, iwl_title);
 
 
 --
@@ -774,6 +774,9 @@ CREATE TABLE /*_*/ipblocks (
 
   -- Start and end of an address range, in hexadecimal
   -- Size chosen to allow IPv6
+  -- FIXME: these fields were originally blank for single-IP blocks,
+  -- but now they are populated. No migration was ever done. They
+  -- should be fixed to be blank again for such blocks (bug 49504).
   ipb_range_start tinyblob NOT NULL,
   ipb_range_end tinyblob NOT NULL,
 
@@ -821,7 +824,7 @@ CREATE TABLE /*_*/image (
   img_width int NOT NULL default 0,
   img_height int NOT NULL default 0,
 
-  -- Extracted EXIF metadata stored as a serialized PHP array.
+  -- Extracted Exif metadata stored as a serialized PHP array.
   img_metadata mediumblob NOT NULL,
 
   -- For images, bits per pixel if known.
@@ -1033,6 +1036,8 @@ CREATE TABLE /*_*/recentchanges (
   rc_timestamp varbinary(14) NOT NULL default '',
 
   -- This is no longer used
+  -- Field kept in database for downgrades
+  -- @todo: add drop patch with 1.24
   rc_cur_time varbinary(14) NOT NULL default '',
 
   -- As in revision
@@ -1066,8 +1071,12 @@ CREATE TABLE /*_*/recentchanges (
   -- rev_id of the prior revision, for generating diff links.
   rc_last_oldid int unsigned NOT NULL default 0,
 
-  -- The type of change entry (RC_EDIT,RC_NEW,RC_LOG)
+  -- The type of change entry (RC_EDIT,RC_NEW,RC_LOG,RC_EXTERNAL)
   rc_type tinyint unsigned NOT NULL default 0,
+
+  -- The source of the change entry (replaces rc_type)
+  -- default of '' is temporary, needed for initial migration
+  rc_source varchar(16) binary not null default '',
 
   -- If the Recent Changes Patrol option is enabled,
   -- users may mark edits as having been reviewed to
@@ -1087,7 +1096,7 @@ CREATE TABLE /*_*/recentchanges (
   -- Visibility of recent changes items, bitfield
   rc_deleted tinyint unsigned NOT NULL default 0,
 
-  -- Value corresonding to log_id, specific log entries
+  -- Value corresponding to log_id, specific log entries
   rc_logid int unsigned NOT NULL default 0,
   -- Store log type info here, or null
   rc_log_type varbinary(255) NULL default NULL,
@@ -1116,8 +1125,9 @@ CREATE TABLE /*_*/watchlist (
   wl_namespace int NOT NULL default 0,
   wl_title varchar(255) binary NOT NULL default '',
 
-  -- Timestamp when user was last sent a notification e-mail;
-  -- cleared when the user visits the page.
+  -- Timestamp used to send notification e-mails and show "updated since last visit" markers on
+  -- history and recent changes / watchlist. Set to NULL when the user visits the latest revision
+  -- of the page, which means that they should be sent an e-mail on the next change.
   wl_notificationtimestamp varbinary(14)
 
 ) /*$wgDBTableOptions*/;
@@ -1143,7 +1153,7 @@ CREATE TABLE /*_*/searchindex (
 
   -- Munged version of body text
   si_text mediumtext NOT NULL
-) ENGINE=MyISAM;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE UNIQUE INDEX /*i*/si_page ON /*_*/searchindex (si_page);
 CREATE FULLTEXT INDEX /*i*/si_title ON /*_*/searchindex (si_title);
@@ -1263,6 +1273,8 @@ CREATE INDEX /*i*/times ON /*_*/logging (log_timestamp);
 CREATE INDEX /*i*/log_user_type_time ON /*_*/logging (log_user, log_type, log_timestamp);
 CREATE INDEX /*i*/log_page_id_time ON /*_*/logging (log_page,log_timestamp);
 CREATE INDEX /*i*/type_action ON /*_*/logging (log_type, log_action, log_timestamp);
+CREATE INDEX /*i*/log_user_text_type_time ON /*_*/logging (log_user_text, log_type, log_timestamp);
+CREATE INDEX /*i*/log_user_text_time ON /*_*/logging (log_user_text, log_timestamp);
 
 
 CREATE TABLE /*_*/log_search (
@@ -1376,6 +1388,8 @@ CREATE INDEX /*i*/qcc_titletwo ON /*_*/querycachetwo (qcc_type,qcc_namespacetwo,
 
 -- Used for storing page restrictions (i.e. protection levels)
 CREATE TABLE /*_*/page_restrictions (
+  -- Field for an ID for this restrictions row (sort-key for Special:ProtectedPages)
+  pr_id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
   -- Page to apply restrictions to (Foreign Key to page).
   pr_page int NOT NULL,
   -- The protection type (edit, move, etc)
@@ -1387,9 +1401,7 @@ CREATE TABLE /*_*/page_restrictions (
   -- Field for future support of per-user restriction.
   pr_user int NULL,
   -- Field for time-limited protection.
-  pr_expiry varbinary(14) NULL,
-  -- Field for an ID for this restrictions row (sort-key for Special:ProtectedPages)
-  pr_id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT
+  pr_expiry varbinary(14) NULL
 ) /*$wgDBTableOptions*/;
 
 CREATE UNIQUE INDEX /*i*/pr_pagetype ON /*_*/page_restrictions (pr_page,pr_type);
@@ -1521,7 +1533,7 @@ CREATE UNIQUE INDEX /*i*/md_module_skin ON /*_*/module_deps (md_module, md_skin)
 
 -- Holds all the sites known to the wiki.
 CREATE TABLE /*_*/sites (
--- Numeric id of the site
+  -- Numeric id of the site
   site_id                    INT UNSIGNED        NOT NULL PRIMARY KEY AUTO_INCREMENT,
 
   -- Global identifier for the site, ie 'enwiktionary'

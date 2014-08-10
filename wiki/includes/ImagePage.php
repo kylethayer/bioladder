@@ -128,7 +128,7 @@ class ImagePage extends Article {
 				$out->setPageTitle( $this->getTitle()->getPrefixedText() );
 				$out->addHTML( $this->viewRedirect( Title::makeTitle( NS_FILE, $this->mPage->getFile()->getName() ),
 					/* $appendSubtitle */ true, /* $forceKnown */ true ) );
-				$this->mPage->doViewUpdates( $this->getContext()->getUser() );
+				$this->mPage->doViewUpdates( $this->getContext()->getUser(), $this->getOldID() );
 				return;
 			}
 		}
@@ -165,7 +165,7 @@ class ImagePage extends Article {
 			# Just need to set the right headers
 			$out->setArticleFlag( true );
 			$out->setPageTitle( $this->getTitle()->getPrefixedText() );
-			$this->mPage->doViewUpdates( $this->getContext()->getUser() );
+			$this->mPage->doViewUpdates( $this->getContext()->getUser(), $this->getOldID() );
 		}
 
 		# Show shared description, if needed
@@ -206,7 +206,7 @@ class ImagePage extends Article {
 		}
 
 		// Add remote Filepage.css
-		if( !$this->repo->isLocal() ) {
+		if ( !$this->repo->isLocal() ) {
 			$css = $this->repo->getDescriptionStylesheetUrl();
 			if ( $css ) {
 				$out->addStyle( $css );
@@ -250,7 +250,7 @@ class ImagePage extends Article {
 	 *
 	 * @todo FIXME: Bad interface, see note on MediaHandler::formatMetadata().
 	 *
-	 * @param array $metadata the array containing the EXIF data
+	 * @param array $metadata the array containing the Exif data
 	 * @return String The metadata table. This is treated as Wikitext (!)
 	 */
 	protected function makeMetadataTable( $metadata ) {
@@ -262,7 +262,9 @@ class ImagePage extends Article {
 				# @todo FIXME: Why is this using escapeId for a class?!
 				$class = Sanitizer::escapeId( $v['id'] );
 				if ( $type == 'collapsed' ) {
-					$class .= ' collapsable'; // sic
+					// Handled by mediawiki.action.view.metadata module
+					// and skins/common/shared.css.
+					$class .= ' collapsable';
 				}
 				$r .= "<tr class=\"$class\">\n";
 				$r .= "<th>{$v['name']}</th>\n";
@@ -311,6 +313,17 @@ class ImagePage extends Article {
 			} else {
 				$params = array( 'page' => $page );
 			}
+
+			$renderLang = $request->getVal( 'lang' );
+			if ( !is_null( $renderLang ) ) {
+				$handler = $this->displayImg->getHandler();
+				if ( $handler && $handler->validateParam( 'lang', $renderLang ) ) {
+					$params['lang'] = $renderLang;
+				} else {
+					$renderLang = null;
+				}
+			}
+
 			$width_orig = $this->displayImg->getWidth( $page );
 			$width = $width_orig;
 			$height_orig = $this->displayImg->getHeight( $page );
@@ -344,23 +357,42 @@ class ImagePage extends Article {
 					$linktext = wfMessage( 'show-big-image' )->escaped();
 					if ( $this->displayImg->getRepo()->canTransformVia404() ) {
 						$thumbSizes = $wgImageLimits;
+						// Also include the full sized resolution in the list, so
+						// that users know they can get it. This will link to the
+						// original file asset if mustRender() === false. In the case
+						// that we mustRender, some users have indicated that they would
+						// find it useful to have the full size image in the rendered
+						// image format.
+						$thumbSizes[] = array( $width_orig, $height_orig );
 					} else {
 						# Creating thumb links triggers thumbnail generation.
 						# Just generate the thumb for the current users prefs.
 						$thumbSizes = array( $this->getImageLimitsFromOption( $user, 'thumbsize' ) );
+						if ( !$this->displayImg->mustRender() ) {
+							// We can safely include a link to the "full-size" preview,
+							// without actually rendering.
+							$thumbSizes[] = array( $width_orig, $height_orig );
+						}
 					}
 					# Generate thumbnails or thumbnail links as needed...
 					$otherSizes = array();
 					foreach ( $thumbSizes as $size ) {
-						if ( $size[0] < $width_orig && $size[1] < $height_orig
-							&& $size[0] != $width && $size[1] != $height )
-						{
+						// We include a thumbnail size in the list, if it is
+						// less than or equal to the original size of the image
+						// asset ($width_orig/$height_orig). We also exclude
+						// the current thumbnail's size ($width/$height)
+						// since that is added to the message separately, so
+						// it can be denoted as the current size being shown.
+						if ( $size[0] <= $width_orig && $size[1] <= $height_orig
+							&& $size[0] != $width && $size[1] != $height
+						) {
 							$sizeLink = $this->makeSizeLink( $params, $size[0], $size[1] );
 							if ( $sizeLink ) {
 								$otherSizes[] = $sizeLink;
 							}
 						}
 					}
+					$otherSizes = array_unique( $otherSizes );
 					$msgsmall = '';
 					$sizeLinkBigImagePreview = $this->makeSizeLink( $params, $width, $height );
 					if ( $sizeLinkBigImagePreview ) {
@@ -390,11 +422,13 @@ class ImagePage extends Article {
 				$params['width'] = $width;
 				$params['height'] = $height;
 				$thumbnail = $this->displayImg->transform( $params );
+				Linker::processResponsiveImages( $this->displayImg, $thumbnail, $params );
 
 				$anchorclose = Html::rawElement( 'div', array( 'class' => 'mw-filepage-resolutioninfo' ), $msgsmall );
 
 				$isMulti = $this->displayImg->isMultipage() && $this->displayImg->pageCount() > 1;
 				if ( $isMulti ) {
+					$out->addModules( 'mediawiki.page.image.pagination' );
 					$out->addHTML( '<table class="multipageimage"><tr><td>' );
 				}
 
@@ -413,6 +447,8 @@ class ImagePage extends Article {
 
 					if ( $page > 1 ) {
 						$label = $out->parse( wfMessage( 'imgmultipageprev' )->text(), false );
+						// on the client side, this link is generated in ajaxifyPageNavigation()
+						// in the mediawiki.page.image.pagination module
 						$link = Linker::linkKnown(
 							$this->getTitle(),
 							$label,
@@ -444,7 +480,6 @@ class ImagePage extends Article {
 					$formParams = array(
 						'name' => 'pageselector',
 						'action' => $wgScript,
-						'onchange' => 'document.pageselector.submit();',
 					);
 					$options = array();
 					for ( $i = 1; $i <= $count; $i++ ) {
@@ -497,6 +532,16 @@ EOT
 </div>
 EOT
 				);
+			}
+
+			$renderLangOptions = $this->displayImg->getAvailableLanguages();
+			if ( count( $renderLangOptions ) >= 1 ) {
+				$currentLanguage = $renderLang;
+				$defaultLang = $this->displayImg->getDefaultRenderLanguage();
+				if ( is_null( $currentLanguage ) ) {
+					$currentLanguage = $defaultLang;
+				}
+				$out->addHtml( $this->doRenderLangOpt( $renderLangOptions, $currentLanguage, $defaultLang ) );
 			}
 
 			// Add cannot animate thumbnail warning
@@ -594,10 +639,10 @@ EOT
 		$this->loadFile();
 
 		$descUrl = $this->mPage->getFile()->getDescriptionUrl();
-		$descText = $this->mPage->getFile()->getDescriptionText();
+		$descText = $this->mPage->getFile()->getDescriptionText( $this->getContext()->getLanguage() );
 
 		/* Add canonical to head if there is no local page for this shared file */
-		if( $descUrl && $this->mPage->getID() == 0 ) {
+		if ( $descUrl && $this->mPage->getID() == 0 ) {
 			$out->setCanonicalUrl( $descUrl );
 		}
 
@@ -631,7 +676,7 @@ EOT
 	 * external editing (and instructions link) etc.
 	 */
 	protected function uploadLinksBox() {
-		global $wgEnableUploads, $wgUseExternalEditor;
+		global $wgEnableUploads;
 
 		if ( !$wgEnableUploads ) {
 			return;
@@ -652,25 +697,6 @@ EOT
 			$out->addHTML( "<li id=\"mw-imagepage-reupload-link\"><div class=\"plainlinks\">{$ulink}</div></li>\n" );
 		} else {
 			$out->addHTML( "<li id=\"mw-imagepage-upload-disallowed\">" . $this->getContext()->msg( 'upload-disallowed-here' )->escaped() . "</li>\n" );
-		}
-
-		# External editing link
-		if ( $wgUseExternalEditor ) {
-			$elink = Linker::linkKnown(
-				$this->getTitle(),
-				wfMessage( 'edit-externally' )->escaped(),
-				array(),
-				array(
-					'action' => 'edit',
-					'externaledit' => 'true',
-					'mode' => 'file'
-				)
-			);
-			$out->addHTML(
-				'<li id="mw-imagepage-edit-external">' . $elink . ' <small>' .
-					wfMessage( 'edit-externally-help' )->parse() .
-					"</small></li>\n"
-			);
 		}
 
 		$out->addHTML( "</ul>\n" );
@@ -719,7 +745,7 @@ EOT
 		$limit = 100;
 
 		$out = $this->getContext()->getOutput();
-		$res = $this->queryImageLinks( $this->getTitle()->getDbKey(), $limit + 1);
+		$res = $this->queryImageLinks( $this->getTitle()->getDBkey(), $limit + 1 );
 		$rows = array();
 		$redirects = array();
 		foreach ( $res as $row ) {
@@ -772,13 +798,21 @@ EOT
 
 		// Create links for every element
 		$currentCount = 0;
-		foreach( $rows as $element ) {
+		foreach ( $rows as $element ) {
 			$currentCount++;
 			if ( $currentCount > $limit ) {
 				break;
 			}
 
-			$link = Linker::linkKnown( Title::makeTitle( $element->page_namespace, $element->page_title ) );
+			$query = array();
+			# Add a redirect=no to make redirect pages reachable
+			if ( isset( $redirects[$element->page_title] ) ) {
+				$query['redirect'] = 'no';
+			}
+			$link = Linker::linkKnown(
+				Title::makeTitle( $element->page_namespace, $element->page_title ),
+				null, array(), $query
+			);
 			if ( !isset( $redirects[$element->page_title] ) ) {
 				# No redirects
 				$liContents = $link;
@@ -931,6 +965,72 @@ EOT
 		return isset( $wgImageLimits[$option] )
 			? $wgImageLimits[$option]
 			: array( 800, 600 ); // if nothing is set, fallback to a hardcoded default
+	}
+
+	/**
+	 * Output a drop-down box for language options for the file
+	 *
+	 * @param Array $langChoices Array of string language codes
+	 * @param String $curLang Language code file is being viewed in.
+	 * @param String $defaultLang Language code that image is rendered in by default
+	 * @return String HTML to insert underneath image.
+	 */
+	protected function doRenderLangOpt( array $langChoices, $curLang, $defaultLang ) {
+		global $wgScript;
+		sort( $langChoices );
+		$curLang = wfBCP47( $curLang );
+		$defaultLang = wfBCP47( $defaultLang );
+		$opts = '';
+		$haveCurrentLang = false;
+		$haveDefaultLang = false;
+
+		// We make a list of all the language choices in the file.
+		// Additionally if the default language to render this file
+		// is not included as being in this file (for example, in svgs
+		// usually the fallback content is the english content) also
+		// include a choice for that. Last of all, if we're viewing
+		// the file in a language not on the list, add it as a choice.
+		foreach ( $langChoices as $lang ) {
+			$code = wfBCP47( $lang );
+			$name = Language::fetchLanguageName( $code, $this->getContext()->getLanguage()->getCode() );
+			if ( $name !== '' ) {
+				$display = wfMessage( 'img-lang-opt', $code, $name )->text();
+			} else {
+				$display = $code;
+			}
+			$opts .= "\n" . Xml::option( $display, $code, $curLang === $code );
+			if ( $curLang === $code ) {
+				$haveCurrentLang = true;
+			}
+			if ( $defaultLang === $code ) {
+				$haveDefaultLang = true;
+			}
+		}
+		if ( !$haveDefaultLang ) {
+			// Its hard to know if the content is really in the default language, or
+			// if its just unmarked content that could be in any language.
+			$opts = Xml::option( wfMessage( 'img-lang-default' )->text(), $defaultLang, $defaultLang === $curLang ) . $opts;
+		}
+		if ( !$haveCurrentLang && $defaultLang !== $curLang ) {
+			$name = Language::fetchLanguageName( $curLang, $this->getContext()->getLanguage()->getCode() );
+			if ( $name !== '' ) {
+				$display = wfMessage( 'img-lang-opt', $curLang, $name )->text();
+			} else {
+				$display = $curLang;
+			}
+			$opts = Xml::option( $display, $curLang, true ) . $opts;
+		}
+
+		$select = Html::rawElement( 'select', array( 'id' => 'mw-imglangselector', 'name' => 'lang' ), $opts );
+		$submit = Xml::submitButton( wfMessage( 'img-lang-go' )->text() );
+
+		$formContents = wfMessage( 'img-lang-info' )->rawParams( $select, $submit )->parse()
+			. Html::hidden( 'title', $this->getTitle()->getPrefixedDBkey() );
+
+		$langSelectLine = Html::rawElement( 'div', array( 'id' => 'mw-imglangselector-line' ),
+			Html::rawElement( 'form', array( 'action' => $wgScript ), $formContents )
+		);
+		return $langSelectLine;
 	}
 }
 
@@ -1188,8 +1288,8 @@ class ImageHistoryList extends ContextSource {
 		$lang = $this->getLanguage();
 		$user = $this->getUser();
 		if ( $file->allowInlineDisplay() && $file->userCan( File::DELETED_FILE, $user )
-			&& !$file->isDeleted( File::DELETED_FILE ) )
-		{
+			&& !$file->isDeleted( File::DELETED_FILE )
+		) {
 			$params = array(
 				'width' => '120',
 				'height' => '120',

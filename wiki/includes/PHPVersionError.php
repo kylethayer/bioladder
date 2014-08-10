@@ -38,7 +38,7 @@
  * version are hardcoded here
  */
 function wfPHPVersionError( $type ) {
-	$mwVersion = '1.21';
+	$mwVersion = '1.23';
 	$minimumVersionPHP = '5.3.2';
 
 	$phpVersion = phpversion();
@@ -61,12 +61,12 @@ function wfPHPVersionError( $type ) {
 		header( 'Pragma: no-cache' );
 
 		$finalOutput = <<<HTML
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns='http://www.w3.org/1999/xhtml' lang='en'>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
 	<head>
+		<meta charset="UTF-8" />
 		<title>MediaWiki {$mwVersion}</title>
-		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-		<style type='text/css' media='screen'>
+		<style media='screen'>
 			body {
 				color: #000;
 				background-color: #fff;
@@ -97,9 +97,9 @@ function wfPHPVersionError( $type ) {
 		</p>
 		<p>
 			If for some reason you are unable to upgrade your PHP version, you will need to
-			<a href="http://www.mediawiki.org/wiki/Download">download</a> an older version
+			<a href="https://www.mediawiki.org/wiki/Download">download</a> an older version
 			of MediaWiki from our website.  See our
-			<a href="http://www.mediawiki.org/wiki/Compatibility#PHP">compatibility page</a>
+			<a href="https://www.mediawiki.org/wiki/Compatibility#PHP">compatibility page</a>
 			for details of which versions are compatible with prior versions of PHP.
 		</p>
 		</div>
@@ -112,6 +112,6 @@ HTML;
 		$finalOutput = ( $type == 'load.php' ) ? "/* $message */" : $message;
 		header( "$protocol 500 MediaWiki configuration Error" );
 	}
-	echo( "$finalOutput\n" );
+	echo "$finalOutput\n";
 	die( 1 );
 }

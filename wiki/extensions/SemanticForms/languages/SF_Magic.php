@@ -89,15 +89,15 @@ $magicWords['mk'] = array(
 
 /** Marathi (मराठी) */
 $magicWords['mr'] = array(
-	'arraymap' => array( 0, 'नकाशेरचना', 'arraymap' ),
-	'arraymaptemplate' => array( 0, 'नकाशेसाचारचना', 'arraymaptemplate' ),
+	'arraymap' => array( 0, 'नकाशेरचना' ),
+	'arraymaptemplate' => array( 0, 'नकाशेसाचारचना' ),
 );
 
 /** Low Saxon (Netherlands) (Nedersaksies) */
 $magicWords['nds-nl'] = array(
 	'forminput' => array( 0, 'formulierinvoer' ),
-	'formlink' => array( 0, 'formulierverwiezing', 'formulierverwijzing' ),
-	'arraymaptemplate' => array( 0, 'arraymapmal', 'arraymapsjabloon' ),
+	'formlink' => array( 0, 'formulierverwiezing' ),
+	'arraymaptemplate' => array( 0, 'arraymapmal' ),
 );
 
 /** Dutch (Nederlands) */

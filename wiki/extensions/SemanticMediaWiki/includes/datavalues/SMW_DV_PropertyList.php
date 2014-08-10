@@ -50,12 +50,7 @@ class SMWPropertyListValue extends SMWDataValue {
 			$stringValue .= ( $stringValue ? ';' : '' ) . $diProperty->getKey();
 		}
 
-		try {
-			$this->m_dataitem = new SMWDIString( $stringValue );
-		} catch ( SMWStringLengthException $e ) {
-			$this->m_dataitem = new SMWDIString( 'Error' );
-			$this->addError( wfMessage( 'smw_maxstring', $stringValue )->inContentLanguage()->text() );
-		}
+		$this->m_dataitem = new SMWDIBlob( $stringValue );
 	}
 
 	/**
@@ -121,7 +116,7 @@ class SMWPropertyListValue extends SMWDataValue {
 		$sep = ( $type == 4 ) ? '; ' : ', ';
 		foreach ( $this->m_diProperties as $diProperty ) {
 			if ( $result !== '' ) $result .= $sep;
-			$propertyValue = SMWDataValueFactory::newDataItemValue( $diProperty, null );
+			$propertyValue = \SMW\DataValueFactory::getInstance()->newDataItemValue( $diProperty, null );
 			$result .= $this->makeValueOutputText( $type, $propertyValue, $linker );
 		}
 		return $result;

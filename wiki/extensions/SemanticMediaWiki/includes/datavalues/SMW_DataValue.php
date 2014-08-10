@@ -1,12 +1,4 @@
 <?php
-/**
- * File holding abstract class SMWDataValue, the base for all datavalues in SMW.
- *
- * @author Markus Krötzsch
- *
- * @file
- * @ingroup SMWDataValues
- */
 
 /**
  * This group contains all parts of SMW that relate to the processing of datavalues
@@ -15,6 +7,7 @@
  * @defgroup SMWDataValues SMWDataValues
  * @ingroup SMW
  */
+use SMW\DataValueFactory;
 
 /**
  * Objects of this type represent all that is known about a certain user-provided
@@ -41,6 +34,8 @@
  * for displaying and serializing the value.
  *
  * @ingroup SMWDataValues
+ *
+ * @author Markus Krötzsch
  */
 abstract class SMWDataValue {
 
@@ -142,10 +137,13 @@ abstract class SMWDataValue {
 	 * The given value is a string as supplied by some user. An alternative
 	 * label for printout might also be specified.
 	 *
+	 * The third argument was added in SMW 1.9 and should not be used from outside SMW.
+	 *
 	 * @param string $value
 	 * @param mixed $caption
+	 * @param boolean $ignoreAllowedValues
 	 */
-	public function setUserValue( $value, $caption = false ) {
+	public function setUserValue( $value, $caption = false, $ignoreAllowedValues = false ) {
 		wfProfileIn( 'SMWDataValue::setUserValue (SMW)' );
 
 		$this->m_dataitem = null;
@@ -168,7 +166,7 @@ abstract class SMWDataValue {
 			$this->addError( wfMessage( 'smw_parseerror' )->inContentLanguage()->text() );
 		}
 
-		if ( $this->isValid() ) {
+		if ( $this->isValid() && !$ignoreAllowedValues ) {
 			$this->checkAllowedValues();
 		}
 
@@ -264,9 +262,11 @@ abstract class SMWDataValue {
 		if ( $this->mHasServiceLinks ) {
 			return;
 		}
+
 		if ( !is_null( $this->m_property ) ) {
 			$propertyDiWikiPage = $this->m_property->getDiWikiPage();
 		}
+
 		if ( is_null( $this->m_property ) || is_null( $propertyDiWikiPage ) ) {
 			return; // no property known, or not associated with a page
 		}
@@ -278,7 +278,7 @@ abstract class SMWDataValue {
 		}
 
 		array_unshift( $args, '' ); // add a 0 element as placeholder
-		$servicelinks = smwfGetStore()->getPropertyValues( $propertyDiWikiPage, new SMWDIProperty( '_SERV' ) );
+		$servicelinks = \SMW\StoreFactory::getStore()->getPropertyValues( $propertyDiWikiPage, new SMWDIProperty( '_SERV' ) );
 
 		foreach ( $servicelinks as $dataItem ) {
 			if ( !( $dataItem instanceof SMWDIBlob ) ) {
@@ -377,7 +377,7 @@ abstract class SMWDataValue {
 	 *
 	 * @since 1.6
 	 *
-	 * @param $dataitem SMWDataItem
+	 * @param SMWDataItem $dataItem
 	 *
 	 * @return boolean
 	 */
@@ -409,18 +409,30 @@ abstract class SMWDataValue {
 	 * might be necessary to call setProperty() before using this method.
 	 *
 	 * @param string $value
+	 *
+	 * @return SMWDescription
+	 * @throws InvalidArgumentException
 	 */
 	public function getQueryDescription( $value ) {
+		if ( !is_string( $value ) ) {
+			throw new InvalidArgumentException( '$value needs to be a string' );
+		}
+
 		$comparator = SMW_CMP_EQ;
 
 		self::prepareValue( $value, $comparator );
 
-		$this->setUserValue( $value );
-
-		if ( !$this->isValid() ) {
-			return new SMWThingDescription();
+		if( $comparator == SMW_CMP_LIKE ) {
+			// ignore allowed values when the LIKE comparator is used (BUG 21893)
+			$this->setUserValue( $value, false, true );
 		} else {
+			$this->setUserValue( $value );
+		}
+
+		if ( $this->isValid() ) {
 			return new SMWValueDescription( $this->getDataItem(), $this->m_property, $comparator );
+		} else {
+			return new SMWThingDescription();
 		}
 	}
 
@@ -434,10 +446,10 @@ abstract class SMWDataValue {
 	 */
 	static protected function prepareValue( &$value, &$comparator ) {
 		// Loop over the comparators to determine which one is used and what the actual value is.
-		foreach ( SMWQueryLanguage::getComparatorStrings() as $srting ) {
-			if ( strpos( $value, $srting ) === 0 ) {
-				$comparator = SMWQueryLanguage::getComparatorFromString( substr( $value, 0, strlen( $srting ) ) );
-				$value = substr( $value, strlen( $srting ) );
+		foreach ( SMWQueryLanguage::getComparatorStrings() as $string ) {
+			if ( strpos( $value, $string ) === 0 ) {
+				$comparator = SMWQueryLanguage::getComparatorFromString( substr( $value, 0, strlen( $string ) ) );
+				$value = substr( $value, strlen( $string ) );
 				break;
 			}
 		}
@@ -714,7 +726,7 @@ abstract class SMWDataValue {
 			return; // no property known, or no data to check
 		}
 
-		$allowedvalues = smwfGetStore()->getPropertyValues(
+		$allowedvalues = \SMW\StoreFactory::getStore()->getPropertyValues(
 			$propertyDiWikiPage,
 			new SMWDIProperty( '_PVAL' )
 		);
@@ -724,9 +736,10 @@ abstract class SMWDataValue {
 		}
 
 		$hash = $this->m_dataitem->getHash();
-		$testdv = SMWDataValueFactory::newTypeIDValue( $this->getTypeID() );
+		$testdv = DataValueFactory::getInstance()->newTypeIDValue( $this->getTypeID() );
 		$accept = false;
 		$valuestring = '';
+
 		foreach ( $allowedvalues as $di ) {
 			if ( $di instanceof SMWDIBlob ) {
 				$testdv->setUserValue( $di->getString() );
@@ -751,4 +764,5 @@ abstract class SMWDataValue {
 			);
 		}
 	}
+
 }

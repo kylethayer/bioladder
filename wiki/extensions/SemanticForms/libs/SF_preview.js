@@ -127,7 +127,7 @@
 		if ( mw.config.get( 'wgAction' ) === 'formedit' ) {
 
 			// set the title, server has to find a suitable form
-			data.target = mw.config.get( 'wgTitle' );
+			data.target = mw.config.get( 'wgPageName' );
 
 			// do we have a URL like .../Special:FormEdit/formname/pagename ?
 		} else if ( mw.config.get( 'wgCanonicalNamespace' ) === 'Special' && mw.config.get( 'wgCanonicalSpecialPageName' ) === 'FormEdit' ) {
@@ -189,13 +189,12 @@
 		// copy all explicitly specified attributes (except 'type' attribute)
 		// from the old to the new button
 		var oldBtnElement = this[0];
-		var newBtnElement = btn[0];
 		var i;
 
 		for ( i = 0; i < oldBtnElement.attributes.length; i = i + 1 ) {
 			var attribute = oldBtnElement.attributes[i];
 			if ( attribute.name !== 'type' ) {
-				newBtnElement[attribute.name] = attribute.value;
+				btn.attr( attribute.name,  attribute.value );
 			}
 		}
 

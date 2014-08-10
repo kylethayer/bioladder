@@ -31,8 +31,7 @@
  * @ingroup Media
  */
 class JpegHandler extends ExifBitmapHandler {
-
-	function getMetadata ( $image, $filename ) {
+	function getMetadata( $image, $filename ) {
 		try {
 			$meta = BitmapMetadataHandler::Jpeg( $filename );
 			if ( !is_array( $meta ) ) {
@@ -40,10 +39,11 @@ class JpegHandler extends ExifBitmapHandler {
 				throw new MWException( 'Metadata array is not an array' );
 			}
 			$meta['MEDIAWIKI_EXIF_VERSION'] = Exif::version();
+
 			return serialize( $meta );
-		}
-		catch ( MWException $e ) {
-			// BitmapMetadataHandler throws an exception in certain exceptional cases like if file does not exist.
+		} catch ( MWException $e ) {
+			// BitmapMetadataHandler throws an exception in certain exceptional
+			// cases like if file does not exist.
 			wfDebug( __METHOD__ . ': ' . $e->getMessage() . "\n" );
 
 			/* This used to use 0 (ExifBitmapHandler::OLD_BROKEN_FILE) for the cases
@@ -55,40 +55,42 @@ class JpegHandler extends ExifBitmapHandler {
 			 * Thus switch to using -1 to denote only a broken file, and use an array with only
 			 * MEDIAWIKI_EXIF_VERSION to denote no props.
 			 */
+
 			return ExifBitmapHandler::BROKEN_FILE;
 		}
 	}
 
 	/**
-	 * @param $file File
+	 * @param File $file
 	 * @param array $params Rotate parameters.
-	 *	'rotation' clockwise rotation in degrees, allowed are multiples of 90
+	 *    'rotation' clockwise rotation in degrees, allowed are multiples of 90
 	 * @since 1.21
 	 * @return bool
 	 */
 	public function rotate( $file, $params ) {
 		global $wgJpegTran;
 
-		$rotation = ( $params[ 'rotation' ] + $this->getRotation( $file ) ) % 360;
+		$rotation = ( $params['rotation'] + $this->getRotation( $file ) ) % 360;
 
-		if( $wgJpegTran && is_file( $wgJpegTran ) ){
+		if ( $wgJpegTran && is_file( $wgJpegTran ) ) {
 			$cmd = wfEscapeShellArg( $wgJpegTran ) .
 				" -rotate " . wfEscapeShellArg( $rotation ) .
-				" -outfile " . wfEscapeShellArg( $params[ 'dstPath' ] ) .
-				" " . wfEscapeShellArg( $params[ 'srcPath' ] ) .  " 2>&1";
-				wfDebug( __METHOD__ . ": running jpgtran: $cmd\n" );
-				wfProfileIn( 'jpegtran' );
-				$retval = 0;
-				$err = wfShellExec( $cmd, $retval, $env );
-				wfProfileOut( 'jpegtran' );
+				" -outfile " . wfEscapeShellArg( $params['dstPath'] ) .
+				" " . wfEscapeShellArg( $params['srcPath'] );
+			wfDebug( __METHOD__ . ": running jpgtran: $cmd\n" );
+			wfProfileIn( 'jpegtran' );
+			$retval = 0;
+			$err = wfShellExecWithStderr( $cmd, $retval );
+			wfProfileOut( 'jpegtran' );
 			if ( $retval !== 0 ) {
 				$this->logErrorForExternalProcess( $retval, $err, $cmd );
+
 				return new MediaTransformError( 'thumbnail_error', 0, 0, $err );
 			}
+
 			return false;
 		} else {
 			return parent::rotate( $file, $params );
 		}
 	}
-
 }

@@ -41,9 +41,9 @@ class WikitextContentHandler extends TextContentHandler {
 	}
 
 	/**
-	 * @see ContentHandler::makeEmptyContent
+	 * @return Content A new WikitextContent object with empty text.
 	 *
-	 * @return Content
+	 * @see ContentHandler::makeEmptyContent
 	 */
 	public function makeEmptyContent() {
 		return new WikitextContent( '' );
@@ -52,15 +52,32 @@ class WikitextContentHandler extends TextContentHandler {
 	/**
 	 * Returns a WikitextContent object representing a redirect to the given destination page.
 	 *
-	 * @see ContentHandler::makeRedirectContent
-	 *
-	 * @param Title $destination the page to redirect to.
+	 * @param Title $destination The page to redirect to.
+	 * @param string $text Text to include in the redirect, if possible.
 	 *
 	 * @return Content
+	 *
+	 * @see ContentHandler::makeRedirectContent
 	 */
-	public function makeRedirectContent( Title $destination ) {
+	public function makeRedirectContent( Title $destination, $text = '' ) {
+		$optionalColon = '';
+
+		if ( $destination->getNamespace() == NS_CATEGORY ) {
+			$optionalColon = ':';
+		} else {
+			$iw = $destination->getInterwiki();
+			if ( $iw && Language::fetchLanguageName( $iw, null, 'mw' ) ) {
+				$optionalColon = ':';
+			}
+		}
+
 		$mwRedir = MagicWord::get( 'redirect' );
-		$redirectText = $mwRedir->getSynonym( 0 ) . ' [[' . $destination->getPrefixedText() . ']]';
+		$redirectText = $mwRedir->getSynonym( 0 ) .
+			' [[' . $optionalColon . $destination->getFullText() . ']]';
+
+		if ( $text != '' ) {
+			$redirectText .= "\n" . $text;
+		}
 
 		return new WikitextContent( $redirectText );
 	}
@@ -68,9 +85,9 @@ class WikitextContentHandler extends TextContentHandler {
 	/**
 	 * Returns true because wikitext supports redirects.
 	 *
-	 * @see ContentHandler::supportsRedirects
+	 * @return bool Always true.
 	 *
-	 * @return boolean whether redirects are supported.
+	 * @see ContentHandler::supportsRedirects
 	 */
 	public function supportsRedirects() {
 		return true;
@@ -79,7 +96,9 @@ class WikitextContentHandler extends TextContentHandler {
 	/**
 	 * Returns true because wikitext supports sections.
 	 *
-	 * @return boolean whether sections are supported.
+	 * @return bool Always true.
+	 *
+	 * @see ContentHandler::supportsSections
 	 */
 	public function supportsSections() {
 		return true;
@@ -90,9 +109,13 @@ class WikitextContentHandler extends TextContentHandler {
 	 * ParserCache mechanism.
 	 *
 	 * @since 1.21
-	 * @return bool
+	 *
+	 * @return bool Always true.
+	 *
+	 * @see ContentHandler::isParserCacheSupported
 	 */
 	public function isParserCacheSupported() {
 		return true;
 	}
+
 }

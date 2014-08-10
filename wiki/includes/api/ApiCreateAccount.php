@@ -39,7 +39,10 @@ class ApiCreateAccount extends ApiBase {
 		// Use userCan in order to hit GlobalBlock checks (according to Special:userlogin)
 		$loginTitle = SpecialPage::getTitleFor( 'Userlogin' );
 		if ( !$loginTitle->userCan( 'createaccount', $this->getUser() ) ) {
-			$this->dieUsage( 'You do not have the right to create a new account', 'permdenied-createaccount' );
+			$this->dieUsage(
+				'You do not have the right to create a new account',
+				'permdenied-createaccount'
+			);
 		}
 		if ( $this->getUser()->isBlockedFromCreateAccount() ) {
 			$this->dieUsage( 'You cannot create a new account because you are blocked', 'blocked' );
@@ -47,15 +50,17 @@ class ApiCreateAccount extends ApiBase {
 
 		$params = $this->extractRequestParams();
 
-		$result = array();
-
 		// Init session if necessary
 		if ( session_id() == '' ) {
 			wfSetupSession();
 		}
 
-		if( $params['mailpassword'] && !$params['email'] ) {
+		if ( $params['mailpassword'] && !$params['email'] ) {
 			$this->dieUsageMsg( 'noemail' );
+		}
+
+		if ( $params['language'] && !Language::isSupportedLanguage( $params['language'] ) ) {
+			$this->dieUsage( 'Invalid language parameter', 'langinvalid' );
 		}
 
 		$context = new DerivativeContext( $this->getContext() );
@@ -78,26 +83,30 @@ class ApiCreateAccount extends ApiBase {
 
 		$loginForm = new LoginForm();
 		$loginForm->setContext( $context );
+		wfRunHooks( 'AddNewAccountApiForm', array( $this, $loginForm ) );
 		$loginForm->load();
 
 		$status = $loginForm->addNewaccountInternal();
 		$result = array();
-		if( $status->isGood() ) {
+		if ( $status->isGood() ) {
 			// Success!
+			global $wgEmailAuthentication;
 			$user = $status->getValue();
 
-			// If we showed up language selection links, and one was in use, be
-			// smart (and sensible) and save that language as the user's preference
-			global $wgLoginLanguageSelector, $wgEmailAuthentication;
-			if( $wgLoginLanguageSelector && $params['language'] ) {
+			if ( $params['language'] ) {
 				$user->setOption( 'language', $params['language'] );
 			}
 
-			if( $params['mailpassword'] ) {
+			if ( $params['mailpassword'] ) {
 				// If mailpassword was set, disable the password and send an email.
 				$user->setPassword( null );
-				$status->merge( $loginForm->mailPasswordInternal( $user, false, 'createaccount-title', 'createaccount-text' ) );
-			} elseif( $wgEmailAuthentication && Sanitizer::validateEmail( $user->getEmail() ) ) {
+				$status->merge( $loginForm->mailPasswordInternal(
+					$user,
+					false,
+					'createaccount-title',
+					'createaccount-text'
+				) );
+			} elseif ( $wgEmailAuthentication && Sanitizer::validateEmail( $user->getEmail() ) ) {
 				// Send out an email authentication message if needed
 				$status->merge( $user->sendConfirmationMail() );
 			}
@@ -124,33 +133,23 @@ class ApiCreateAccount extends ApiBase {
 
 		$apiResult = $this->getResult();
 
-		if( $status->hasMessage( 'sessionfailure' ) || $status->hasMessage( 'nocookiesfornew' ) ) {
+		if ( $status->hasMessage( 'sessionfailure' ) || $status->hasMessage( 'nocookiesfornew' ) ) {
 			// Token was incorrect, so add it to result, but don't throw an exception
 			// since not having the correct token is part of the normal
 			// flow of events.
 			$result['token'] = LoginForm::getCreateaccountToken();
-			$result['result'] = 'needtoken';
-		} elseif( !$status->isOK() ) {
+			$result['result'] = 'NeedToken';
+		} elseif ( !$status->isOK() ) {
 			// There was an error. Die now.
-			// Cannot use dieUsageMsg() directly because extensions
-			// might return custom error messages.
-			$errors = $status->getErrorsArray();
-			if( $errors[0] instanceof Message ) {
-				$code = 'aborted';
-				$desc = $errors[0];
-			} else {
-				$code = array_shift( $errors[0] );
-				$desc = wfMessage( $code, $errors[0] );
-			}
-			$this->dieUsage( $desc, $code );
-		} elseif( !$status->isGood() ) {
+			$this->dieStatus( $status );
+		} elseif ( !$status->isGood() ) {
 			// Status is not good, but OK. This means warnings.
-			$result['result'] = 'warning';
+			$result['result'] = 'Warning';
 
 			// Add any warnings to the result
 			$warnings = $status->getErrorsByType( 'warning' );
-			if( $warnings ) {
-				foreach( $warnings as &$warning ) {
+			if ( $warnings ) {
+				foreach ( $warnings as &$warning ) {
 					$apiResult->setIndexedTagName( $warning['params'], 'param' );
 				}
 				$apiResult->setIndexedTagName( $warnings, 'warning' );
@@ -158,8 +157,11 @@ class ApiCreateAccount extends ApiBase {
 			}
 		} else {
 			// Everything was fine.
-			$result['result'] = 'success';
+			$result['result'] = 'Success';
 		}
+
+		// Give extensions a chance to modify the API result data
+		wfRunHooks( 'AddNewAccountApiResult', array( $this, $loginForm, &$result ) );
 
 		$apiResult->addValue( null, 'createaccount', $result );
 	}
@@ -182,6 +184,7 @@ class ApiCreateAccount extends ApiBase {
 
 	public function getAllowedParams() {
 		global $wgEmailConfirmToEdit;
+
 		return array(
 			'name' => array(
 				ApiBase::PARAM_TYPE => 'user',
@@ -206,6 +209,7 @@ class ApiCreateAccount extends ApiBase {
 
 	public function getParamDescription() {
 		$p = $this->getModulePrefix();
+
 		return array(
 			'name' => 'Username',
 			'password' => "Password (ignored if {$p}mailpassword is set)",
@@ -215,7 +219,8 @@ class ApiCreateAccount extends ApiBase {
 			'realname' => 'Real name of user (optional)',
 			'mailpassword' => 'If set to any value, a random password will be emailed to the user',
 			'reason' => 'Optional reason for creating the account to be put in the logs',
-			'language' => 'Language code to set as default for the user (optional, defaults to content language)'
+			'language'
+				=> 'Language code to set as default for the user (optional, defaults to content language)'
 		);
 	}
 
@@ -224,9 +229,9 @@ class ApiCreateAccount extends ApiBase {
 			'createaccount' => array(
 				'result' => array(
 					ApiBase::PROP_TYPE => array(
-						'success',
-						'warning',
-						'needtoken'
+						'Success',
+						'Warning',
+						'NeedToken'
 					)
 				),
 				'username' => array(
@@ -263,8 +268,11 @@ class ApiCreateAccount extends ApiBase {
 
 		$errors = parent::getPossibleErrors();
 		// All local errors are from LoginForm, which means they're actually message keys.
-		foreach( $localErrors as $error ) {
-			$errors[] = array( 'code' => $error, 'info' => wfMessage( $error )->parse() );
+		foreach ( $localErrors as $error ) {
+			$errors[] = array(
+				'code' => $error,
+				'info' => wfMessage( $error )->inLanguage( 'en' )->useDatabase( false )->parse()
+			);
 		}
 
 		$errors[] = array(
@@ -279,13 +287,19 @@ class ApiCreateAccount extends ApiBase {
 			'code' => 'aborted',
 			'info' => 'Account creation aborted by hook (info may vary)'
 		);
+		$errors[] = array(
+			'code' => 'langinvalid',
+			'info' => 'Invalid language parameter'
+		);
 
 		// 'passwordtooshort' has parameters. :(
 		global $wgMinimalPasswordLength;
 		$errors[] = array(
 			'code' => 'passwordtooshort',
-			'info' => wfMessage( 'passwordtooshort', $wgMinimalPasswordLength )->parse()
+			'info' => wfMessage( 'passwordtooshort', $wgMinimalPasswordLength )
+				->inLanguage( 'en' )->useDatabase( false )->parse()
 		);
+
 		return $errors;
 	}
 

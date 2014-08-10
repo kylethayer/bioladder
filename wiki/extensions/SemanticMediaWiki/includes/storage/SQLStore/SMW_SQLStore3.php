@@ -1,5 +1,19 @@
 <?php
 
+use SMW\SQLStore\PropertyTableDefinitionBuilder;
+use SMW\SQLStore\WantedPropertiesCollector;
+use SMW\SQLStore\UnusedPropertiesCollector;
+use SMW\SQLStore\PropertiesCollector;
+use SMW\SQLStore\StatisticsCollector;
+use SMW\DataTypeRegistry;
+use SMW\Settings;
+use SMW\SQLStore\TableDefinition;
+use SMW\MediaWiki\Database;
+use SMW\MediaWiki\LazyDBConnectionProvider as DBConnectionProvider;
+use SMW\DIWikiPage;
+use SMW\DIProperty;
+use SMW\SemanticData;
+
 /**
  * SQL-based implementation of SMW's storage abstraction layer.
  *
@@ -61,6 +75,12 @@ class SMWSQLStore3 extends SMWStore {
 	public $smwIds;
 
 	/**
+	 * @var Database
+	 * @since  1.9.0.2
+	 */
+	protected $database = null;
+
+	/**
 	 * The reader object used by this store. Initialized by getReader()
 	 * Always access using getReader()
 	 *
@@ -77,16 +97,6 @@ class SMWSQLStore3 extends SMWStore {
 	 * @var SMWSQLStore3Writers
 	 */
 	protected $writer = false;
-
-	/**
-	 * The SpecialPageHandler object used by this store. Initialized by
-	 * getSpecialPageHandler(), which is the only way in which it should
-	 * be accessed.
-	 *
-	 * @since 1.8
-	 * @var SMWSQLStore3SpecialPageHandlers
-	 */
-	protected $specialPageHandler = false;
 
 	/**
 	 * The SetupHandler object used by this store. Initialized by getSetupHandler(),
@@ -107,7 +117,7 @@ class SMWSQLStore3 extends SMWStore {
 	protected $diHandlers = array();
 
 	/**
-	 * Cache for SMWSemanticData objects, indexed by SMW ID.
+	 * Cache for SemanticData objects, indexed by SMW ID.
 	 *
 	 * @todo In the future, the cache should be managed by a helper class.
 	 *
@@ -118,7 +128,7 @@ class SMWSQLStore3 extends SMWStore {
 
 	/**
 	 * Like SMWSQLStore3::m_semdata, but containing flags indicating
-	 * completeness of the SMWSemanticData objs.
+	 * completeness of the SemanticData objs.
 	 *
 	 * @since 1.8
 	 * @var array
@@ -130,7 +140,7 @@ class SMWSQLStore3 extends SMWStore {
 	 * Access this only by calling getPropertyTables().
 	 *
 	 * @since 1.8
-	 * @var SMWSQLStore3Table[]
+	 * @var TableDefinition[]
 	 */
 	protected static $prop_tables;
 
@@ -151,13 +161,15 @@ class SMWSQLStore3 extends SMWStore {
 	 * @since 1.8
 	 * @var array
 	 */
-	protected static $special_tables = array(
-		// page metadata tables
-		'_MDAT', '_CDAT', '_NEWP', '_LEDT',
+	protected static $customizableSpecialProperties = array(
+		'_MDAT', '_CDAT', '_NEWP', '_LEDT', '_MIME', '_MEDIA',
+	);
+
+	protected static $fixedSpecialProperties = array(
 		// property declarations
 		'_TYPE', '_UNIT', '_CONV', '_PVAL', '_LIST', '_SERV',
 		// query statistics (very frequently used)
-		'_ASK', '_ASKDE', '_ASKSI', '_ASKFO', '_ASKST',
+		'_ASK', '_ASKDE', '_ASKSI', '_ASKFO', '_ASKST', '_ASKDU',
 		// subproperties, classes, and instances
 		'_SUBP', '_SUBC', '_INST',
 		// redirects
@@ -169,7 +181,7 @@ class SMWSQLStore3 extends SMWStore {
 		// Concepts
 		'_CONC',
 		// Semantic forms properties:
-		'_SF_DF', '_SF_AF',
+		'_SF_DF', '_SF_AF', // FIXME if this is desired by SF than it should set up $smwgFixedProperties
 	);
 
 	/**
@@ -180,7 +192,6 @@ class SMWSQLStore3 extends SMWStore {
 	 */
 	protected static $di_type_tables = array(
 		SMWDataItem::TYPE_NUMBER     => 'smw_di_number',
-		SMWDataItem::TYPE_STRING     => 'smw_di_blob',
 		SMWDataItem::TYPE_BLOB       => 'smw_di_blob',
 		SMWDataItem::TYPE_BOOLEAN    => 'smw_di_bool',
 		SMWDataItem::TYPE_URI        => 'smw_di_uri',
@@ -189,24 +200,6 @@ class SMWSQLStore3 extends SMWStore {
 		SMWDataItem::TYPE_WIKIPAGE   => 'smw_di_wikipage',
 		//SMWDataItem::TYPE_CONCEPT    => '', // _CONC is the only property of this type
 	);
-
-	/**
-	* These are fixed properties, i.e. user defined tables having a
-	* dedicated table for them. Entries in this array have the format
-	* property key => property DI type. The key is a DB key (title with
-	* underscores instead of _ and capital first letter). The DI type is
-	* one of the types declared in SMWDataItem, e.g.,
-	* SMWDataItem::TYPE_DATE. The correct DI type for common datatypes
-	* can be found in SMWDataValueFactory.
-	*
-	* See also http://semantic-mediawiki.org/wiki/Fixed_properties
-	*
-	* @todo Move these to somewhere else?
-	*
-	* @since 1.8
-	* @var array
-	*/
-	public static $fixedProperties = array();
 
 	/**
 	 * Constructor.
@@ -230,9 +223,6 @@ class SMWSQLStore3 extends SMWStore {
 			switch ( $diType ) {
 				case SMWDataItem::TYPE_NUMBER:
 					$this->diHandlers[$diType] = new SMWDIHandlerNumber( $this );
-					break;
-				case SMWDataItem::TYPE_STRING:
-					$this->diHandlers[$diType] = new SMWDIHandlerString( $this );
 					break;
 				case SMWDataItem::TYPE_BLOB:
 					$this->diHandlers[$diType] = new SMWDIHandlerBlob( $this );
@@ -277,7 +267,7 @@ class SMWSQLStore3 extends SMWStore {
 	 * @return SMWDataItemHandler
 	 */
 	public function getDataItemHandlerForDatatype( $typeid ) {
-		$dataItemId = SMWDataValueFactory::getDataItemId( $typeid );
+		$dataItemId = DataTypeRegistry::getInstance()->getDataItemId( $typeid );
 		return $this->getDataItemHandlerForDIType( $dataItemId );
 	}
 
@@ -290,23 +280,23 @@ class SMWSQLStore3 extends SMWStore {
 		return $this->reader;
 	}
 
-	public function getSemanticData( SMWDIWikiPage $subject, $filter = false ) {
+	public function getSemanticData( DIWikiPage $subject, $filter = false ) {
 		return $this->getReader()->getSemanticData( $subject, $filter );
 	}
 
-	public function getPropertyValues( $subject, SMWDIProperty $property, $requestoptions = null ) {
+	public function getPropertyValues( $subject, DIProperty $property, $requestoptions = null ) {
 		return $this->getReader()->getPropertyValues( $subject, $property, $requestoptions );
 	}
 
-	public function getPropertySubjects( SMWDIProperty $property, $value, $requestoptions = null ) {
+	public function getPropertySubjects( DIProperty $property, $value, $requestoptions = null ) {
 		return $this->getReader()->getPropertySubjects( $property, $value, $requestoptions );
 	}
 
-	public function getAllPropertySubjects( SMWDIProperty $property, $requestoptions = null ) {
+	public function getAllPropertySubjects( DIProperty $property, $requestoptions = null ) {
 		return $this->getReader()->getAllPropertySubjects( $property, $requestoptions );
 	}
 
-	public function getProperties( SMWDIWikiPage $subject, $requestoptions = null ) {
+	public function getProperties( DIWikiPage $subject, $requestoptions = null ) {
 		return $this->getReader()->getProperties( $subject, $requestoptions );
 	}
 
@@ -325,11 +315,11 @@ class SMWSQLStore3 extends SMWStore {
 		return $this->writer;
 	}
 
-	public function deleteSubject ( Title $subject ) {
+	public function deleteSubject( Title $subject ) {
 		return $this->getWriter()->deleteSubject( $subject );
 	}
 
-	public function doDataUpdate( SMWSemanticData $data ) {
+	protected function doDataUpdate( SemanticData $data ) {
 		return $this->getWriter()->doDataUpdate( $data );
 	}
 
@@ -359,27 +349,48 @@ class SMWSQLStore3 extends SMWStore {
 
 ///// Special page functions /////
 
-	public function getSpecialPageHandler() {
-		if( $this->specialPageHandler == false )
-			$this->specialPageHandler = new SMWSQLStore3SpecialPageHandlers( $this );//Initialize if not done already
-
-		return $this->specialPageHandler;
-	}
-
 	public function getPropertiesSpecial( $requestoptions = null ) {
-		return $this->getSpecialPageHandler()->getPropertiesSpecial( $requestoptions );
+
+		$propertiesCollector = new PropertiesCollector(
+			$this,
+			wfGetDB( DB_SLAVE ),
+			Settings::newFromGlobals()
+		);
+
+		return $propertiesCollector->setRequestOptions( $requestoptions );
 	}
 
 	public function getUnusedPropertiesSpecial( $requestoptions = null ) {
-		return $this->getSpecialPageHandler()->getUnusedPropertiesSpecial( $requestoptions );
+
+		$unusedPropertiesCollector = new UnusedPropertiesCollector(
+			$this,
+			wfGetDB( DB_SLAVE ),
+			Settings::newFromGlobals()
+		);
+
+		return $unusedPropertiesCollector->setRequestOptions( $requestoptions );
 	}
 
 	public function getWantedPropertiesSpecial( $requestoptions = null ) {
-		return $this->getSpecialPageHandler()->getWantedPropertiesSpecial( $requestoptions );
+
+		$wantedPropertiesCollector = new WantedPropertiesCollector(
+			$this,
+			wfGetDB( DB_SLAVE ),
+			Settings::newFromGlobals()
+		);
+
+		return $wantedPropertiesCollector->setRequestOptions( $requestoptions );
 	}
 
 	public function getStatistics() {
-		return $this->getSpecialPageHandler()->getStatistics();
+
+		$statisticsCollector = new StatisticsCollector(
+			$this,
+			wfGetDB( DB_SLAVE ),
+			Settings::newFromGlobals()
+		);
+
+		return $statisticsCollector->getResults();
 	}
 
 
@@ -452,30 +463,49 @@ class SMWSQLStore3 extends SMWStore {
 	 *
 	 * @since 1.8
 	 * @param Title|SMWWikiPageValue $concept
-	 * @return array
+	 *
+	 * @return SMW\DIConcept|null
 	 */
 	public function getConceptCacheStatus( $concept ) {
 		wfProfileIn( 'SMWSQLStore3::getConceptCacheStatus (SMW)' );
 
-		$db = wfGetDB( DB_SLAVE );
-		$cid = $this->smwIds->getSMWPageID( $concept->getDBkey(), $concept->getNamespace(), '', '', false );
+		$db = $this->getDatabase();
 
-		$row = $db->selectRow( 'smw_fpt_conc',
-		         array( 'concept_txt', 'concept_features', 'concept_size', 'concept_depth', 'cache_date', 'cache_count' ),
-		         array( 's_id' => $cid ), 'SMWSQLStore3::getConceptCacheStatus (SMW)' );
+		$cid = $this->smwIds->getSMWPageID(
+			$concept->getDBkey(),
+			$concept->getNamespace(),
+			'',
+			'',
+			false
+		);
+
+		$row = $db->selectRow(
+			'smw_fpt_conc',
+			array( 'concept_txt', 'concept_features', 'concept_size', 'concept_depth', 'cache_date', 'cache_count' ),
+			array( 's_id' => $cid ),
+			__METHOD__
+		);
 
 		if ( $row !== false ) {
-			$result = array( 'size' => $row->concept_size, 'depth' => $row->concept_depth, 'features' => $row->concept_features );
+
+			$dataItem = new SMW\DIConcept(
+				$concept,
+				null,
+				$row->concept_features,
+				$row->concept_size,
+				$row->concept_depth
+			);
 
 			if ( $row->cache_date ) {
-				$result['status'] = 'full';
-				$result['date'] = $row->cache_date;
-				$result['count'] = $row->cache_count;
+				$dataItem->setCacheStatus( 'full' );
+				$dataItem->setCacheDate( $row->cache_date );
+				$dataItem->setCacheCount( $row->cache_count );
 			} else {
-				$result['status'] = 'empty';
+				$dataItem->setCacheStatus( 'empty' );
 			}
+			$result = $dataItem;
 		} else {
-			$result = array( 'status' => 'no' );
+			$result = null;
 		}
 
 		wfProfileOut( 'SMWSQLStore3::getConceptCacheStatus (SMW)' );
@@ -571,7 +601,7 @@ class SMWSQLStore3 extends SMWStore {
 	 * @since 1.8
 	 * @param array $data array of SMWDataItem objects
 	 * @param SMWRequestOptions|null $requestoptions
-	 * @return array of SMWDataItem objects
+	 * @return SMWDataItem[]
 	 */
 	public function applyRequestOptions( array $data, SMWRequestOptions $requestoptions = null ) {
 		wfProfileIn( "SMWSQLStore3::applyRequestOptions (SMW)" );
@@ -592,7 +622,7 @@ class SMWSQLStore3 extends SMWStore {
 		foreach ( $data as $item ) {
 			$ok = true; // keep datavalue only if this remains true
 
-			if ( $item instanceof SMWDIWikiPage ) {
+			if ( $item instanceof DIWikiPage ) {
 				$label = $this->getWikiPageSortKey( $item );
 				$value = $label;
 			} else {
@@ -677,9 +707,9 @@ class SMWSQLStore3 extends SMWStore {
 	 * @param string $typeid
 	 * @return string
 	 */
-	public static function findTypeTableId( $typeid ) {
-		$dataItemId = SMWDataValueFactory::getDataItemId( $typeid );
-		return self::findDiTypeTableId( $dataItemId );
+	public function findTypeTableId( $typeid ) {
+		$dataItemId = DataTypeRegistry::getInstance()->getDataItemId( $typeid );
+		return $this->findDiTypeTableId( $dataItemId );
 	}
 
 	/**
@@ -691,7 +721,7 @@ class SMWSQLStore3 extends SMWStore {
 	 * @param integer $dataItemId
 	 * @return string
 	 */
-	public static function findDiTypeTableId( $dataItemId ) {
+	public function findDiTypeTableId( $dataItemId ) {
 		if ( array_key_exists( $dataItemId, self::$di_type_tables ) ) {
 			return self::$di_type_tables[$dataItemId];
 		} else {
@@ -704,19 +734,19 @@ class SMWSQLStore3 extends SMWStore {
 	 * values for the given property object.
 	 *
 	 * @since 1.8
-	 * @param SMWDIProperty $diProperty
+	 * @param DIProperty $diProperty
 	 * @return string
 	 */
-	public static function findPropertyTableID( SMWDIProperty $diProperty ) {
+	public function findPropertyTableID( DIProperty $diProperty ) {
 		$propertyKey = $diProperty->getKey();
 
 		// This is needed to initialize the $fixedPropertyTableIds field
-		self::getPropertyTables();
+		$this->getPropertyTables();
 
 		if ( array_key_exists( $propertyKey, self::$fixedPropertyTableIds ) ) {
 			return self::$fixedPropertyTableIds[$propertyKey];
 		} else {
-			return self::findTypeTableId( $diProperty->findPropertyTypeID() );
+			return $this->findTypeTableId( $diProperty->findPropertyTypeID() );
 		}
 	}
 
@@ -748,7 +778,7 @@ class SMWSQLStore3 extends SMWStore {
 		$db = wfGetDB( DB_MASTER );
 
 		// Change all id entries in property tables:
-		foreach ( self::getPropertyTables() as $proptable ) {
+		foreach ( $this->getPropertyTables() as $proptable ) {
 			if ( $sdata && $proptable->usesIdSubject() ) {
 				$db->update( $proptable->getName(), array( 's_id' => $newid ), array( 's_id' => $oldid ), __METHOD__ );
 			}
@@ -795,61 +825,101 @@ class SMWSQLStore3 extends SMWStore {
 	 * the table that they refer to.
 	 *
 	 * @since 1.8
-	 * @return SMWSQLStore3Table[]
+	 * @return TableDefinition[]
 	 */
-	public static function getPropertyTables() {
+	public function getPropertyTables() {
+
+		// Definitions are kept static to prevent them from being initialised twice
 		if ( isset( self::$prop_tables ) ) {
-			return self::$prop_tables; // Don't initialise twice.
+			return self::$prop_tables;
 		}
 
-		/**
-		 * @var SMWSQLStore3Table[] $propertyTables
-		 */
-		$propertyTables = array();
+		$enabledSpecialProperties = self::$fixedSpecialProperties;
+		$customizableSpecialProperties = array_flip( self::$customizableSpecialProperties );
 
-		//tables for each DI type
-		foreach( self::$di_type_tables as $tableDIType => $tableName ){
-			$propertyTables[$tableName] = new SMWSQLStore3Table( $tableDIType, $tableName );
-		}
+		$customFixedProperties = self::$configuration->get( 'smwgFixedProperties' );
+		$customSpecialProperties = self::$configuration->get( 'smwgPageSpecialProperties' );
 
-		//tables for special properties
-		foreach( self::$special_tables as $propertyKey ){
-			$typeId = SMWDIProperty::getPredefinedPropertyTypeId( $propertyKey );
-			$diType = SMWDataValueFactory::getDataItemId( $typeId );
-			$tableName = 'smw_fpt' . strtolower( $propertyKey );
-			$propertyTables[$tableName] = new SMWSQLStore3Table( $diType, $tableName, $propertyKey );
-		}
-
-		// Redirect table uses another subject scheme for historic reasons
-		// TODO This should be changed if possible
-		$propertyTables['smw_fpt_redi']->setUsesIdSubject( false );
-
-		// Get all the tables for the properties that are declared as fixed
-		// (overly used and thus having separate tables)
-		foreach( self::$fixedProperties as $propertyKey => $tableDIType ){
-			$tableName = 'smw_fpt_' . md5( $propertyKey );
-			$propertyTables[$tableName] = new SMWSQLStore3Table( $tableDIType, $tableName, $propertyKey );
-		}
-
-		wfRunHooks( 'SMWPropertyTables', array( &$propertyTables ) );
-
-		self::$prop_tables = $propertyTables;
-
-		// Build index for finding property tables
-		self::$fixedPropertyTableIds = array();
-
-		foreach ( self::$prop_tables as $tid => $propTable ) {
-			if ( $propTable->isFixedPropertyTable() ) {
-				self::$fixedPropertyTableIds[$propTable->getFixedProperty()] = $tid;
+		foreach ( $customSpecialProperties as $property ) {
+			if ( isset( $customizableSpecialProperties[$property] ) ) {
+				$enabledSpecialProperties[] = $property;
 			}
 		}
 
-		// Specifically set properties that must not be stored in any
-		// property table to null here. Any function that hits this
-		// null unprepared is doing something wrong anyway.
-		self::$fixedPropertyTableIds['_SKEY'] = null;
+		$definitionBuilder = new PropertyTableDefinitionBuilder(
+			self::$di_type_tables,
+			$enabledSpecialProperties,
+			$customFixedProperties
+		);
+
+		$definitionBuilder->runBuilder();
+
+		self::$prop_tables = $definitionBuilder->getTableDefinitions();
+		self::$fixedPropertyTableIds = $definitionBuilder->getTableIds();
 
 		return self::$prop_tables;
+	}
+
+	/**
+	 * Returns SMW Id object
+	 *
+	 * @since 1.9
+	 *
+	 * @return SMWSql3SmwIds
+	 */
+	public function getObjectIds() {
+		return $this->smwIds;
+	}
+
+	/**
+	 * Returns the statics table
+	 *
+	 * @since 1.9
+	 *
+	 * @return string
+	 */
+	public function getStatisticsTable() {
+		return self::PROPERTY_STATISTICS_TABLE;
+	}
+
+	/**
+	 * Resets internal objects
+	 *
+	 * @since 1.9.1.1
+	 */
+	public function clear() {
+		self::$prop_tables = null;
+		$this->getObjectIds()->clearCaches();
+	}
+
+	/**
+	 * @since  1.9.0.2
+	 *
+	 * @param Database $database
+	 */
+	public function setDatabase( Database $database ) {
+		$this->database = $database;
+		return $this;
+	}
+
+	/**
+	 * @note DB_SLAVE (for read queries) or DB_MASTER (for write queries and read
+	 * queries that need the newest information)
+	 *
+	 * @since  1.9.0.2
+	 *
+	 * @return Database
+	 */
+	public function getDatabase() {
+
+		if ( $this->database === null ) {
+			$this->database = new Database(
+				new DBConnectionProvider( DB_SLAVE ),
+				new DBConnectionProvider( DB_MASTER )
+			);
+		}
+
+		return $this->database;
 	}
 
 }

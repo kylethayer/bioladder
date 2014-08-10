@@ -40,7 +40,7 @@ class ApiRsd extends ApiBase {
 		$service = array( 'apis' => $this->formatRsdApiList() );
 		ApiResult::setContent( $service, 'MediaWiki', 'engineName' );
 		ApiResult::setContent( $service, 'https://www.mediawiki.org/', 'engineLink' );
-		ApiResult::setContent( $service, Title::newMainPage()->getCanonicalUrl(), 'homePageLink' );
+		ApiResult::setContent( $service, Title::newMainPage()->getCanonicalURL(), 'homePageLink' );
 
 		$result->setIndexedTagName( $service['apis'], 'api' );
 
@@ -60,7 +60,7 @@ class ApiRsd extends ApiBase {
 	}
 
 	public function getDescription() {
-		return 'Export an RSD (Really Simple Discovery) schema';
+		return 'Export an RSD (Really Simple Discovery) schema.';
 	}
 
 	public function getExamples() {
@@ -107,6 +107,7 @@ class ApiRsd extends ApiBase {
 			),
 		);
 		wfRunHooks( 'ApiRsdServiceApis', array( &$apis ) );
+
 		return $apis;
 	}
 
@@ -149,6 +150,7 @@ class ApiRsd extends ApiBase {
 			}
 			$outputData[] = $data;
 		}
+
 		return $outputData;
 	}
 }

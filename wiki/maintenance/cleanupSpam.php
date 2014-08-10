@@ -21,7 +21,7 @@
  * @ingroup Maintenance
  */
 
-require_once( __DIR__ . '/Maintenance.php' );
+require_once __DIR__ . '/Maintenance.php';
 
 /**
  * Maintenance script to cleanup all spam from a given hostname.
@@ -39,7 +39,7 @@ class CleanupSpam extends Maintenance {
 	}
 
 	public function execute() {
-		global $wgLocalDatabases, $wgUser;
+		global $IP, $wgLocalDatabases, $wgUser;
 
 		$username = wfMessage( 'spambot_username' )->text();
 		$wgUser = User::newFromName( $username );
@@ -67,7 +67,9 @@ class CleanupSpam extends Maintenance {
 					array( 'el_index' . $dbr->buildLike( $like ) ), __METHOD__ );
 				if ( $count ) {
 					$found = true;
-					passthru( "php cleanupSpam.php --wiki='$wikiID' $spec | sed 's/^/$wikiID:  /'" );
+					$cmd = wfShellWikiCmd( "$IP/maintenance/cleanupSpam.php",
+						array( '--wiki', $wikiID, $spec ) );
+					passthru( "$cmd | sed 's/^/$wikiID:  /'" );
 				}
 			}
 			if ( $found ) {
@@ -141,4 +143,4 @@ class CleanupSpam extends Maintenance {
 }
 
 $maintClass = "CleanupSpam";
-require_once( RUN_MAINTENANCE_IF_MAIN );
+require_once RUN_MAINTENANCE_IF_MAIN;

@@ -5,6 +5,7 @@
  * @file
  * @ingroup Extensions
  */
+// @codingStandardsIgnoreFile
 
 $specialPageAliases = array();
 
@@ -41,6 +42,21 @@ $specialPageAliases['br'] = array(
 /** Bosnian (bosanski) */
 $specialPageAliases['bs'] = array(
 	'Interwiki' => array( 'Medjuwiki' ),
+);
+
+/** Min Dong Chinese (Mìng-dĕ̤ng-ngṳ̄) */
+$specialPageAliases['cdo'] = array(
+	'Interwiki' => array( '跨維基' ),
+);
+
+/** Chechen (нохчийн) */
+$specialPageAliases['ce'] = array(
+	'Interwiki' => array( 'Юкъарвики' ),
+);
+
+/** Sorani Kurdish (کوردی) */
+$specialPageAliases['ckb'] = array(
+	'Interwiki' => array( 'نێوانویکی' ),
 );
 
 /** German (Deutsch) */
@@ -86,6 +102,11 @@ $specialPageAliases['gag'] = array(
 /** Galician (galego) */
 $specialPageAliases['gl'] = array(
 	'Interwiki' => array( 'Interwikis' ),
+);
+
+/** Hawaiian (Hawai`i) */
+$specialPageAliases['haw'] = array(
+	'Interwiki' => array( 'Waenawiki' ),
 );
 
 /** Hebrew (עברית) */
@@ -240,5 +261,5 @@ $specialPageAliases['zh-hans'] = array(
 
 /** Traditional Chinese (中文（繁體）‎) */
 $specialPageAliases['zh-hant'] = array(
-	'Interwiki' => array( '跨維基連結' ),
+	'Interwiki' => array( '跨wiki', '跨維基' ),
 );

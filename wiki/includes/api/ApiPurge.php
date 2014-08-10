@@ -30,32 +30,7 @@
  * @ingroup API
  */
 class ApiPurge extends ApiBase {
-
 	private $mPageSet;
-
-	/**
-	 * Add all items from $values into the result
-	 * @param array $result output
-	 * @param array $values values to add
-	 * @param string $flag the name of the boolean flag to mark this element
-	 * @param string $name if given, name of the value
-	 */
-	private static function addValues( array &$result, $values, $flag = null, $name = null ) {
-		foreach ( $values as $val ) {
-			if( $val instanceof Title ) {
-				$v = array();
-				ApiQueryBase::addTitleInfo( $v, $val );
-			} elseif( $name !== null ) {
-				$v = array( $name => $val );
-			} else {
-				$v = $val;
-			}
-			if( $flag !== null ) {
-				$v[$flag] = '';
-			}
-			$result[] = $v;
-		}
-	}
 
 	/**
 	 * Purges the cache of a page
@@ -64,16 +39,11 @@ class ApiPurge extends ApiBase {
 		$params = $this->extractRequestParams();
 
 		$forceLinkUpdate = $params['forcelinkupdate'];
+		$forceRecursiveLinkUpdate = $params['forcerecursivelinkupdate'];
 		$pageSet = $this->getPageSet();
 		$pageSet->execute();
 
-		$result = array();
-		self::addValues( $result, $pageSet->getInvalidTitles(), 'invalid', 'title' );
-		self::addValues( $result, $pageSet->getSpecialTitles(), 'special', 'title' );
-		self::addValues( $result, $pageSet->getMissingPageIDs(), 'missing', 'pageid' );
-		self::addValues( $result, $pageSet->getMissingRevisionIDs(), 'missing', 'revid' );
-		self::addValues( $result, $pageSet->getMissingTitles(), 'missing' );
-		self::addValues( $result, $pageSet->getInterwikiTitlesAsResult() );
+		$result = $pageSet->getInvalidTitlesAndRevisions();
 
 		foreach ( $pageSet->getGoodTitles() as $title ) {
 			$r = array();
@@ -82,18 +52,24 @@ class ApiPurge extends ApiBase {
 			$page->doPurge(); // Directly purge and skip the UI part of purge().
 			$r['purged'] = '';
 
-			if ( $forceLinkUpdate ) {
-				if ( !$this->getUser()->pingLimiter() ) {
+			if ( $forceLinkUpdate || $forceRecursiveLinkUpdate ) {
+				if ( !$this->getUser()->pingLimiter( 'linkpurge' ) ) {
 					global $wgEnableParserCache;
 
 					$popts = $page->makeParserOptions( 'canonical' );
 
 					# Parse content; note that HTML generation is only needed if we want to cache the result.
 					$content = $page->getContent( Revision::RAW );
-					$p_result = $content->getParserOutput( $title, $page->getLatest(), $popts, $wgEnableParserCache );
+					$p_result = $content->getParserOutput(
+						$title,
+						$page->getLatest(),
+						$popts,
+						$wgEnableParserCache
+					);
 
 					# Update the links tables
-					$updates = $content->getSecondaryDataUpdates( $title, null, true, $p_result );
+					$updates = $content->getSecondaryDataUpdates(
+						$title, null, $forceRecursiveLinkUpdate, $p_result );
 					DataUpdate::runUpdates( $updates );
 
 					$r['linkupdate'] = '';
@@ -137,6 +113,7 @@ class ApiPurge extends ApiBase {
 		if ( !isset( $this->mPageSet ) ) {
 			$this->mPageSet = new ApiPageSet( $this );
 		}
+
 		return $this->mPageSet;
 	}
 
@@ -150,16 +127,24 @@ class ApiPurge extends ApiBase {
 	}
 
 	public function getAllowedParams( $flags = 0 ) {
-		$result = array( 'forcelinkupdate' => false );
+		$result = array(
+			'forcelinkupdate' => false,
+			'forcerecursivelinkupdate' => false
+		);
 		if ( $flags ) {
 			$result += $this->getPageSet()->getFinalParams( $flags );
 		}
+
 		return $result;
 	}
 
 	public function getParamDescription() {
-		return $this->getPageSet()->getParamDescription()
-			+ array( 'forcelinkupdate' => 'Update the links tables' );
+		return $this->getPageSet()->getFinalParamDescription()
+			+ array(
+				'forcelinkupdate' => 'Update the links tables',
+				'forcerecursivelinkupdate' => 'Update the links table, and update ' .
+					'the links tables for any page that uses this page as a template',
+			);
 	}
 
 	public function getResultProperties() {
@@ -204,7 +189,7 @@ class ApiPurge extends ApiBase {
 	public function getPossibleErrors() {
 		return array_merge(
 			parent::getPossibleErrors(),
-			$this->getPageSet()->getPossibleErrors()
+			$this->getPageSet()->getFinalPossibleErrors()
 		);
 	}
 

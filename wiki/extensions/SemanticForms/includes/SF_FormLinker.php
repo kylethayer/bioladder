@@ -26,7 +26,7 @@ class SFFormLinker {
 	 * in the wiki.
 	 */
 	static function getIncomingProperties( $title ) {
-		$store = smwfGetStore();
+		$store = SFUtils::getSMWStore();
 		$value = SMWDIWikiPage::newFromTitle( $title );
 		$properties = $store->getInProperties( $value );
 		$propertyNames = array();
@@ -46,7 +46,8 @@ class SFFormLinker {
 		if ( self::$mLinkedPagesRetrieved ) {
 			return;
 		}
-		$store = smwfGetStore();
+
+		$store = SFUtils::getSMWStore();
 		if ( class_exists( 'SMWDataItem' ) ) {
 			$value = SMWDIWikiPage::newFromTitle( $title );
 		} else {
@@ -124,7 +125,7 @@ class SFFormLinker {
 
 		global $sfgContLang;
 
-		$store = smwfGetStore();
+		$store = SFUtils::getSMWStore();
 		$subject = Title::makeTitleSafe( $page_namespace, $page_name );
 		$form_names = SFUtils::getSMWPropertyValues( $store, $subject, $prop_smw_id );
 
@@ -203,13 +204,15 @@ class SFFormLinker {
 			return null;
 		}
 
-		$fe = SFUtils::getSpecialPage( 'FormEdit' );
+		$fe = SpecialPageFactory::getPage( 'FormEdit' );
 
 		$fe_url = $fe->getTitle()->getLocalURL();
 		if ( count( $default_forms ) > 0 ) {
 			$form_edit_url = $fe_url . "/" . $default_forms[0] . "/" . SFUtils::titleURLString( $target_page_title );
 		} else {
-			$form_edit_url = $fe_url . "/" . SFUtils::titleURLString( $target_page_title );
+			$form_edit_url = $fe_url;
+			$form_edit_url .= ( strpos( $form_edit_url, "?" ) ) ? "&" : "?";
+			$form_edit_url .= 'target=' . urlencode( SFUtils::titleString( $target_page_title ) );
 		}
 		foreach ( $alt_forms as $i => $alt_form ) {
 			$form_edit_url .= ( strpos( $form_edit_url, "?" ) ) ? "&" : "?";

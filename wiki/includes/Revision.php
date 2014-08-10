@@ -61,6 +61,11 @@ class Revision implements IDBAccessObject {
 	 */
 	protected $mContentHandler;
 
+	/**
+	 * @var int
+	 */
+	protected $mQueryFlags = 0;
+
 	// Revision deletion constants
 	const DELETED_TEXT = 1;
 	const DELETED_COMMENT = 2;
@@ -106,16 +111,18 @@ class Revision implements IDBAccessObject {
 	public static function newFromTitle( $title, $id = 0, $flags = 0 ) {
 		$conds = array(
 			'page_namespace' => $title->getNamespace(),
-			'page_title' 	 => $title->getDBkey()
+			'page_title' => $title->getDBkey()
 		);
 		if ( $id ) {
 			// Use the specified ID
 			$conds['rev_id'] = $id;
+			return self::newFromConds( $conds, (int)$flags );
 		} else {
 			// Use a join to get the latest revision
 			$conds[] = 'rev_id=page_latest';
+			$db = wfGetDB( ( $flags & self::READ_LATEST ) ? DB_MASTER : DB_SLAVE );
+			return self::loadFromConds( $db, $conds, $flags );
 		}
-		return self::newFromConds( $conds, (int)$flags );
 	}
 
 	/**
@@ -228,8 +235,8 @@ class Revision implements IDBAccessObject {
 	 * @return Revision or null
 	 */
 	public static function loadFromPageId( $db, $pageid, $id = 0 ) {
-		$conds = array( 'rev_page' => intval( $pageid ), 'page_id'  => intval( $pageid ) );
-		if( $id ) {
+		$conds = array( 'rev_page' => intval( $pageid ), 'page_id' => intval( $pageid ) );
+		if ( $id ) {
 			$conds['rev_id'] = intval( $id );
 		} else {
 			$conds[] = 'rev_id=page_latest';
@@ -248,7 +255,7 @@ class Revision implements IDBAccessObject {
 	 * @return Revision or null
 	 */
 	public static function loadFromTitle( $db, $title, $id = 0 ) {
-		if( $id ) {
+		if ( $id ) {
 			$matchId = intval( $id );
 		} else {
 			$matchId = 'page_latest';
@@ -257,7 +264,7 @@ class Revision implements IDBAccessObject {
 			array(
 				"rev_id=$matchId",
 				'page_namespace' => $title->getNamespace(),
-				'page_title'     => $title->getDBkey()
+				'page_title' => $title->getDBkey()
 			)
 		);
 	}
@@ -275,9 +282,9 @@ class Revision implements IDBAccessObject {
 	public static function loadFromTimestamp( $db, $title, $timestamp ) {
 		return self::loadFromConds( $db,
 			array(
-				'rev_timestamp'  => $db->timestamp( $timestamp ),
+				'rev_timestamp' => $db->timestamp( $timestamp ),
 				'page_namespace' => $title->getNamespace(),
-				'page_title'     => $title->getDBkey()
+				'page_title' => $title->getDBkey()
 			)
 		);
 	}
@@ -298,6 +305,9 @@ class Revision implements IDBAccessObject {
 				$rev = self::loadFromConds( $dbw, $conditions, $flags );
 			}
 		}
+		if ( $rev ) {
+			$rev->mQueryFlags = $flags;
+		}
 		return $rev;
 	}
 
@@ -312,9 +322,9 @@ class Revision implements IDBAccessObject {
 	 */
 	private static function loadFromConds( $db, $conditions, $flags = 0 ) {
 		$res = self::fetchFromConds( $db, $conditions, $flags );
-		if( $res ) {
+		if ( $res ) {
 			$row = $res->fetchObject();
-			if( $row ) {
+			if ( $row ) {
 				$ret = new Revision( $row );
 				return $ret;
 			}
@@ -337,7 +347,7 @@ class Revision implements IDBAccessObject {
 			array(
 				'rev_id=page_latest',
 				'page_namespace' => $title->getNamespace(),
-				'page_title'     => $title->getDBkey()
+				'page_title' => $title->getDBkey()
 			)
 		);
 	}
@@ -424,6 +434,37 @@ class Revision implements IDBAccessObject {
 	}
 
 	/**
+	 * Return the list of revision fields that should be selected to create
+	 * a new revision from an archive row.
+	 * @return array
+	 */
+	public static function selectArchiveFields() {
+		global $wgContentHandlerUseDB;
+		$fields = array(
+			'ar_id',
+			'ar_page_id',
+			'ar_rev_id',
+			'ar_text',
+			'ar_text_id',
+			'ar_timestamp',
+			'ar_comment',
+			'ar_user_text',
+			'ar_user',
+			'ar_minor_edit',
+			'ar_deleted',
+			'ar_len',
+			'ar_parent_id',
+			'ar_sha1',
+		);
+
+		if ( $wgContentHandlerUseDB ) {
+			$fields[] = 'ar_content_format';
+			$fields[] = 'ar_content_model';
+		}
+		return $fields;
+	}
+
+	/**
 	 * Return the list of text fields that should be selected to read the
 	 * revision text
 	 * @return array
@@ -489,15 +530,15 @@ class Revision implements IDBAccessObject {
 	 * @access private
 	 */
 	function __construct( $row ) {
-		if( is_object( $row ) ) {
-			$this->mId        = intval( $row->rev_id );
-			$this->mPage      = intval( $row->rev_page );
-			$this->mTextId    = intval( $row->rev_text_id );
-			$this->mComment   =         $row->rev_comment;
-			$this->mUser      = intval( $row->rev_user );
+		if ( is_object( $row ) ) {
+			$this->mId = intval( $row->rev_id );
+			$this->mPage = intval( $row->rev_page );
+			$this->mTextId = intval( $row->rev_text_id );
+			$this->mComment = $row->rev_comment;
+			$this->mUser = intval( $row->rev_user );
 			$this->mMinorEdit = intval( $row->rev_minor_edit );
-			$this->mTimestamp =         $row->rev_timestamp;
-			$this->mDeleted   = intval( $row->rev_deleted );
+			$this->mTimestamp = $row->rev_timestamp;
+			$this->mDeleted = intval( $row->rev_deleted );
 
 			if ( !isset( $row->rev_parent_id ) ) {
 				$this->mParentId = null;
@@ -517,7 +558,7 @@ class Revision implements IDBAccessObject {
 				$this->mSha1 = $row->rev_sha1;
 			}
 
-			if( isset( $row->page_latest ) ) {
+			if ( isset( $row->page_latest ) ) {
 				$this->mCurrent = ( $row->rev_id == $row->page_latest );
 				$this->mTitle = Title::newFromRow( $row );
 			} else {
@@ -525,13 +566,13 @@ class Revision implements IDBAccessObject {
 				$this->mTitle = null;
 			}
 
-			if( !isset( $row->rev_content_model ) || is_null( $row->rev_content_model ) ) {
+			if ( !isset( $row->rev_content_model ) || is_null( $row->rev_content_model ) ) {
 				$this->mContentModel = null; # determine on demand if needed
 			} else {
 				$this->mContentModel = strval( $row->rev_content_model );
 			}
 
-			if( !isset( $row->rev_content_format ) || is_null( $row->rev_content_format ) ) {
+			if ( !isset( $row->rev_content_format ) || is_null( $row->rev_content_format ) ) {
 				$this->mContentFormat = null; # determine on demand if needed
 			} else {
 				$this->mContentFormat = strval( $row->rev_content_format );
@@ -539,7 +580,7 @@ class Revision implements IDBAccessObject {
 
 			// Lazy extraction...
 			$this->mText = null;
-			if( isset( $row->old_text ) ) {
+			if ( isset( $row->old_text ) ) {
 				$this->mTextRow = $row;
 			} else {
 				// 'text' table row entry will be lazy-loaded
@@ -554,13 +595,13 @@ class Revision implements IDBAccessObject {
 				$this->mUserText = $row->user_name; // logged-in user
 			}
 			$this->mOrigUserText = $row->rev_user_text;
-		} elseif( is_array( $row ) ) {
+		} elseif ( is_array( $row ) ) {
 			// Build a new revision to be saved...
 			global $wgUser; // ugh
 
 			# if we have a content object, use it to set the model and type
 			if ( !empty( $row['content'] ) ) {
-				//@todo: when is that set? test with external store setup! check out insertOn() [dk]
+				// @todo when is that set? test with external store setup! check out insertOn() [dk]
 				if ( !empty( $row['text_id'] ) ) {
 					throw new MWException( "Text already stored in external store (id {$row['text_id']}), " .
 						"can't serialize content object" );
@@ -572,27 +613,31 @@ class Revision implements IDBAccessObject {
 				# also set text to null?
 			}
 
-			$this->mId        = isset( $row['id']         ) ? intval( $row['id']         ) : null;
-			$this->mPage      = isset( $row['page']       ) ? intval( $row['page']       ) : null;
-			$this->mTextId    = isset( $row['text_id']    ) ? intval( $row['text_id']    ) : null;
-			$this->mUserText  = isset( $row['user_text']  ) ? strval( $row['user_text']  ) : $wgUser->getName();
-			$this->mUser      = isset( $row['user']       ) ? intval( $row['user']       ) : $wgUser->getId();
+			$this->mId = isset( $row['id'] ) ? intval( $row['id'] ) : null;
+			$this->mPage = isset( $row['page'] ) ? intval( $row['page'] ) : null;
+			$this->mTextId = isset( $row['text_id'] ) ? intval( $row['text_id'] ) : null;
+			$this->mUserText = isset( $row['user_text'] )
+				? strval( $row['user_text'] ) : $wgUser->getName();
+			$this->mUser = isset( $row['user'] ) ? intval( $row['user'] ) : $wgUser->getId();
 			$this->mMinorEdit = isset( $row['minor_edit'] ) ? intval( $row['minor_edit'] ) : 0;
-			$this->mTimestamp = isset( $row['timestamp']  ) ? strval( $row['timestamp']  ) : wfTimestampNow();
-			$this->mDeleted   = isset( $row['deleted']    ) ? intval( $row['deleted']    ) : 0;
-			$this->mSize      = isset( $row['len']        ) ? intval( $row['len']        ) : null;
-			$this->mParentId  = isset( $row['parent_id']  ) ? intval( $row['parent_id']  ) : null;
-			$this->mSha1      = isset( $row['sha1']  )      ? strval( $row['sha1']  )      : null;
+			$this->mTimestamp = isset( $row['timestamp'] )
+				? strval( $row['timestamp'] ) : wfTimestampNow();
+			$this->mDeleted = isset( $row['deleted'] ) ? intval( $row['deleted'] ) : 0;
+			$this->mSize = isset( $row['len'] ) ? intval( $row['len'] ) : null;
+			$this->mParentId = isset( $row['parent_id'] ) ? intval( $row['parent_id'] ) : null;
+			$this->mSha1 = isset( $row['sha1'] ) ? strval( $row['sha1'] ) : null;
 
-			$this->mContentModel   = isset( $row['content_model']  )  ? strval( $row['content_model'] )  : null;
-			$this->mContentFormat  = isset( $row['content_format']  ) ? strval( $row['content_format'] ) : null;
+			$this->mContentModel = isset( $row['content_model'] )
+				? strval( $row['content_model'] ) : null;
+			$this->mContentFormat = isset( $row['content_format'] )
+				? strval( $row['content_format'] ) : null;
 
 			// Enforce spacing trimming on supplied text
-			$this->mComment   = isset( $row['comment']    ) ?  trim( strval( $row['comment'] ) ) : null;
-			$this->mText      = isset( $row['text']       ) ? rtrim( strval( $row['text']    ) ) : null;
-			$this->mTextRow   = null;
+			$this->mComment = isset( $row['comment'] ) ? trim( strval( $row['comment'] ) ) : null;
+			$this->mText = isset( $row['text'] ) ? rtrim( strval( $row['text'] ) ) : null;
+			$this->mTextRow = null;
 
-			$this->mTitle     = isset( $row['title']      ) ? $row['title'] : null;
+			$this->mTitle = isset( $row['title'] ) ? $row['title'] : null;
 
 			// if we have a Content object, override mText and mContentModel
 			if ( !empty( $row['content'] ) ) {
@@ -714,10 +759,11 @@ class Revision implements IDBAccessObject {
 	 * @return Title|null
 	 */
 	public function getTitle() {
-		if( isset( $this->mTitle ) ) {
+		if ( isset( $this->mTitle ) ) {
 			return $this->mTitle;
 		}
-		if( !is_null( $this->mId ) ) { //rev_id is defined as NOT NULL, but this revision may not yet have been inserted.
+		//rev_id is defined as NOT NULL, but this revision may not yet have been inserted.
+		if ( !is_null( $this->mId ) ) {
 			$dbr = wfGetDB( DB_SLAVE );
 			$row = $dbr->selectRow(
 				array( 'page', 'revision' ),
@@ -769,9 +815,9 @@ class Revision implements IDBAccessObject {
 	 * @return Integer
 	 */
 	public function getUser( $audience = self::FOR_PUBLIC, User $user = null ) {
-		if( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_USER ) ) {
+		if ( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_USER ) ) {
 			return 0;
-		} elseif( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_USER, $user ) ) {
+		} elseif ( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_USER, $user ) ) {
 			return 0;
 		} else {
 			return $this->mUser;
@@ -801,9 +847,9 @@ class Revision implements IDBAccessObject {
 	 * @return string
 	 */
 	public function getUserText( $audience = self::FOR_PUBLIC, User $user = null ) {
-		if( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_USER ) ) {
+		if ( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_USER ) ) {
 			return '';
-		} elseif( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_USER, $user ) ) {
+		} elseif ( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_USER, $user ) ) {
 			return '';
 		} else {
 			return $this->getRawUserText();
@@ -841,9 +887,9 @@ class Revision implements IDBAccessObject {
 	 * @return String
 	 */
 	function getComment( $audience = self::FOR_PUBLIC, User $user = null ) {
-		if( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_COMMENT ) ) {
+		if ( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_COMMENT ) ) {
 			return '';
-		} elseif( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_COMMENT, $user ) ) {
+		} elseif ( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_COMMENT, $user ) ) {
 			return '';
 		} else {
 			return $this->mComment;
@@ -867,24 +913,37 @@ class Revision implements IDBAccessObject {
 	}
 
 	/**
-	 * @return Integer rcid of the unpatrolled row, zero if there isn't one
+	 * @return integer rcid of the unpatrolled row, zero if there isn't one
 	 */
 	public function isUnpatrolled() {
-		if( $this->mUnpatrolled !== null ) {
+		if ( $this->mUnpatrolled !== null ) {
 			return $this->mUnpatrolled;
 		}
+		$rc = $this->getRecentChange();
+		if ( $rc && $rc->getAttribute( 'rc_patrolled' ) == 0 ) {
+			$this->mUnpatrolled = $rc->getAttribute( 'rc_id' );
+		} else {
+			$this->mUnpatrolled = 0;
+		}
+		return $this->mUnpatrolled;
+	}
+
+	/**
+	 * Get the RC object belonging to the current revision, if there's one
+	 *
+	 * @since 1.22
+	 * @return RecentChange|null
+	 */
+	public function getRecentChange() {
 		$dbr = wfGetDB( DB_SLAVE );
-		$this->mUnpatrolled = $dbr->selectField( 'recentchanges',
-			'rc_id',
-			array( // Add redundant user,timestamp condition so we can use the existing index
-				'rc_user_text'  => $this->getRawUserText(),
-				'rc_timestamp'  => $dbr->timestamp( $this->getTimestamp() ),
-				'rc_this_oldid' => $this->getId(),
-				'rc_patrolled'  => 0
+		return RecentChange::newFromConds(
+			array(
+				'rc_user_text' => $this->getRawUserText(),
+				'rc_timestamp' => $dbr->timestamp( $this->getTimestamp() ),
+				'rc_this_oldid' => $this->getId()
 			),
 			__METHOD__
 		);
-		return (int)$this->mUnpatrolled;
 	}
 
 	/**
@@ -918,7 +977,7 @@ class Revision implements IDBAccessObject {
 	 *              to the $audience parameter
 	 *
 	 * @deprecated in 1.21, use getContent() instead
-	 * @todo: replace usage in core
+	 * @todo Replace usage in core
 	 * @return String
 	 */
 	public function getText( $audience = self::FOR_PUBLIC, User $user = null ) {
@@ -943,24 +1002,13 @@ class Revision implements IDBAccessObject {
 	 * @return Content|null
 	 */
 	public function getContent( $audience = self::FOR_PUBLIC, User $user = null ) {
-		if( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_TEXT ) ) {
+		if ( $audience == self::FOR_PUBLIC && $this->isDeleted( self::DELETED_TEXT ) ) {
 			return null;
-		} elseif( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_TEXT, $user ) ) {
+		} elseif ( $audience == self::FOR_THIS_USER && !$this->userCan( self::DELETED_TEXT, $user ) ) {
 			return null;
 		} else {
 			return $this->getContentInternal();
 		}
-	}
-
-	/**
-	 * Alias for getText(Revision::FOR_THIS_USER)
-	 *
-	 * @deprecated since 1.17
-	 * @return String
-	 */
-	public function revText() {
-		wfDeprecated( __METHOD__, '1.17' );
-		return $this->getText( self::FOR_THIS_USER );
 	}
 
 	/**
@@ -983,6 +1031,10 @@ class Revision implements IDBAccessObject {
 	 * @return String
 	 */
 	public function getSerializedData() {
+		if ( is_null( $this->mText ) ) {
+			$this->mText = $this->loadText();
+		}
+
 		return $this->mText;
 	}
 
@@ -996,9 +1048,9 @@ class Revision implements IDBAccessObject {
 	 * @return Content|null the Revision's content, or null on failure.
 	 */
 	protected function getContentInternal() {
-		if( is_null( $this->mContent ) ) {
+		if ( is_null( $this->mContent ) ) {
 			// Revision is immutable. Load on demand:
-			if( is_null( $this->mText ) ) {
+			if ( is_null( $this->mText ) ) {
 				$this->mText = $this->loadText();
 			}
 
@@ -1024,7 +1076,8 @@ class Revision implements IDBAccessObject {
 	 * used to determine the content model to use. If no title is know, CONTENT_MODEL_WIKITEXT
 	 * is used as a last resort.
 	 *
-	 * @return String the content model id associated with this revision, see the CONTENT_MODEL_XXX constants.
+	 * @return String the content model id associated with this revision,
+	 *     see the CONTENT_MODEL_XXX constants.
 	 **/
 	public function getContentModel() {
 		if ( !$this->mContentModel ) {
@@ -1043,7 +1096,8 @@ class Revision implements IDBAccessObject {
 	 * If no content format was stored in the database, the default format for this
 	 * revision's content model is returned.
 	 *
-	 * @return String the content format id associated with this revision, see the CONTENT_FORMAT_XXX constants.
+	 * @return String the content format id associated with this revision,
+	 *     see the CONTENT_FORMAT_XXX constants.
 	 **/
 	public function getContentFormat() {
 		if ( !$this->mContentFormat ) {
@@ -1070,7 +1124,8 @@ class Revision implements IDBAccessObject {
 			$format = $this->getContentFormat();
 
 			if ( !$this->mContentHandler->isSupportedFormat( $format ) ) {
-				throw new MWException( "Oops, the content format $format is not supported for this content model, $model" );
+				throw new MWException( "Oops, the content format $format is not supported for "
+					. "this content model, $model" );
 			}
 		}
 
@@ -1097,9 +1152,9 @@ class Revision implements IDBAccessObject {
 	 * @return Revision|null
 	 */
 	public function getPrevious() {
-		if( $this->getTitle() ) {
+		if ( $this->getTitle() ) {
 			$prev = $this->getTitle()->getPreviousRevisionID( $this->getId() );
-			if( $prev ) {
+			if ( $prev ) {
 				return self::newFromTitle( $this->getTitle(), $prev );
 			}
 		}
@@ -1112,7 +1167,7 @@ class Revision implements IDBAccessObject {
 	 * @return Revision or null
 	 */
 	public function getNext() {
-		if( $this->getTitle() ) {
+		if ( $this->getTitle() ) {
 			$next = $this->getTitle()->getNextRevisionID( $this->getId() );
 			if ( $next ) {
 				return self::newFromTitle( $this->getTitle(), $next );
@@ -1129,11 +1184,11 @@ class Revision implements IDBAccessObject {
 	 * @return Integer
 	 */
 	private function getPreviousRevisionId( $db ) {
-		if( is_null( $this->mPage ) ) {
+		if ( is_null( $this->mPage ) ) {
 			return 0;
 		}
 		# Use page_latest if ID is not given
-		if( !$this->mId ) {
+		if ( !$this->mId ) {
 			$prevId = $db->selectField( 'page', 'page_latest',
 				array( 'page_id' => $this->mPage ),
 				__METHOD__ );
@@ -1149,15 +1204,15 @@ class Revision implements IDBAccessObject {
 	/**
 	  * Get revision text associated with an old or archive row
 	  * $row is usually an object from wfFetchRow(), both the flags and the text
-	  * field must be included
+	  * field must be included.
 	  *
-	  * @param $row Object: the text data
-	  * @param string $prefix table prefix (default 'old_')
-	  * @param string|false $wiki the name of the wiki to load the revision text from
-	  *         (same as the the wiki $row was loaded from) or false to indicate the local
-	  *         wiki (this is the default). Otherwise, it must be a symbolic wiki database
-	  *         identifier as understood by the LoadBalancer class.
-	  * @return String: text the text requested or false on failure
+	  * @param stdClass $row The text data
+	  * @param string $prefix Table prefix (default 'old_')
+	  * @param string|bool $wiki The name of the wiki to load the revision text from
+	  *   (same as the the wiki $row was loaded from) or false to indicate the local
+	  *   wiki (this is the default). Otherwise, it must be a symbolic wiki database
+	  *   identifier as understood by the LoadBalancer class.
+	  * @return string Text the text requested or false on failure
 	  */
 	public static function getRevisionText( $row, $prefix = 'old_', $wiki = false ) {
 		wfProfileIn( __METHOD__ );
@@ -1166,13 +1221,13 @@ class Revision implements IDBAccessObject {
 		$textField = $prefix . 'text';
 		$flagsField = $prefix . 'flags';
 
-		if( isset( $row->$flagsField ) ) {
+		if ( isset( $row->$flagsField ) ) {
 			$flags = explode( ',', $row->$flagsField );
 		} else {
 			$flags = array();
 		}
 
-		if( isset( $row->$textField ) ) {
+		if ( isset( $row->$textField ) ) {
 			$text = $row->$textField;
 		} else {
 			wfProfileOut( __METHOD__ );
@@ -1183,7 +1238,7 @@ class Revision implements IDBAccessObject {
 		if ( in_array( 'external', $flags ) ) {
 			$url = $text;
 			$parts = explode( '://', $url, 2 );
-			if( count( $parts ) == 1 || $parts[1] == '' ) {
+			if ( count( $parts ) == 1 || $parts[1] == '' ) {
 				wfProfileOut( __METHOD__ );
 				return false;
 			}
@@ -1192,35 +1247,7 @@ class Revision implements IDBAccessObject {
 
 		// If the text was fetched without an error, convert it
 		if ( $text !== false ) {
-			if( in_array( 'gzip', $flags ) ) {
-				# Deal with optional compression of archived pages.
-				# This can be done periodically via maintenance/compressOld.php, and
-				# as pages are saved if $wgCompressRevisions is set.
-				$text = gzinflate( $text );
-			}
-
-			if( in_array( 'object', $flags ) ) {
-				# Generic compressed storage
-				$obj = unserialize( $text );
-				if ( !is_object( $obj ) ) {
-					// Invalid object
-					wfProfileOut( __METHOD__ );
-					return false;
-				}
-				$text = $obj->getText();
-			}
-
-			global $wgLegacyEncoding;
-			if( $text !== false && $wgLegacyEncoding
-				&& !in_array( 'utf-8', $flags ) && !in_array( 'utf8', $flags ) )
-			{
-				# Old revisions kept around in a legacy encoding?
-				# Upconvert on demand.
-				# ("utf8" checked for compatibility with some broken
-				#  conversion scripts 2008-12-30)
-				global $wgContLang;
-				$text = $wgContLang->iconv( $wgLegacyEncoding, 'UTF-8', $text );
-			}
+			$text = self::decompressRevisionText( $text, $flags );
 		}
 		wfProfileOut( __METHOD__ );
 		return $text;
@@ -1244,8 +1271,8 @@ class Revision implements IDBAccessObject {
 		# on load if $wgLegacyCharset is set in the future.
 		$flags[] = 'utf-8';
 
-		if( $wgCompressRevisions ) {
-			if( function_exists( 'gzdeflate' ) ) {
+		if ( $wgCompressRevisions ) {
+			if ( function_exists( 'gzdeflate' ) ) {
 				$text = gzdeflate( $text );
 				$flags[] = 'gzip';
 			} else {
@@ -1253,6 +1280,46 @@ class Revision implements IDBAccessObject {
 			}
 		}
 		return implode( ',', $flags );
+	}
+
+	/**
+	 * Re-converts revision text according to it's flags.
+	 *
+	 * @param $text Mixed: reference to a text
+	 * @param $flags array: compression flags
+	 * @return String|bool decompressed text, or false on failure
+	 */
+	public static function decompressRevisionText( $text, $flags ) {
+		if ( in_array( 'gzip', $flags ) ) {
+			# Deal with optional compression of archived pages.
+			# This can be done periodically via maintenance/compressOld.php, and
+			# as pages are saved if $wgCompressRevisions is set.
+			$text = gzinflate( $text );
+		}
+
+		if ( in_array( 'object', $flags ) ) {
+			# Generic compressed storage
+			$obj = unserialize( $text );
+			if ( !is_object( $obj ) ) {
+				// Invalid object
+				return false;
+			}
+			$text = $obj->getText();
+		}
+
+		global $wgLegacyEncoding;
+		if ( $text !== false && $wgLegacyEncoding
+			&& !in_array( 'utf-8', $flags ) && !in_array( 'utf8', $flags )
+		) {
+			# Old revisions kept around in a legacy encoding?
+			# Upconvert on demand.
+			# ("utf8" checked for compatibility with some broken
+			#  conversion scripts 2008-12-30)
+			global $wgContLang;
+			$text = $wgContLang->iconv( $wgLegacyEncoding, 'UTF-8', $text );
+		}
+
+		return $text;
 	}
 
 	/**
@@ -1274,32 +1341,35 @@ class Revision implements IDBAccessObject {
 		$flags = self::compressRevisionText( $data );
 
 		# Write to external storage if required
-		if( $wgDefaultExternalStore ) {
+		if ( $wgDefaultExternalStore ) {
 			// Store and get the URL
 			$data = ExternalStore::insertToDefault( $data );
-			if( !$data ) {
+			if ( !$data ) {
+				wfProfileOut( __METHOD__ );
 				throw new MWException( "Unable to store text to external storage" );
 			}
-			if( $flags ) {
+			if ( $flags ) {
 				$flags .= ',';
 			}
 			$flags .= 'external';
 		}
 
 		# Record the text (or external storage URL) to the text table
-		if( !isset( $this->mTextId ) ) {
+		if ( !isset( $this->mTextId ) ) {
 			$old_id = $dbw->nextSequenceValue( 'text_old_id_seq' );
 			$dbw->insert( 'text',
 				array(
-					'old_id'    => $old_id,
-					'old_text'  => $data,
+					'old_id' => $old_id,
+					'old_text' => $data,
 					'old_flags' => $flags,
 				), __METHOD__
 			);
 			$this->mTextId = $dbw->insertId();
 		}
 
-		if ( $this->mComment === null ) $this->mComment = "";
+		if ( $this->mComment === null ) {
+			$this->mComment = "";
+		}
 
 		# Record the edit in revisions
 		$rev_id = isset( $this->mId )
@@ -1326,7 +1396,8 @@ class Revision implements IDBAccessObject {
 
 		if ( $wgContentHandlerUseDB ) {
 			//NOTE: Store null for the default model and format, to save space.
-			//XXX: Makes the DB sensitive to changed defaults. Make this behavior optional? Only in miser mode?
+			//XXX: Makes the DB sensitive to changed defaults.
+			// Make this behavior optional? Only in miser mode?
 
 			$model = $this->getContentModel();
 			$format = $this->getContentFormat();
@@ -1334,14 +1405,16 @@ class Revision implements IDBAccessObject {
 			$title = $this->getTitle();
 
 			if ( $title === null ) {
-				throw new MWException( "Insufficient information to determine the title of the revision's page!" );
+				wfProfileOut( __METHOD__ );
+				throw new MWException( "Insufficient information to determine the title of the "
+					. "revision's page!" );
 			}
 
 			$defaultModel = ContentHandler::getDefaultModelFor( $title );
 			$defaultFormat = ContentHandler::getForModelID( $defaultModel )->getDefaultFormat();
 
-			$row[ 'rev_content_model' ] = ( $model === $defaultModel ) ? null : $model;
-			$row[ 'rev_content_format' ] = ( $format === $defaultFormat ) ? null : $format;
+			$row['rev_content_model'] = ( $model === $defaultModel ) ? null : $model;
+			$row['rev_content_format'] = ( $format === $defaultFormat ) ? null : $format;
 		}
 
 		$dbw->insert( 'revision', $row, __METHOD__ );
@@ -1370,7 +1443,8 @@ class Revision implements IDBAccessObject {
 		}
 
 		if ( !$wgContentHandlerUseDB && $title ) {
-			// if $wgContentHandlerUseDB is not set, all revisions must use the default content model and format.
+			// if $wgContentHandlerUseDB is not set,
+			// all revisions must use the default content model and format.
 
 			$defaultModel = ContentHandler::getDefaultModelFor( $title );
 			$defaultHandler = ContentHandler::getForModelID( $defaultModel );
@@ -1379,15 +1453,17 @@ class Revision implements IDBAccessObject {
 			if ( $this->getContentModel() != $defaultModel ) {
 				$t = $title->getPrefixedDBkey();
 
-				throw new MWException( "Can't save non-default content model with \$wgContentHandlerUseDB disabled: "
-										. "model is $model , default for $t is $defaultModel" );
+				throw new MWException( "Can't save non-default content model with "
+					. "\$wgContentHandlerUseDB disabled: model is $model, "
+					. "default for $t is $defaultModel" );
 			}
 
 			if ( $this->getContentFormat() != $defaultFormat ) {
 				$t = $title->getPrefixedDBkey();
 
-				throw new MWException( "Can't use non-default content format with \$wgContentHandlerUseDB disabled: "
-										. "format is $format, default for $t is $defaultFormat" );
+				throw new MWException( "Can't use non-default content format with "
+					. "\$wgContentHandlerUseDB disabled: format is $format, "
+					. "default for $t is $defaultFormat" );
 			}
 		}
 
@@ -1422,9 +1498,9 @@ class Revision implements IDBAccessObject {
 		global $wgRevisionCacheExpiry, $wgMemc;
 		$textId = $this->getTextId();
 		$key = wfMemcKey( 'revisiontext', 'textid', $textId );
-		if( $wgRevisionCacheExpiry ) {
+		if ( $wgRevisionCacheExpiry ) {
 			$text = $wgMemc->get( $key );
-			if( is_string( $text ) ) {
+			if ( is_string( $text ) ) {
 				wfDebug( __METHOD__ . ": got id $textId from cache\n" );
 				wfProfileOut( __METHOD__ );
 				return $text;
@@ -1439,28 +1515,38 @@ class Revision implements IDBAccessObject {
 			$row = null;
 		}
 
-		if( !$row ) {
+		if ( !$row ) {
 			// Text data is immutable; check slaves first.
 			$dbr = wfGetDB( DB_SLAVE );
 			$row = $dbr->selectRow( 'text',
 				array( 'old_text', 'old_flags' ),
-				array( 'old_id' => $this->getTextId() ),
+				array( 'old_id' => $textId ),
 				__METHOD__ );
 		}
 
-		if( !$row && wfGetLB()->getServerCount() > 1 ) {
-			// Possible slave lag!
+		// Fallback to the master in case of slave lag. Also use FOR UPDATE if it was
+		// used to fetch this revision to avoid missing the row due to REPEATABLE-READ.
+		$forUpdate = ( $this->mQueryFlags & self::READ_LOCKING == self::READ_LOCKING );
+		if ( !$row && ( $forUpdate || wfGetLB()->getServerCount() > 1 ) ) {
 			$dbw = wfGetDB( DB_MASTER );
 			$row = $dbw->selectRow( 'text',
 				array( 'old_text', 'old_flags' ),
-				array( 'old_id' => $this->getTextId() ),
-				__METHOD__ );
+				array( 'old_id' => $textId ),
+				__METHOD__,
+				$forUpdate ? array( 'FOR UPDATE' ) : array() );
+		}
+
+		if ( !$row ) {
+			wfDebugLog( 'Revision', "No text row with ID '$textId' (revision {$this->getId()})." );
 		}
 
 		$text = self::getRevisionText( $row );
+		if ( $row && $text === false ) {
+			wfDebugLog( 'Revision', "No blob for text row '$textId' (revision {$this->getId()})." );
+		}
 
 		# No negative caching -- negative hits on text rows may be due to corrupted slave servers
-		if( $wgRevisionCacheExpiry && $text !== false ) {
+		if ( $wgRevisionCacheExpiry && $text !== false ) {
 			$wgMemc->set( $key, $text, $wgRevisionCacheExpiry );
 		}
 
@@ -1505,7 +1591,7 @@ class Revision implements IDBAccessObject {
 				),
 			__METHOD__ );
 
-		if( $current ) {
+		if ( $current ) {
 			$row = array(
 				'page'       => $pageId,
 				'comment'    => $summary,
@@ -1517,8 +1603,8 @@ class Revision implements IDBAccessObject {
 			);
 
 			if ( $wgContentHandlerUseDB ) {
-				$row[ 'content_model' ] = $current->rev_content_model;
-				$row[ 'content_format' ] = $current->rev_content_format;
+				$row['content_model'] = $current->rev_content_model;
+				$row['content_format'] = $current->rev_content_format;
 			}
 
 			$revision = new Revision( $row );
@@ -1558,7 +1644,7 @@ class Revision implements IDBAccessObject {
 	 * @return Boolean
 	 */
 	public static function userCanBitfield( $bitfield, $field, User $user = null ) {
-		if( $bitfield & $field ) { // aspect is deleted
+		if ( $bitfield & $field ) { // aspect is deleted
 			if ( $bitfield & self::DELETED_RESTRICTED ) {
 				$permission = 'suppressrevision';
 			} elseif ( $field & self::DELETED_TEXT ) {
@@ -1611,7 +1697,7 @@ class Revision implements IDBAccessObject {
 	static function countByPageId( $db, $id ) {
 		$row = $db->selectRow( 'revision', array( 'revCount' => 'COUNT(*)' ),
 			array( 'rev_page' => $id ), __METHOD__ );
-		if( $row ) {
+		if ( $row ) {
 			return $row->revCount;
 		}
 		return 0;
@@ -1626,7 +1712,7 @@ class Revision implements IDBAccessObject {
 	 */
 	static function countByTitle( $db, $title ) {
 		$id = $title->getArticleID();
-		if( $id ) {
+		if ( $id ) {
 			return self::countByPageId( $db, $id );
 		}
 		return 0;
@@ -1639,8 +1725,8 @@ class Revision implements IDBAccessObject {
 	 *
 	 * @since 1.20
 	 *
-	 * @param DatabaseBase|int $db the Database to perform the check on. May be given as a Database object or
-	 *        a database identifier usable with wfGetDB.
+	 * @param DatabaseBase|int $db the Database to perform the check on. May be given as a
+	 *        Database object or a database identifier usable with wfGetDB.
 	 * @param int $pageId the ID of the page in question
 	 * @param int $userId the ID of the user in question
 	 * @param string $since look at edits since this time
@@ -1648,7 +1734,9 @@ class Revision implements IDBAccessObject {
 	 * @return bool True if the given user was the only one to edit since the given timestamp
 	 */
 	public static function userWasLastToEdit( $db, $pageId, $userId, $since ) {
-		if ( !$userId ) return false;
+		if ( !$userId ) {
+			return false;
+		}
 
 		if ( is_int( $db ) ) {
 			$db = wfGetDB( $db );

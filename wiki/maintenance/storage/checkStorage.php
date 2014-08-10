@@ -22,7 +22,7 @@
  */
 
 if ( !defined( 'MEDIAWIKI' ) ) {
-	require_once( __DIR__ . '/../commandLine.inc' );
+	require_once __DIR__ . '/../commandLine.inc';
 
 	$cs = new CheckStorage;
 	$fix = isset( $options['fix'] );
@@ -33,7 +33,6 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	}
 	$cs->check( $fix, $xml );
 }
-
 
 // ----------------------------------------------------------------------------------
 
@@ -75,7 +74,7 @@ class CheckStorage {
 			'fixable' => array(),
 		);
 
-		for ( $chunkStart = 1 ; $chunkStart < $maxRevId; $chunkStart += $chunkSize ) {
+		for ( $chunkStart = 1; $chunkStart < $maxRevId; $chunkStart += $chunkSize ) {
 			$chunkEnd = $chunkStart + $chunkSize - 1;
 			// print "$chunkStart of $maxRevId\n";
 
@@ -331,7 +330,6 @@ class CheckStorage {
 		}
 	}
 
-
 	function error( $type, $msg, $ids ) {
 		if ( is_array( $ids ) && count( $ids ) == 1 ) {
 			$ids = reset( $ids );
@@ -443,18 +441,26 @@ class CheckStorage {
 
 	function importRevision( &$revision, &$importer ) {
 		$id = $revision->getID();
-		$text = $revision->getText();
+		$content = $revision->getContent( Revision::RAW );
+		$id = $id ? $id : '';
+
+		if ( $content === null ) {
+			echo "Revision $id is broken, we have no content available\n";
+			return;
+		}
+
+		$text = $content->serialize();
 		if ( $text === '' ) {
 			// This is what happens if the revision was broken at the time the
 			// dump was made. Unfortunately, it also happens if the revision was
 			// legitimately blank, so there's no way to tell the difference. To
 			// be safe, we'll skip it and leave it broken
-			$id = $id ? $id : '';
+
 			echo "Revision $id is blank in the dump, may have been broken before export\n";
 			return;
 		}
 
-		if ( !$id )  {
+		if ( !$id ) {
 			// No ID, can't import
 			echo "No id tag in revision, can't import\n";
 			return;

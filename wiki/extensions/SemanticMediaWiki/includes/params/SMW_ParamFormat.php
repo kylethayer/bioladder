@@ -1,9 +1,13 @@
 <?php
 
+use ParamProcessor\Definition\StringParam;
+use ParamProcessor\IParam;
+
 /**
  * Definition for the format parameter.
  * 
  * @since 1.6.2
+ * @deprecated since 1.9
  * 
  * @file
  * @ingroup SMW
@@ -16,12 +20,12 @@ class SMWParamFormat extends StringParam {
 
 	/**
 	 * List of the queries print requests, used to determine the format
-	 * when it's not povided. Set with setPrintRequests before passing
+	 * when it's not provided. Set with setPrintRequests before passing
 	 * to Validator.
 	 * 
 	 * @since 1.6.2
 	 * 
-	 * @var array
+	 * @var SMWPrintRequest[]
 	 */
 	protected $printRequests = array();
 
@@ -43,12 +47,13 @@ class SMWParamFormat extends StringParam {
 		
 		if ( !array_key_exists( $value, $smwgResultFormats ) ) {
 			$isAlias = self::resolveFormatAliases( $value );
-			
+
 			if ( !$isAlias ) {
 				$value = $this->getDefaultFormat();
+				self::resolveFormatAliases( $value );
 			}
 		}
-		
+
 		return $value;
 	}
 	
@@ -115,9 +120,9 @@ class SMWParamFormat extends StringParam {
 	 * 
 	 * @since 1.6.2
 	 * 
-	 * @param $printRequests array of SMWPrintRequest
+	 * @param SMWPrintRequest[] $printRequests
 	 */
-	public function setPrintRequests( array /* of SMWPrintRequest */ $printRequests ) {
+	public function setPrintRequests( array $printRequests ) {
 		$this->printRequests = $printRequests;
 	}
 
@@ -126,10 +131,10 @@ class SMWParamFormat extends StringParam {
 	 *
 	 * @since 1.8
 	 *
-	 * @param $value mixed
-	 * @param $param IParam
-	 * @param $definitions array of IParamDefinition
-	 * @param $params array of IParam
+	 * @param mixed $value
+	 * @param IParam $param
+	 * @param IParamDefinition[] $definitions
+	 * @param IParam[] $params
 	 *
 	 * @return mixed
 	 */

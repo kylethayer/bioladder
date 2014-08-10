@@ -73,16 +73,18 @@ class WantedFilesPage extends WantedQueryPage {
 	}
 
 	function getQueryInfo() {
-		return array (
-			'tables' => array ( 'imagelinks', 'image' ),
-			'fields' => array ( 'namespace' => NS_FILE,
-					'title' => 'il_to',
-					'value' => 'COUNT(*)' ),
-			'conds' => array ( 'img_name IS NULL' ),
-			'options' => array ( 'GROUP BY' => 'il_to' ),
-			'join_conds' => array ( 'image' =>
-				array ( 'LEFT JOIN',
-					array ( 'il_to = img_name' )
+		return array(
+			'tables' => array( 'imagelinks', 'image' ),
+			'fields' => array(
+				'namespace' => NS_FILE,
+				'title' => 'il_to',
+				'value' => 'COUNT(*)'
+			),
+			'conds' => array( 'img_name IS NULL' ),
+			'options' => array( 'GROUP BY' => 'il_to' ),
+			'join_conds' => array( 'image' =>
+				array( 'LEFT JOIN',
+					array( 'il_to = img_name' )
 				)
 			)
 		);

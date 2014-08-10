@@ -4,7 +4,7 @@
  * Should probably merge them for consistency.
  *
  * Copyright © 2004 Brion Vibber <brion@pobox.com>
- * http://www.mediawiki.org/
+ * https://www.mediawiki.org/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,9 +76,11 @@ function hexSequenceToUtf8( $sequence ) {
  * @private
  */
 function utf8ToHexSequence( $str ) {
-	return rtrim( preg_replace( '/(.)/uSe',
-	                            'sprintf("%04x ", utf8ToCodepoint("$1"))',
-	                            $str ) );
+	$buf = '';
+	foreach ( preg_split( '//u', $str, -1, PREG_SPLIT_NO_EMPTY ) as $cp ) {
+		$buf .= sprintf( '%04x ', utf8ToCodepoint( $cp ) );
+	}
+	return rtrim( $buf );
 }
 
 /**

@@ -3,7 +3,7 @@
  * Unicode normalization routines
  *
  * Copyright © 2004 Brion Vibber <brion@pobox.com>
- * http://www.mediawiki.org/
+ * https://www.mediawiki.org/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ class UtfNormal {
 	 */
 	static function loadData() {
 		if( !isset( self::$utfCombiningClass ) ) {
-			require_once( __DIR__ . '/UtfNormalData.inc' );
+			require_once __DIR__ . '/UtfNormalData.inc';
 		}
 	}
 
@@ -491,7 +491,7 @@ class UtfNormal {
 	 */
 	static function NFKD( $string ) {
 		if( !isset( self::$utfCompatibilityDecomp ) ) {
-			require_once( 'UtfNormalDataK.inc' );
+			require_once 'UtfNormalDataK.inc';
 		}
 		return self::fastCombiningSort(
 			self::fastDecompose( $string, self::$utfCompatibilityDecomp ) );

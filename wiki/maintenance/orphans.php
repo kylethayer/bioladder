@@ -6,7 +6,7 @@
  * Man this is depressing.
  *
  * Copyright © 2005 Brion Vibber <brion@pobox.com>
- * http://www.mediawiki.org/
+ * https://www.mediawiki.org/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
  * @ingroup Maintenance
  */
 
-require_once( __DIR__ . '/Maintenance.php' );
+require_once __DIR__ . '/Maintenance.php';
 
 /**
  * Maintenance script that looks for 'orphan' revisions hooked to pages which
@@ -47,8 +47,6 @@ class Orphans extends Maintenance {
 	}
 
 	public function execute() {
-		global $wgTitle;
-		$wgTitle = Title::newFromText( 'Orphan revision cleanup script' );
 		$this->checkOrphans( $this->hasOption( 'fix' ) );
 		$this->checkSeparation( $this->hasOption( 'fix' ) );
 		# Does not work yet, do not use
@@ -171,7 +169,7 @@ class Orphans extends Maintenance {
 	 */
 	private function checkSeparation( $fix ) {
 		$dbw = wfGetDB( DB_MASTER );
-		$page     = $dbw->tableName( 'page' );
+		$page = $dbw->tableName( 'page' );
 		$revision = $dbw->tableName( 'revision' );
 
 		if ( $fix ) {
@@ -209,7 +207,7 @@ class Orphans extends Maintenance {
 							'revision',
 							'rev_id',
 							array(
-								'rev_page'      => $row->page_id,
+								'rev_page' => $row->page_id,
 								'rev_timestamp' => $row2->max_timestamp ) );
 						$this->output( "... updating to revision $maxId\n" );
 						$maxRev = Revision::newFromId( $maxId );
@@ -239,4 +237,4 @@ class Orphans extends Maintenance {
 }
 
 $maintClass = "Orphans";
-require_once( RUN_MAINTENANCE_IF_MAIN );
+require_once RUN_MAINTENANCE_IF_MAIN;

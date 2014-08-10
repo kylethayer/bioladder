@@ -41,13 +41,13 @@ class ApiFeedContributions extends ApiBase {
 	public function execute() {
 		$params = $this->extractRequestParams();
 
-		global $wgFeed, $wgFeedClasses, $wgSitename, $wgLanguageCode;
+		global $wgFeed, $wgFeedClasses, $wgFeedLimit, $wgSitename, $wgLanguageCode;
 
-		if( !$wgFeed ) {
+		if ( !$wgFeed ) {
 			$this->dieUsage( 'Syndication feeds are not available', 'feed-unavailable' );
 		}
 
-		if( !isset( $wgFeedClasses[$params['feedformat']] ) ) {
+		if ( !isset( $wgFeedClasses[$params['feedformat']] ) ) {
 			$this->dieUsage( 'Invalid subscription feed type', 'feed-invalid' );
 		}
 
@@ -61,8 +61,8 @@ class ApiFeedContributions extends ApiBase {
 		$feedUrl = SpecialPage::getTitleFor( 'Contributions', $params['user'] )->getFullURL();
 
 		$target = $params['user'] == 'newbies'
-				? 'newbies'
-				: Title::makeTitleSafe( NS_USER, $params['user'] )->getText();
+			? 'newbies'
+			: Title::makeTitleSafe( NS_USER, $params['user'] )->getText();
 
 		$feed = new $wgFeedClasses[$params['feedformat']] (
 			$feedTitle,
@@ -78,12 +78,23 @@ class ApiFeedContributions extends ApiBase {
 			'tagFilter' => $params['tagfilter'],
 			'deletedOnly' => $params['deletedonly'],
 			'topOnly' => $params['toponly'],
+			'newOnly' => $params['newonly'],
 			'showSizeDiff' => $params['showsizediff'],
 		) );
 
+		if ( $pager->getLimit() > $wgFeedLimit ) {
+			$pager->setLimit( $wgFeedLimit );
+		}
+
 		$feedItems = array();
-		if( $pager->getNumRows() > 0 ) {
+		if ( $pager->getNumRows() > 0 ) {
+			$count = 0;
+			$limit = $pager->getLimit();
 			foreach ( $pager->mResult as $row ) {
+				// ContribsPager selects one more row for navigation, skip that row
+				if ( ++$count > $limit ) {
+					break;
+				}
 				$feedItems[] = $this->feedItem( $row );
 			}
 		}
@@ -93,7 +104,7 @@ class ApiFeedContributions extends ApiBase {
 
 	protected function feedItem( $row ) {
 		$title = Title::makeTitle( intval( $row->page_namespace ), $row->page_title );
-		if( $title ) {
+		if ( $title && $title->userCan( 'read', $this->getUser() ) ) {
 			$date = $row->rev_timestamp;
 			$comments = $title->getTalkPage()->getFullURL();
 			$revision = Revision::newFromRow( $row );
@@ -106,9 +117,9 @@ class ApiFeedContributions extends ApiBase {
 				$this->feedItemAuthor( $revision ),
 				$comments
 			);
-		} else {
-			return null;
 		}
+
+		return null;
 	}
 
 	/**
@@ -124,7 +135,7 @@ class ApiFeedContributions extends ApiBase {
 	 * @return string
 	 */
 	protected function feedItemDesc( $revision ) {
-		if( $revision ) {
+		if ( $revision ) {
 			$msg = wfMessage( 'colon-separator' )->inContentLanguage()->text();
 			$content = $revision->getContent();
 
@@ -143,13 +154,15 @@ class ApiFeedContributions extends ApiBase {
 				htmlspecialchars( FeedItem::stripComment( $revision->getComment() ) ) .
 				"</p>\n<hr />\n<div>" . $html . "</div>";
 		}
+
 		return '';
 	}
 
 	public function getAllowedParams() {
 		global $wgFeedClasses;
 		$feedFormatNames = array_keys( $wgFeedClasses );
-		return array (
+
+		return array(
 			'feedformat' => array(
 				ApiBase::PARAM_DFLT => 'rss',
 				ApiBase::PARAM_TYPE => $feedFormatNames
@@ -174,6 +187,7 @@ class ApiFeedContributions extends ApiBase {
 			),
 			'deletedonly' => false,
 			'toponly' => false,
+			'newonly' => false,
 			'showsizediff' => false,
 		);
 	}
@@ -188,12 +202,13 @@ class ApiFeedContributions extends ApiBase {
 			'tagfilter' => 'Filter contributions that have these tags',
 			'deletedonly' => 'Show only deleted contributions',
 			'toponly' => 'Only show edits that are latest revisions',
+			'newonly' => 'Only show edits that are page creations',
 			'showsizediff' => 'Show the size difference between revisions. Disabled in Miser Mode',
 		);
 	}
 
 	public function getDescription() {
-		return 'Returns a user contributions feed';
+		return 'Returns a user contributions feed.';
 	}
 
 	public function getPossibleErrors() {

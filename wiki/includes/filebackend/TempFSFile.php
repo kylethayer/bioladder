@@ -28,17 +28,18 @@
  * @ingroup FileBackend
  */
 class TempFSFile extends FSFile {
-	protected $canDelete = false; // bool; garbage collect the temp file
+	/** @var bool Garbage collect the temp file */
+	protected $canDelete = false;
 
-	/** @var Array of active temp files to purge on shutdown */
+	/** @var array Active temp files to purge on shutdown */
 	protected static $instances = array();
 
 	/**
 	 * Make a new temporary file on the file system.
 	 * Temporary files may be purged when the file object falls out of scope.
 	 *
-	 * @param $prefix string
-	 * @param $extension string
+	 * @param string $prefix
+	 * @param string $extension
 	 * @return TempFSFile|null
 	 */
 	public static function factory( $prefix, $extension = '' ) {
@@ -56,12 +57,14 @@ class TempFSFile extends FSFile {
 			}
 			if ( $attempt >= 5 ) {
 				wfProfileOut( __METHOD__ );
+
 				return null; // give up
 			}
 		}
 		$tmpFile = new self( $path );
 		$tmpFile->canDelete = true; // safely instantiated
 		wfProfileOut( __METHOD__ );
+
 		return $tmpFile;
 	}
 
@@ -75,13 +78,14 @@ class TempFSFile extends FSFile {
 		wfSuppressWarnings();
 		$ok = unlink( $this->path );
 		wfRestoreWarnings();
+
 		return $ok;
 	}
 
 	/**
 	 * Clean up the temporary file only after an object goes out of scope
 	 *
-	 * @param $object Object
+	 * @param stdClass $object
 	 * @return TempFSFile This object
 	 */
 	public function bind( $object ) {
@@ -92,6 +96,7 @@ class TempFSFile extends FSFile {
 			}
 			$object->tempFSFileReferences[] = $this;
 		}
+
 		return $this;
 	}
 
@@ -102,6 +107,7 @@ class TempFSFile extends FSFile {
 	 */
 	public function preserve() {
 		$this->canDelete = false;
+
 		return $this;
 	}
 
@@ -112,6 +118,7 @@ class TempFSFile extends FSFile {
 	 */
 	public function autocollect() {
 		$this->canDelete = true;
+
 		return $this;
 	}
 

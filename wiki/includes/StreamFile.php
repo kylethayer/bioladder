@@ -42,6 +42,7 @@ class StreamFile {
 		wfProfileIn( __METHOD__ );
 
 		if ( FileBackend::isStoragePath( $fname ) ) { // sanity
+			wfProfileOut( __METHOD__ );
 			throw new MWException( __FUNCTION__ . " given storage path '$fname'." );
 		}
 
@@ -184,8 +185,8 @@ class StreamFile {
 				return 'unknown/unknown';
 			}
 			if ( $wgCheckFileExtensions && $wgStrictFileExtensions
-				&& !UploadBase::checkFileExtensionList( $extList, $wgFileExtensions ) )
-			{
+				&& !UploadBase::checkFileExtensionList( $extList, $wgFileExtensions )
+			) {
 				return 'unknown/unknown';
 			}
 			if ( $wgVerifyMimeType && in_array( strtolower( $type ), $wgMimeTypeBlacklist ) ) {

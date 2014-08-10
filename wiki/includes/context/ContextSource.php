@@ -41,9 +41,11 @@ abstract class ContextSource implements IContextSource {
 	public function getContext() {
 		if ( $this->context === null ) {
 			$class = get_class( $this );
-			wfDebug( __METHOD__ . " ($class): called and \$context is null. Using RequestContext::getMain() for sanity\n" );
+			wfDebug( __METHOD__ . " ($class): called and \$context is null. " .
+				"Using RequestContext::getMain() for sanity\n" );
 			$this->context = RequestContext::getMain();
 		}
+
 		return $this->context;
 	}
 
@@ -55,6 +57,16 @@ abstract class ContextSource implements IContextSource {
 	 */
 	public function setContext( IContextSource $context ) {
 		$this->context = $context;
+	}
+
+	/**
+	 * Get the Config object
+	 *
+	 * @since 1.23
+	 * @return Config
+	 */
+	public function getConfig() {
+		return $this->getContext()->getConfig();
 	}
 
 	/**
@@ -125,11 +137,12 @@ abstract class ContextSource implements IContextSource {
 	/**
 	 * Get the Language object
 	 *
-	 * @deprecated 1.19 Use getLanguage instead
+	 * @deprecated since 1.19 Use getLanguage instead
 	 * @return Language
 	 */
 	public function getLang() {
 		wfDeprecated( __METHOD__, '1.19' );
+
 		return $this->getLanguage();
 	}
 
@@ -162,6 +175,7 @@ abstract class ContextSource implements IContextSource {
 	 */
 	public function msg( /* $args */ ) {
 		$args = func_get_args();
+
 		return call_user_func_array( array( $this->getContext(), 'msg' ), $args );
 	}
 

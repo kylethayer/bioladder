@@ -25,7 +25,7 @@
  */
 
 /**
- * The main skin class that provide methods and properties for all other skins.
+ * The main skin class which provides methods and properties for all other skins.
  * This base class is also the "Standard" skin.
  *
  * See docs/skin.txt for more information.
@@ -56,17 +56,29 @@ abstract class Skin extends ContextSource {
 
 			$skinDir = dir( $wgStyleDirectory );
 
-			# while code from www.php.net
-			while ( false !== ( $file = $skinDir->read() ) ) {
-				// Skip non-PHP files, hidden files, and '.dep' includes
-				$matches = array();
+			if ( $skinDir !== false && $skinDir !== null ) {
+				# while code from www.php.net
+				while ( false !== ( $file = $skinDir->read() ) ) {
+					// Skip non-PHP files, hidden files, and '.dep' includes
+					$matches = array();
 
-				if ( preg_match( '/^([^.]*)\.php$/', $file, $matches ) ) {
-					$aSkin = $matches[1];
-					$wgValidSkinNames[strtolower( $aSkin )] = $aSkin;
+					if ( preg_match( '/^([^.]*)\.php$/', $file, $matches ) ) {
+						$aSkin = $matches[1];
+
+						// We're still loading core skins via the autodiscovery mechanism... :(
+						if ( !in_array( $aSkin, array( 'CologneBlue', 'Modern', 'MonoBook', 'Vector' ) ) ) {
+							wfLogWarning(
+								"A skin using autodiscovery mechanism, $aSkin, was found in your skins/ directory. " .
+								"The mechanism will be removed in MediaWiki 1.25 and the skin will no longer be recognized. " .
+								"See https://www.mediawiki.org/wiki/Manual:Skin_autodiscovery for information how to fix this."
+							);
+						}
+
+						$wgValidSkinNames[strtolower( $aSkin )] = $aSkin;
+					}
 				}
+				$skinDir->close();
 			}
-			$skinDir->close();
 			$skinsInitialised = true;
 			wfProfileOut( __METHOD__ . '-init' );
 		}
@@ -79,28 +91,39 @@ abstract class Skin extends ContextSource {
 	 */
 	static function getSkinNameMessages() {
 		$messages = array();
-		foreach( self::getSkinNames() as $skinKey => $skinName ) {
+		foreach ( self::getSkinNames() as $skinKey => $skinName ) {
+			// Messages: skinname-cologneblue, skinname-monobook, skinname-modern, skinname-vector
 			$messages[] = "skinname-$skinKey";
 		}
 		return $messages;
 	}
 
 	/**
-	 * Fetch the list of usable skins in regards to $wgSkipSkins.
+	 * Fetch the list of user-selectable skins in regards to $wgSkipSkins.
 	 * Useful for Special:Preferences and other places where you
 	 * only want to show skins users _can_ use.
-	 * @return array of strings
+	 * @return string[]
+	 * @since 1.23
 	 */
-	public static function getUsableSkins() {
+	public static function getAllowedSkins() {
 		global $wgSkipSkins;
 
-		$usableSkins = self::getSkinNames();
+		$allowedSkins = self::getSkinNames();
 
 		foreach ( $wgSkipSkins as $skip ) {
-			unset( $usableSkins[$skip] );
+			unset( $allowedSkins[$skip] );
 		}
 
-		return $usableSkins;
+		return $allowedSkins;
+	}
+
+	/**
+	 * @deprecated since 1.23, use getAllowedSkins
+	 * @return string[]
+	 */
+	public static function getUsableSkins() {
+		wfDeprecated( __METHOD__, '1.23' );
+		return self::getAllowedSkins();
 	}
 
 	/**
@@ -129,7 +152,6 @@ abstract class Skin extends ContextSource {
 		// in the user preferences.
 		$fallback = array(
 			0 => $wgDefaultSkin,
-			1 => 'nostalgia',
 			2 => 'cologneblue'
 		);
 
@@ -161,30 +183,28 @@ abstract class Skin extends ContextSource {
 		$className = "Skin{$skinName}";
 
 		# Grab the skin class and initialise it.
-		if ( !MWInit::classExists( $className ) ) {
+		if ( !class_exists( $className ) ) {
 
-			if ( !defined( 'MW_COMPILED' ) ) {
-				require_once( "{$wgStyleDirectory}/{$skinName}.php" );
-			}
+			require_once "{$wgStyleDirectory}/{$skinName}.php";
 
 			# Check if we got if not fallback to default skin
-			if ( !MWInit::classExists( $className ) ) {
+			if ( !class_exists( $className ) ) {
 				# DO NOT die if the class isn't found. This breaks maintenance
 				# scripts and can cause a user account to be unrecoverable
 				# except by SQL manipulation if a previously valid skin name
 				# is no longer valid.
 				wfDebug( "Skin class does not exist: $className\n" );
 				$className = 'SkinVector';
-				if ( !defined( 'MW_COMPILED' ) ) {
-					require_once( "{$wgStyleDirectory}/Vector.php" );
-				}
+				require_once "{$wgStyleDirectory}/Vector.php";
 			}
 		}
 		$skin = new $className( $key );
 		return $skin;
 	}
 
-	/** @return string skin name */
+	/**
+	 * @return string skin name
+	 */
 	public function getSkinName() {
 		return $this->skinname;
 	}
@@ -198,6 +218,66 @@ abstract class Skin extends ContextSource {
 		$this->preloadExistence();
 
 		wfProfileOut( __METHOD__ );
+	}
+
+	/**
+	 * Defines the ResourceLoader modules that should be added to the skin
+	 * It is recommended that skins wishing to override call parent::getDefaultModules()
+	 * and substitute out any modules they wish to change by using a key to look them up
+	 * @return Array of modules with helper keys for easy overriding
+	 */
+	public function getDefaultModules() {
+		global $wgIncludeLegacyJavaScript, $wgPreloadJavaScriptMwUtil, $wgUseAjax,
+			$wgAjaxWatch, $wgEnableAPI, $wgEnableWriteAPI;
+
+		$out = $this->getOutput();
+		$user = $out->getUser();
+		$modules = array(
+			// modules that enhance the page content in some way
+			'content' => array(
+				'mediawiki.page.ready',
+			),
+			// modules that exist for legacy reasons
+			'legacy' => array(),
+			// modules relating to search functionality
+			'search' => array(),
+			// modules relating to functionality relating to watching an article
+			'watch' => array(),
+			// modules which relate to the current users preferences
+			'user' => array(),
+		);
+		if ( $wgIncludeLegacyJavaScript ) {
+			$modules['legacy'][] = 'mediawiki.legacy.wikibits';
+		}
+
+		if ( $wgPreloadJavaScriptMwUtil ) {
+			$modules['legacy'][] = 'mediawiki.util';
+		}
+
+		// Add various resources if required
+		if ( $wgUseAjax ) {
+			$modules['legacy'][] = 'mediawiki.legacy.ajax';
+
+			if ( $wgEnableAPI ) {
+				if ( $wgEnableWriteAPI && $wgAjaxWatch && $user->isLoggedIn()
+					&& $user->isAllowed( 'writeapi' )
+				) {
+					$modules['watch'][] = 'mediawiki.page.watch.ajax';
+				}
+
+				$modules['search'][] = 'mediawiki.searchSuggest';
+			}
+		}
+
+		if ( $user->getBoolOption( 'editsectiononrightclick' ) ) {
+			$modules['user'][] = 'mediawiki.action.view.rightClickEdit';
+		}
+
+		// Crazy edit-on-double-click stuff
+		if ( $out->isArticle() && $user->getOption( 'editondblclick' ) ) {
+			$modules['user'][] = 'mediawiki.action.view.dblClickEdit';
+		}
+		return $modules;
 	}
 
 	/**
@@ -290,7 +370,7 @@ abstract class Skin extends ContextSource {
 			return $this->mRelevantUser;
 		}
 		$title = $this->getRelevantTitle();
-		if( $title->hasSubjectNamespace( NS_USER ) ) {
+		if ( $title->hasSubjectNamespace( NS_USER ) ) {
 			$rootUser = $title->getRootText();
 			if ( User::isIP( $rootUser ) ) {
 				$this->mRelevantUser = User::newFromName( $rootUser, false );
@@ -393,6 +473,19 @@ abstract class Skin extends ContextSource {
 		$name = Sanitizer::escapeClass( 'page-' . $title->getPrefixedText() );
 
 		return "$numeric $type $name";
+	}
+
+	/*
+	 * Return values for <html> element
+	 * @return array of associative name-to-value elements for <html> element
+	 */
+	public function getHtmlElementAttributes() {
+		$lang = $this->getLanguage();
+		return array(
+			'lang' => $lang->getHtmlCode(),
+			'dir' => $lang->getDir(),
+			'class' => 'client-nojs',
+		);
 	}
 
 	/**
@@ -667,7 +760,7 @@ abstract class Skin extends ContextSource {
 
 						if ( $c > 1 ) {
 							$subpages .= $wgLang->getDirMarkEntity() . $this->msg( 'pipe-separator' )->escaped();
-						} else  {
+						} else {
 							$subpages .= '&lt; ';
 						}
 
@@ -887,9 +980,10 @@ abstract class Skin extends ContextSource {
 	}
 
 	/**
-	 * @param $desc
-	 * @param $page
-	 * @return string
+	 * Returns an HTML link for use in the footer
+	 * @param string $desc i18n message key for the link text
+	 * @param string $page i18n message key for the page to link to
+	 * @return string HTML anchor
 	 */
 	public function footerLink( $desc, $page ) {
 		// if the link description has been set to "-" in the default language,
@@ -1014,7 +1108,7 @@ abstract class Skin extends ContextSource {
 	 */
 	static function makeSpecialUrl( $name, $urlaction = '', $proto = null ) {
 		$title = SpecialPage::getSafeTitleFor( $name );
-		if( is_null( $proto ) ) {
+		if ( is_null( $proto ) ) {
 			return $title->getLocalURL( $urlaction );
 		} else {
 			return $title->getFullURL( $urlaction, false, $proto );
@@ -1176,6 +1270,7 @@ abstract class Skin extends ContextSource {
 		wfProfileOut( __METHOD__ );
 		return $bar;
 	}
+
 	/**
 	 * Add content from a sidebar system message
 	 * Currently only used for MediaWiki:Sidebar (but may be used by Extensions)
@@ -1252,7 +1347,7 @@ abstract class Skin extends ContextSource {
 						}
 
 						global $wgExternalLinkTarget;
-						if ( $wgExternalLinkTarget) {
+						if ( $wgExternalLinkTarget ) {
 							$extraAttribs['target'] = $wgExternalLinkTarget;
 						}
 					} else {
@@ -1282,86 +1377,97 @@ abstract class Skin extends ContextSource {
 	}
 
 	/**
-	 * Should we load mediawiki.legacy.wikiprintable?  Skins that have their own
-	 * print stylesheet should override this and return false.  (This is an
-	 * ugly hack to get Monobook to play nicely with OutputPage::headElement().)
+	 * This function previously controlled whether the 'mediawiki.legacy.wikiprintable' module
+	 * should be loaded by OutputPage. That module no longer exists and the return value of this
+	 * method is ignored.
 	 *
+	 * If your skin doesn't provide its own print styles, the 'mediawiki.legacy.commonPrint' module
+	 * can be used instead (SkinTemplate-based skins do it automatically).
+	 *
+	 * @deprecated since 1.22
 	 * @return bool
 	 */
 	public function commonPrintStylesheet() {
-		return true;
+		wfDeprecated( __METHOD__, '1.22' );
+		return false;
 	}
 
 	/**
-	 * Gets new talk page messages for the current user.
-	 * @return MediaWiki message or if no new talk page messages, nothing
+	 * Gets new talk page messages for the current user and returns an
+	 * appropriate alert message (or an empty string if there are no messages)
+	 * @return String
 	 */
 	function getNewtalks() {
+
+		$newMessagesAlert = '';
+		$user = $this->getUser();
+		$newtalks = $user->getNewMessageLinks();
 		$out = $this->getOutput();
 
-		$newtalks = $this->getUser()->getNewMessageLinks();
-		$ntl = '';
+		// Allow extensions to disable or modify the new messages alert
+		if ( !wfRunHooks( 'GetNewMessagesAlert', array( &$newMessagesAlert, $newtalks, $user, $out ) ) ) {
+			return '';
+		}
+		if ( $newMessagesAlert ) {
+			return $newMessagesAlert;
+		}
 
 		if ( count( $newtalks ) == 1 && $newtalks[0]['wiki'] === wfWikiID() ) {
-			$uTalkTitle = $this->getUser()->getTalkPage();
-
-			if ( !$uTalkTitle->equals( $out->getTitle() ) ) {
-				$lastSeenRev = isset( $newtalks[0]['rev'] ) ? $newtalks[0]['rev'] : null;
-				$nofAuthors = 0;
-				if ( $lastSeenRev !== null ) {
-					$plural = true; // Default if we have a last seen revision: if unknown, use plural
-					$latestRev = Revision::newFromTitle( $uTalkTitle, false, Revision::READ_NORMAL );
-					if ( $latestRev !== null ) {
-						// Singular if only 1 unseen revision, plural if several unseen revisions.
-						$plural = $latestRev->getParentId() !== $lastSeenRev->getId();
-						$nofAuthors = $uTalkTitle->countAuthorsBetween(
-							$lastSeenRev, $latestRev, 10, 'include_new' );
-					}
-				} else {
-					// Singular if no revision -> diff link will show latest change only in any case
-					$plural = false;
+			$uTalkTitle = $user->getTalkPage();
+			$lastSeenRev = isset( $newtalks[0]['rev'] ) ? $newtalks[0]['rev'] : null;
+			$nofAuthors = 0;
+			if ( $lastSeenRev !== null ) {
+				$plural = true; // Default if we have a last seen revision: if unknown, use plural
+				$latestRev = Revision::newFromTitle( $uTalkTitle, false, Revision::READ_NORMAL );
+				if ( $latestRev !== null ) {
+					// Singular if only 1 unseen revision, plural if several unseen revisions.
+					$plural = $latestRev->getParentId() !== $lastSeenRev->getId();
+					$nofAuthors = $uTalkTitle->countAuthorsBetween(
+						$lastSeenRev, $latestRev, 10, 'include_new' );
 				}
-				$plural = $plural ? 2 : 1;
-				// 2 signifies "more than one revision". We don't know how many, and even if we did,
-				// the number of revisions or authors is not necessarily the same as the number of
-				// "messages".
-				$newMessagesLink = Linker::linkKnown(
-					$uTalkTitle,
-					$this->msg( 'newmessageslinkplural' )->params( $plural )->escaped(),
-					array(),
-					array( 'redirect' => 'no' )
-				);
-
-				$newMessagesDiffLink = Linker::linkKnown(
-					$uTalkTitle,
-					$this->msg( 'newmessagesdifflinkplural' )->params( $plural )->escaped(),
-					array(),
-					$lastSeenRev !== null
-						? array( 'oldid' => $lastSeenRev->getId(), 'diff' => 'cur' )
-						: array( 'diff' => 'cur' )
-				);
-
-				if ( $nofAuthors >= 1 && $nofAuthors <= 10 ) {
-					$ntl = $this->msg(
-						'youhavenewmessagesfromusers',
-						$newMessagesLink,
-						$newMessagesDiffLink
-					)->numParams( $nofAuthors );
-				} else {
-					// $nofAuthors === 11 signifies "11 or more" ("more than 10")
-					$ntl = $this->msg(
-						$nofAuthors > 10 ? 'youhavenewmessagesmanyusers' : 'youhavenewmessages',
-						$newMessagesLink,
-						$newMessagesDiffLink
-					);
-				}
-				$ntl = $ntl->text();
-				# Disable Squid cache
-				$out->setSquidMaxage( 0 );
+			} else {
+				// Singular if no revision -> diff link will show latest change only in any case
+				$plural = false;
 			}
+			$plural = $plural ? 999 : 1;
+			// 999 signifies "more than one revision". We don't know how many, and even if we did,
+			// the number of revisions or authors is not necessarily the same as the number of
+			// "messages".
+			$newMessagesLink = Linker::linkKnown(
+				$uTalkTitle,
+				$this->msg( 'newmessageslinkplural' )->params( $plural )->escaped(),
+				array(),
+				array( 'redirect' => 'no' )
+			);
+
+			$newMessagesDiffLink = Linker::linkKnown(
+				$uTalkTitle,
+				$this->msg( 'newmessagesdifflinkplural' )->params( $plural )->escaped(),
+				array(),
+				$lastSeenRev !== null
+					? array( 'oldid' => $lastSeenRev->getId(), 'diff' => 'cur' )
+					: array( 'diff' => 'cur' )
+			);
+
+			if ( $nofAuthors >= 1 && $nofAuthors <= 10 ) {
+				$newMessagesAlert = $this->msg(
+					'youhavenewmessagesfromusers',
+					$newMessagesLink,
+					$newMessagesDiffLink
+				)->numParams( $nofAuthors, $plural );
+			} else {
+				// $nofAuthors === 11 signifies "11 or more" ("more than 10")
+				$newMessagesAlert = $this->msg(
+					$nofAuthors > 10 ? 'youhavenewmessagesmanyusers' : 'youhavenewmessages',
+					$newMessagesLink,
+					$newMessagesDiffLink
+				)->numParams( $plural );
+			}
+			$newMessagesAlert = $newMessagesAlert->text();
+			# Disable Squid cache
+			$out->setSquidMaxage( 0 );
 		} elseif ( count( $newtalks ) ) {
-			// _>" " for BC <= 1.16
-			$sep = str_replace( '_', ' ', $this->msg( 'newtalkseparator' )->escaped() );
+			$sep = $this->msg( 'newtalkseparator' )->escaped();
 			$msgs = array();
 
 			foreach ( $newtalks as $newtalk ) {
@@ -1371,11 +1477,11 @@ abstract class Skin extends ContextSource {
 				);
 			}
 			$parts = implode( $sep, $msgs );
-			$ntl = $this->msg( 'youhavenewmessagesmulti' )->rawParams( $parts )->escaped();
+			$newMessagesAlert = $this->msg( 'youhavenewmessagesmulti' )->rawParams( $parts )->escaped();
 			$out->setSquidMaxage( 0 );
 		}
 
-		return $ntl;
+		return $newMessagesAlert;
 	}
 
 	/**
@@ -1391,17 +1497,17 @@ abstract class Skin extends ContextSource {
 
 		$needParse = false;
 
-		if( $name === 'default' ) {
+		if ( $name === 'default' ) {
 			// special case
 			global $wgSiteNotice;
 			$notice = $wgSiteNotice;
-			if( empty( $notice ) ) {
+			if ( empty( $notice ) ) {
 				wfProfileOut( __METHOD__ );
 				return false;
 			}
 		} else {
 			$msg = $this->msg( $name )->inContentLanguage();
-			if( $msg->isDisabled() ) {
+			if ( $msg->isDisabled() ) {
 				wfProfileOut( __METHOD__ );
 				return false;
 			}
@@ -1411,8 +1517,8 @@ abstract class Skin extends ContextSource {
 		// Use the extra hash appender to let eg SSL variants separately cache.
 		$key = wfMemcKey( $name . $wgRenderHashAppend );
 		$cachedNotice = $parserMemc->get( $key );
-		if( is_array( $cachedNotice ) ) {
-			if( md5( $notice ) == $cachedNotice['hash'] ) {
+		if ( is_array( $cachedNotice ) ) {
+			if ( md5( $notice ) == $cachedNotice['hash'] ) {
 				$notice = $cachedNotice['html'];
 			} else {
 				$needParse = true;
@@ -1487,14 +1593,14 @@ abstract class Skin extends ContextSource {
 	 * Create a section edit link.  This supersedes editSectionLink() and
 	 * editSectionLinkForOther().
 	 *
-	 * @param $nt      Title  The title being linked to (may not be the same as
-	 *   $wgTitle, if the section is included from a template)
+	 * @param $nt Title  The title being linked to (may not be the same as
+	 *   the current page, if the section is included from a template)
 	 * @param string $section The designation of the section being pointed to,
 	 *   to be included in the link, like "&section=$section"
 	 * @param string $tooltip The tooltip to use for the link: will be escaped
 	 *   and wrapped in the 'editsectionhint' message
-	 * @param $lang    string Language code
-	 * @return         string HTML to use for edit link
+	 * @param $lang string Language code
+	 * @return string HTML to use for edit link
 	 */
 	public function doEditSectionLink( Title $nt, $section, $tooltip = null, $lang = false ) {
 		// HTML generated here should probably have userlangattributes
@@ -1515,31 +1621,12 @@ abstract class Skin extends ContextSource {
 			array( 'noclasses', 'known' )
 		);
 
-		# Run the old hook.  This takes up half of the function . . . hopefully
-		# we can rid of it someday.
-		$attribs = '';
-		if ( $tooltip ) {
-			$attribs = wfMessage( 'editsectionhint' )->rawParams( $tooltip )
-				->inLanguage( $lang )->escaped();
-			$attribs = " title=\"$attribs\"";
-		}
-		$result = null;
-		wfRunHooks( 'EditSectionLink', array( &$this, $nt, $section, $attribs, $link, &$result, $lang ) );
-		if ( !is_null( $result ) ) {
-			# For reverse compatibility, add the brackets *after* the hook is
-			# run, and even add them to hook-provided text.  (This is the main
-			# reason that the EditSectionLink hook is deprecated in favor of
-			# DoEditSectionLink: it can't change the brackets or the span.)
-			$result = wfMessage( 'editsection-brackets' )->rawParams( $result )
-				->inLanguage( $lang )->escaped();
-			return "<span class=\"editsection\">$result</span>";
-		}
-
-		# Add the brackets and the span, and *then* run the nice new hook, with
-		# clean and non-redundant arguments.
-		$result = wfMessage( 'editsection-brackets' )->rawParams( $link )
-			->inLanguage( $lang )->escaped();
-		$result = "<span class=\"editsection\">$result</span>";
+		# Add the brackets and the span and run the hook.
+		$result = '<span class="mw-editsection">'
+			. '<span class="mw-editsection-bracket">[</span>'
+			. $link
+			. '<span class="mw-editsection-bracket">]</span>'
+			. '</span>';
 
 		wfRunHooks( 'DoEditSectionLink', array( $this, $nt, $section, $tooltip, &$result, $lang ) );
 		return $result;
@@ -1557,6 +1644,7 @@ abstract class Skin extends ContextSource {
 	function __call( $fname, $args ) {
 		$realFunction = array( 'Linker', $fname );
 		if ( is_callable( $realFunction ) ) {
+			wfDeprecated( get_class( $this ) . '::' . $fname, '1.21' );
 			return call_user_func_array( $realFunction, $args );
 		} else {
 			$className = get_class( $this );

@@ -24,7 +24,7 @@ class SFFormEdit extends SpecialPage {
 		parent::__construct( 'FormEdit' );
 	}
 
-	function execute( $query, $redirectOnError = true ) {
+	function execute( $query ) {
 
 		wfProfileIn( __METHOD__ );
 
@@ -43,14 +43,14 @@ class SFFormEdit extends SpecialPage {
 
 		$alt_forms = $this->getRequest()->getArray( 'alt_form' );
 
-		self::printForm( $this->mForm, $this->mTarget, $alt_forms, $redirectOnError );
+		self::printForm( $this->mForm, $this->mTarget, $alt_forms );
 
 		wfProfileOut( __METHOD__ );
 	}
 
 	static function printAltFormsList( $alt_forms, $target_name ) {
 		$text = "";
-		$fe = SFUtils::getSpecialPage( 'FormEdit' );
+		$fe = SpecialPageFactory::getPage( 'FormEdit' );
 		$fe_url = $fe->getTitle()->getFullURL();
 		$i = 0;
 		foreach ( $alt_forms as $alt_form ) {
@@ -74,24 +74,47 @@ class SFFormEdit extends SpecialPage {
 		$module->setOption( 'target', $targetName );
 
 		if ( $wgRequest->getCheck( 'wpSave' ) || $wgRequest->getCheck( 'wpPreview' ) || $wgRequest->getCheck( 'wpDiff' ) ) {
-			// if the page was submitted, formdata should be complete => do not preload
-			$module->setOption( 'preload', false );
-		} else if ( !empty($targetName) && Title::newFromText( $targetName )->exists ( ) ) {
-			// if target page exists do not overwrite it with preload data, just preload the page's data
+			// If the page was submitted, form data should be
+			// complete => do not preload (unless it's a partial
+			// form).
+			if ( $wgRequest->getCheck( 'partial' ) ) {
+				$module->setOption( 'preload', true );
+			} else {
+				$module->setOption( 'preload', false );
+			}
+		} else if ( !empty( $targetName ) && Title::newFromText( $targetName )->exists ( ) ) {
+			// If target page exists, do not overwrite it with
+			// preload data; just preload the page's data.
 			$module->setOption( 'preload', true );
 		} else if ( $wgRequest->getCheck( 'preload' ) ) {
 			// if page does not exist and preload parameter is set, pass that on
 			$module->setOption( 'preload', $wgRequest->getText( 'preload' ) );
 		} else {
-			// nothing set, so do not preload
-			$module->setOption( 'preload', false );			
+			// nothing set, so do not set preload
 		}
 
 		$module->execute();
 
+		$text = '';
+
 		// if action was successful and action was a Save, return
-		if ( $module->getStatus() === 200 && $module->getAction() === SFAutoeditAPI::ACTION_SAVE ) {
-			return;
+		if ( $module->getStatus() === 200 ) {
+			if ( $module->getAction() === SFAutoeditAPI::ACTION_SAVE ) {
+				return;
+			}
+		} else {
+
+			$resultData = $module->getResultData();
+
+			if ( array_key_exists( 'errors', $resultData ) ) {
+
+				foreach ($resultData['errors'] as $error) {
+					// FIXME: This should probably not be hard-coded to WARNING but put into a setting
+					if ( $error[ 'level' ] <= SFAutoeditAPI::WARNING ) {
+						$text .= Html::rawElement( 'p', array( 'class' => 'error' ), $error[ 'message' ] ) . "\n";
+					}
+				}
+			}
 		}
 
 		// override the default title for this page if a title was specified in the form
@@ -117,13 +140,30 @@ class SFFormEdit extends SpecialPage {
 			} else {
 				$pageTitle = wfMessage( 'sf_formedit_createtitle', $result[ 'form' ], $targetName )->text();
 			}
+		} elseif ( count( $alt_forms ) > 0 ) {
+			// We use the 'creating' message here, instead of
+			// 'sf_formedit_createtitlenotarget', to differentiate
+			// between a page with no (default) form, and one with
+			// no target; in English they'll show up as
+			// "Creating ..." and "Create ...", respectively.
+			// Does this make any difference? Who knows.
+			$pageTitle = wfMessage( 'creating', $targetName )->text();
+		} elseif ( $result[ 'form' ] == '' ) {  //FIXME: This looks weird; a simple else should be enough, right?
+			// display error message if the form is not specified in the URL
+			$pageTitle = wfMessage( 'formedit' )->text();
+			$text .= Html::element( 'p', array( 'class' => 'error' ), wfMessage( 'sf_formedit_badurl' )->text() ) . "\n";
+			$wgOut->addHTML( $text );
 		}
 
 		$wgOut->setPageTitle( $pageTitle );
-		$text = '';
 		if ( count( $alt_forms ) > 0 ) {
-			$text .= '<div class="infoMessage">' . wfMessage( 'sf_formedit_altforms' )->escaped() . ' ';
-			$text .= self::printAltFormsList( $alt_forms, $targetName );
+			$text .= '<div class="infoMessage">';
+			if ( $result[ 'form' ] != '' ) {
+				$text .= wfMessage( 'sf_formedit_altforms' )->escaped();
+			} else {
+				$text .= wfMessage( 'sf_formedit_altformsonly' )->escaped();
+			}
+			$text .= ' ' . self::printAltFormsList( $alt_forms, $targetName );
 			$text .= "</div>\n";
 		}
 

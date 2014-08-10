@@ -21,7 +21,7 @@
  * @ingroup Maintenance ExternalStorage
  */
 
-require_once( __DIR__ . '/../Maintenance.php' );
+require_once __DIR__ . '/../Maintenance.php';
 
 /**
  * Maintenance script to fix bug 20757.
@@ -57,14 +57,9 @@ class FixBug20757 extends Maintenance {
 
 		$totalRevs = $dbr->selectField( 'text', 'MAX(old_id)', false, __METHOD__ );
 
-		if ( $dbr->getType() == 'mysql'
-			&& version_compare( $dbr->getServerVersion(), '4.1.0', '>=' ) )
-		{
+		if ( $dbr->getType() == 'mysql' ) {
 			// In MySQL 4.1+, the binary field old_text has a non-working LOWER() function
 			$lowerLeft = 'LOWER(CONVERT(LEFT(old_text,22) USING latin1))';
-		} else {
-			// No CONVERT() in MySQL 4.0
-			$lowerLeft = 'LOWER(LEFT(old_text,22))';
 		}
 
 		while ( true ) {
@@ -348,4 +343,4 @@ class FixBug20757 extends Maintenance {
 }
 
 $maintClass = 'FixBug20757';
-require_once( RUN_MAINTENANCE_IF_MAIN );
+require_once RUN_MAINTENANCE_IF_MAIN;

@@ -79,7 +79,7 @@ interface IContextSource {
 	/**
 	 * Get the Language object
 	 *
-	 * @deprecated 1.19 Use getLanguage instead
+	 * @deprecated since 1.19 Use getLanguage instead
 	 * @return Language
 	 */
 	public function getLang();
@@ -98,6 +98,14 @@ interface IContextSource {
 	 * @return Skin
 	 */
 	public function getSkin();
+
+	/**
+	 * Get the site configuration
+	 *
+	 * @since 1.23
+	 * @return Config
+	 */
+	public function getConfig();
 
 	/**
 	 * Get a Message object with context set

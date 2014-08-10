@@ -20,9 +20,6 @@
 # Enabled Extensions.
 require_once( "$IP/extensions/googleAnalytics/googleAnalytics.php" );
 
-require_once( "$IP/extensions/Validator/Validator.php" );
-
-require_once( "$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php" );
 enableSemantics('localhost');
 $smwgShowFactbox = SMW_FACTBOX_NONEMPTY;
 $smwgShowFactboxEdit = SMW_FACTBOX_NONEMPTY;

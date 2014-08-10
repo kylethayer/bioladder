@@ -30,7 +30,6 @@
  * @ingroup API
  */
 abstract class ApiFormatBase extends ApiBase {
-
 	private $mIsHtml, $mFormat, $mUnescapeAmps, $mHelp, $mCleared;
 	private $mBufferResult = false, $mBuffer, $mDisabled = false;
 
@@ -43,9 +42,9 @@ abstract class ApiFormatBase extends ApiBase {
 	public function __construct( $main, $format ) {
 		parent::__construct( $main, $format );
 
-		$this->mIsHtml = ( substr( $format, - 2, 2 ) === 'fm' ); // ends with 'fm'
+		$this->mIsHtml = ( substr( $format, -2, 2 ) === 'fm' ); // ends with 'fm'
 		if ( $this->mIsHtml ) {
-			$this->mFormat = substr( $format, 0, - 2 ); // remove ending 'fm'
+			$this->mFormat = substr( $format, 0, -2 ); // remove ending 'fm'
 		} else {
 			$this->mFormat = $format;
 		}
@@ -85,7 +84,7 @@ abstract class ApiFormatBase extends ApiBase {
 	 *
 	 * @param bool $b Whether or not ampersands should be escaped.
 	 */
-	public function setUnescapeAmps ( $b ) {
+	public function setUnescapeAmps( $b ) {
 		$this->mUnescapeAmps = $b;
 	}
 
@@ -119,6 +118,16 @@ abstract class ApiFormatBase extends ApiBase {
 
 	public function isDisabled() {
 		return $this->mDisabled;
+	}
+
+	/**
+	 * Whether this formatter can handle printing API errors. If this returns
+	 * false, then on API errors the default printer will be instantiated.
+	 * @since 1.23
+	 * @return bool
+	 */
+	public function canPrintErrors() {
+		return true;
 	}
 
 	/**
@@ -156,38 +165,40 @@ abstract class ApiFormatBase extends ApiBase {
 <!DOCTYPE HTML>
 <html>
 <head>
-<?php if ( $this->mUnescapeAmps ) {
+<?php
+			if ( $this->mUnescapeAmps ) {
 ?>	<title>MediaWiki API</title>
-<?php } else {
+<?php
+			} else {
 ?>	<title>MediaWiki API Result</title>
-<?php } ?>
+<?php
+			}
+?>
 </head>
 <body>
 <?php
-
-
 			if ( !$isHelpScreen ) {
+// @codingStandardsIgnoreStart Exclude long line from CodeSniffer checks
 ?>
 <br />
 <small>
-You are looking at the HTML representation of the <?php echo( $this->mFormat ); ?> format.<br />
+You are looking at the HTML representation of the <?php echo $this->mFormat; ?> format.<br />
 HTML is good for debugging, but is unsuitable for application use.<br />
 Specify the format parameter to change the output format.<br />
-To see the non HTML representation of the <?php echo( $this->mFormat ); ?> format, set format=<?php echo( strtolower( $this->mFormat ) ); ?>.<br />
+To see the non HTML representation of the <?php echo $this->mFormat; ?> format, set format=<?php echo strtolower( $this->mFormat ); ?>.<br />
 See the <a href='https://www.mediawiki.org/wiki/API'>complete documentation</a>, or
-<a href='<?php echo( $script ); ?>'>API help</a> for more information.
+<a href='<?php echo $script; ?>'>API help</a> for more information.
 </small>
 <pre style='white-space: pre-wrap;'>
 <?php
-
-
-			} else { // don't wrap the contents of the <pre> for help screens
-			          // because these are actually formatted to rely on
-			          // the monospaced font for layout purposes
+// @codingStandardsIgnoreEnd
+			// don't wrap the contents of the <pre> for help screens
+			// because these are actually formatted to rely on
+			// the monospaced font for layout purposes
+			} else {
 ?>
 <pre>
 <?php
-
 			}
 		}
 	}
@@ -206,8 +217,6 @@ See the <a href='https://www.mediawiki.org/wiki/API'>complete documentation</a>,
 </body>
 </html>
 <?php
-
-
 		}
 	}
 
@@ -272,16 +281,36 @@ See the <a href='https://www.mediawiki.org/wiki/API'>complete documentation</a>,
 		// encode all comments or tags as safe blue strings
 		$text = str_replace( '&lt;', '<span style="color:blue;">&lt;', $text );
 		$text = str_replace( '&gt;', '&gt;</span>', $text );
+
 		// identify requests to api.php
-		$text = preg_replace( "#api\\.php\\?[^ <\n\t]+#", '<a href="\\0">\\0</a>', $text );
+		$text = preg_replace( '#^(\s*)(api\.php\?[^ <\n\t]+)$#m', '\1<a href="\2">\2</a>', $text );
 		if ( $this->mHelp ) {
-			// make strings inside * bold
-			$text = preg_replace( "#\\*[^<>\n]+\\*#", '<b>\\0</b>', $text );
+			// make lines inside * bold
+			$text = preg_replace( '#^(\s*)(\*[^<>\n]+\*)(\s*)$#m', '$1<b>$2</b>$3', $text );
 		}
+
+		// Armor links (bug 61362)
+		$masked = array();
+		$text = preg_replace_callback( '#<a .*?</a>#', function ( $matches ) use ( &$masked ) {
+			$sha = sha1( $matches[0] );
+			$masked[$sha] = $matches[0];
+			return "<$sha>";
+		}, $text );
+
 		// identify URLs
 		$protos = wfUrlProtocolsWithoutProtRel();
 		// This regex hacks around bug 13218 (&quot; included in the URL)
-		$text = preg_replace( "#(((?i)$protos).*?)(&quot;)?([ \\'\"<>\n]|&lt;|&gt;|&quot;)#", '<a href="\\1">\\1</a>\\3\\4', $text );
+		$text = preg_replace(
+			"#(((?i)$protos).*?)(&quot;)?([ \\'\"<>\n]|&lt;|&gt;|&quot;)#",
+			'<a href="\\1">\\1</a>\\3\\4',
+			$text
+		);
+
+		// Unarmor links
+		$text = preg_replace_callback( '#<([0-9a-f]{40})>#', function ( $matches ) use ( &$masked ) {
+			$sha = $matches[1];
+			return isset( $masked[$sha] ) ? $masked[$sha] : $matches[0];
+		}, $text );
 
 		/**
 		 * Temporary fix for bad links in help messages. As a special case,
@@ -359,9 +388,18 @@ class ApiFormatFeedWrapper extends ApiFormatBase {
 	}
 
 	/**
+	 * ChannelFeed doesn't give us a method to print errors in a friendly
+	 * manner, so just punt errors to the default printer.
+	 * @return false
+	 */
+	public function canPrintErrors() {
+		return false;
+	}
+
+	/**
 	 * This class expects the result data to be in a custom format set by self::setResult()
-	 * $result['_feed']		- an instance of one of the $wgFeedClasses classes
-	 * $result['_feeditems']	- an array of FeedItem instances
+	 * $result['_feed'] - an instance of one of the $wgFeedClasses classes
+	 * $result['_feeditems'] - an array of FeedItem instances
 	 */
 	public function execute() {
 		$data = $this->getResultData();

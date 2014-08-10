@@ -58,8 +58,7 @@ body {
 	font-variant: small-caps;
 }
 
-#p-personal h3,
-#p-personal h5 {
+#p-personal h3 {
 	display: none;
 }
 
@@ -156,8 +155,7 @@ div.mw_clear {
 textarea {
 	width: 100%;
 	padding: .1em;
-}
-#editform textarea {
+	display: block;
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
@@ -177,8 +175,7 @@ textarea {
 	margin-top: .4em;
 }
 
-.portlet h3,
-.portlet h5 {
+.portlet h3 {
 	padding: 0.1em 0 0.3em 1em;
 	margin: 0 0 0 0;
 	background-color: #dddddd;
@@ -252,8 +249,7 @@ ul {
 	color: white;
 }
 
-#p-cactions h3,
-#p-cactions h5 {
+#p-cactions h3 {
 	display: none;
 }
 
@@ -306,7 +302,7 @@ hr {
 }
 
 #contentSub {
-	color: #888;
+	color: #545454;
 	font-size: small;
 	padding-left: 2em;
 }
@@ -338,10 +334,6 @@ a.new {
 }
 a.new:visited {
 	color: #a55858;
-}
-
-span.editsection {
-	font-size: small;
 }
 
 h1, h2 {
@@ -412,13 +404,7 @@ h1, h2, h3, h4, h5, h6 {
 	text-decoration: none;
 	color: white;
 }
-
-#mw-pref-clear {
-	clear: both;
-}
-
-#mw_content a.external,
-#mw_content a.external[href ^="gopher://"] {
+#mw_content a.external {
 	/* @embed */
 	background: url(external.png) center right no-repeat;
 	padding-right: 13px;
@@ -526,6 +512,7 @@ div.magnify {
 	float: right;
 	border: none !important;
 	background: none !important;
+	margin-left: 3px;
 }
 div.magnify a, div.magnify img {
 	display: block;
@@ -555,6 +542,27 @@ img.thumbborder {
 	border-spacing: 0;
 	background-color: #f0f0f0;
 	border: solid 1px #bbbbbb;
+	display: -moz-inline-block;
+	display: inline-block;
+	display: table;
+
+	/* IE7 and earliers */
+	zoom: 1;
+	*display: inline;
+
+	padding: 7px;
+}
+
+/* CSS for backwards-compatibility with cached page renders and creative uses in wikitext */
+table#toc,
+table.toc {
+	border-collapse: collapse;
+}
+
+/* Remove additional paddings inside table-cells that are not present in <div>s */
+table#toc td,
+table.toc td {
+	padding: 0;
 }
 
 #toc tr, #toc td {

@@ -166,7 +166,7 @@ class SMWPropertyValue extends SMWDataValue {
 		if ( !isset( $this->m_wikipage ) ) {
 			$diWikiPage = $this->m_dataitem->getDiWikiPage();
 			if ( !is_null( $diWikiPage ) ) {
-				$this->m_wikipage = SMWDataValueFactory::newDataItemValue( $diWikiPage, null, $this->m_caption );
+				$this->m_wikipage = \SMW\DataValueFactory::getInstance()->newDataItemValue( $diWikiPage, null, $this->m_caption );
 				$this->m_wikipage->setOutputFormat( $this->m_outformat );
 				$this->addError( $this->m_wikipage->getErrors() );
 			} else { // should rarely happen ($value is only changed if the input $value really was a label for a predefined prop)
@@ -269,14 +269,13 @@ class SMWPropertyValue extends SMWDataValue {
 		if ( $this->m_dataitem->isUserDefined() ) {
 			return $text;
 		} else {
-			SMWOutputs::requireResource( 'ext.smw.style' );
-			return smwfContextHighlighter( array (
-				'context' => 'inline',
-				'class'   => 'smwbuiltin',
-				'type'    => 'property',
-				'title'   => $text,
-				'content' => wfMessage( 'smw_isspecprop' )->inContentLanguage()->text()
+			$highlighter = SMW\Highlighter::factory( SMW\Highlighter::TYPE_PROPERTY );
+			$highlighter->setContent( array (
+				'caption' => $text,
+				'content' => wfMessage( 'smw_isspecprop' )->text()
 			) );
+
+			return $highlighter->getHtml();
 		}
 	}
 

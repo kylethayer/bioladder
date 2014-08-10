@@ -114,8 +114,8 @@ class SqlBagOStuff extends BagOStuff {
 
 			# Don't keep timing out trying to connect for each call if the DB is down
 			if ( isset( $this->connFailureErrors[$serverIndex] )
-				&& ( time() - $this->connFailureTimes[$serverIndex] ) < 60 )
-			{
+				&& ( time() - $this->connFailureTimes[$serverIndex] ) < 60
+			) {
 				throw $this->connFailureErrors[$serverIndex];
 			}
 
@@ -222,8 +222,8 @@ class SqlBagOStuff extends BagOStuff {
 
 		$dataRows = array();
 		foreach ( $keysByTable as $serverIndex => $serverKeys ) {
-			$db = $this->getDB( $serverIndex );
 			try {
+				$db = $this->getDB( $serverIndex );
 				foreach ( $serverKeys as $tableName => $tableKeys ) {
 					$res = $db->select( $tableName,
 						array( 'keyname', 'value', 'exptime' ),
@@ -244,23 +244,23 @@ class SqlBagOStuff extends BagOStuff {
 			if ( isset( $dataRows[$key] ) ) { // HIT?
 				$row = $dataRows[$key];
 				$this->debug( "get: retrieved data; expiry time is " . $row->exptime );
-				$db = $this->getDB( $row->serverIndex );
-				if ( $this->isExpired( $db, $row->exptime ) ) { // MISS
-					$this->debug( "get: key has expired, deleting" );
-					try {
-						$db->begin( __METHOD__ );
+				try {
+					$db = $this->getDB( $row->serverIndex );
+					if ( $this->isExpired( $db, $row->exptime ) ) { // MISS
+						$this->debug( "get: key has expired, deleting" );
+						$db->commit( __METHOD__, 'flush' );
 						# Put the expiry time in the WHERE condition to avoid deleting a
 						# newly-inserted value
 						$db->delete( $row->tableName,
 							array( 'keyname' => $key, 'exptime' => $row->exptime ),
 							__METHOD__ );
-						$db->commit( __METHOD__ );
-					} catch ( DBQueryError $e ) {
-						$this->handleWriteError( $e, $row->serverIndex );
+						$db->commit( __METHOD__, 'flush' );
+						$values[$key] = false;
+					} else { // HIT
+						$values[$key] = $this->unserialize( $db->decodeBlob( $row->value ) );
 					}
-					$values[$key] = false;
-				} else { // HIT
-					$values[$key] = $this->unserialize( $db->decodeBlob( $row->value ) );
+				} catch ( DBQueryError $e ) {
+					$this->handleWriteError( $e, $row->serverIndex );
 				}
 			} else { // MISS
 				$values[$key] = false;
@@ -296,7 +296,7 @@ class SqlBagOStuff extends BagOStuff {
 
 				$encExpiry = $db->timestamp( $exptime );
 			}
-			$db->begin( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 			// (bug 24425) use a replace if the db supports it instead of
 			// delete/insert to avoid clashes with conflicting keynames
 			$db->replace(
@@ -307,7 +307,7 @@ class SqlBagOStuff extends BagOStuff {
 					'value' => $db->encodeBlob( $this->serialize( $value ) ),
 					'exptime' => $encExpiry
 				), __METHOD__ );
-			$db->commit( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 		} catch ( DBError $e ) {
 			$this->handleWriteError( $e, $serverIndex );
 			return false;
@@ -341,7 +341,7 @@ class SqlBagOStuff extends BagOStuff {
 				}
 				$encExpiry = $db->timestamp( $exptime );
 			}
-			$db->begin( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 			// (bug 24425) use a replace if the db supports it instead of
 			// delete/insert to avoid clashes with conflicting keynames
 			$db->update(
@@ -357,14 +357,14 @@ class SqlBagOStuff extends BagOStuff {
 				),
 				__METHOD__
 			);
-			$db->commit( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 		} catch ( DBQueryError $e ) {
 			$this->handleWriteError( $e, $serverIndex );
 
 			return false;
 		}
 
-		return (bool) $db->affectedRows();
+		return (bool)$db->affectedRows();
 	}
 
 	/**
@@ -376,12 +376,12 @@ class SqlBagOStuff extends BagOStuff {
 		list( $serverIndex, $tableName ) = $this->getTableByKey( $key );
 		try {
 			$db = $this->getDB( $serverIndex );
-			$db->begin( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 			$db->delete(
 				$tableName,
 				array( 'keyname' => $key ),
 				__METHOD__ );
-			$db->commit( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 		} catch ( DBError $e ) {
 			$this->handleWriteError( $e, $serverIndex );
 			return false;
@@ -400,7 +400,7 @@ class SqlBagOStuff extends BagOStuff {
 		try {
 			$db = $this->getDB( $serverIndex );
 			$step = intval( $step );
-			$db->begin( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 			$row = $db->selectRow(
 				$tableName,
 				array( 'value', 'exptime' ),
@@ -409,14 +409,14 @@ class SqlBagOStuff extends BagOStuff {
 				array( 'FOR UPDATE' ) );
 			if ( $row === false ) {
 				// Missing
-				$db->commit( __METHOD__ );
+				$db->commit( __METHOD__, 'flush' );
 
 				return null;
 			}
 			$db->delete( $tableName, array( 'keyname' => $key ), __METHOD__ );
 			if ( $this->isExpired( $db, $row->exptime ) ) {
 				// Expired, do not reinsert
-				$db->commit( __METHOD__ );
+				$db->commit( __METHOD__, 'flush' );
 
 				return null;
 			}
@@ -434,7 +434,7 @@ class SqlBagOStuff extends BagOStuff {
 				// Race condition. See bug 28611
 				$newValue = null;
 			}
-			$db->commit( __METHOD__ );
+			$db->commit( __METHOD__, 'flush' );
 		} catch ( DBError $e ) {
 			$this->handleWriteError( $e, $serverIndex );
 			return null;
@@ -524,7 +524,7 @@ class SqlBagOStuff extends BagOStuff {
 							$maxExpTime = $row->exptime;
 						}
 
-						$db->begin( __METHOD__ );
+						$db->commit( __METHOD__, 'flush' );
 						$db->delete(
 							$this->getTableNameByShard( $i ),
 							array(
@@ -533,7 +533,7 @@ class SqlBagOStuff extends BagOStuff {
 								'keyname' => $keys
 							),
 							__METHOD__ );
-						$db->commit( __METHOD__ );
+						$db->commit( __METHOD__, 'flush' );
 
 						if ( $progressCallback ) {
 							if ( intval( $totalSeconds ) === 0 ) {
@@ -566,9 +566,9 @@ class SqlBagOStuff extends BagOStuff {
 			try {
 				$db = $this->getDB( $serverIndex );
 				for ( $i = 0; $i < $this->shards; $i++ ) {
-					$db->begin( __METHOD__ );
+					$db->commit( __METHOD__, 'flush' );
 					$db->delete( $this->getTableNameByShard( $i ), '*', __METHOD__ );
-					$db->commit( __METHOD__ );
+					$db->commit( __METHOD__, 'flush' );
 				}
 			} catch ( DBError $e ) {
 				$this->handleWriteError( $e, $serverIndex );
@@ -626,8 +626,10 @@ class SqlBagOStuff extends BagOStuff {
 		}
 		wfDebugLog( 'SQLBagOStuff', "DBError: {$exception->getMessage()}" );
 		if ( $exception instanceof DBConnectionError ) {
+			$this->setLastError( BagOStuff::ERR_UNREACHABLE );
 			wfDebug( __METHOD__ . ": ignoring connection error\n" );
 		} else {
+			$this->setLastError( BagOStuff::ERR_UNEXPECTED );
 			wfDebug( __METHOD__ . ": ignoring query error\n" );
 		}
 	}
@@ -646,8 +648,10 @@ class SqlBagOStuff extends BagOStuff {
 		}
 		wfDebugLog( 'SQLBagOStuff', "DBError: {$exception->getMessage()}" );
 		if ( $exception instanceof DBConnectionError ) {
+			$this->setLastError( BagOStuff::ERR_UNREACHABLE );
 			wfDebug( __METHOD__ . ": ignoring connection error\n" );
 		} else {
+			$this->setLastError( BagOStuff::ERR_UNEXPECTED );
 			wfDebug( __METHOD__ . ": ignoring query error\n" );
 		}
 	}
@@ -677,19 +681,17 @@ class SqlBagOStuff extends BagOStuff {
 	public function createTables() {
 		for ( $serverIndex = 0; $serverIndex < $this->numServers; $serverIndex++ ) {
 			$db = $this->getDB( $serverIndex );
-			if ( $db->getType() !== 'mysql'
-				|| version_compare( $db->getServerVersion(), '4.1.0', '<' ) )
-			{
+			if ( $db->getType() !== 'mysql' ) {
 				throw new MWException( __METHOD__ . ' is not supported on this DB server' );
 			}
 
 			for ( $i = 0; $i < $this->shards; $i++ ) {
-				$db->begin( __METHOD__ );
+				$db->commit( __METHOD__, 'flush' );
 				$db->query(
 					'CREATE TABLE ' . $db->tableName( $this->getTableNameByShard( $i ) ) .
 					' LIKE ' . $db->tableName( 'objectcache' ),
 					__METHOD__ );
-				$db->commit( __METHOD__ );
+				$db->commit( __METHOD__, 'flush' );
 			}
 		}
 	}
