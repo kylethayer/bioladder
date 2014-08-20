@@ -42,6 +42,9 @@
         '<tpl if="otherNames">',
             '<b>Other Names:</b> {otherNames:htmlEncode}<br><br>',
         '</tpl>',
+        '<tpl if="taxonomicRank">',
+            '<b>Taxonomic Rank:</b> {taxonomicRank:htmlEncode}<br><br>',
+        '</tpl>',
         '<tpl if="description">',
             '<b>Description:</b> {[Ext.String.htmlEncode(values.description).replace(/\\n/g,"<br>");]}<br><br>', //todo html encode, replace \n with <br>
         '<tpl else>',

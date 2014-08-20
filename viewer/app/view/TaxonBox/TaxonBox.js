@@ -187,11 +187,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
     
     updateTitle: function() {
         var me = this;
-        if(me.getCollapsed() || !me.getTaxon().get('taxonomicRank')){
-            me.down('#taxonLabel').setHtml(me.getTaxon().get('name'));
-        } else {
-            me.down('#taxonLabel').setHtml(me.getTaxon().get('name') + ' (' + Ext.String.htmlEncode(me.getTaxon().get('taxonomicRank')) + ')');
-        }
+        me.down('#taxonLabel').setHtml(me.getTaxon().get('name'));
     },
     
     destroy: function(){
