@@ -94,7 +94,6 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     },
                 }
              });
-             Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
          }
         
         //display current taxon

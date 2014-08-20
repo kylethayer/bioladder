@@ -45,6 +45,8 @@ Ext.define('BioLadderOrg.controller.Main', {
 
     onNoRoute: function () {
         this.onNavigateToTaxon('Human');
+        //Coming to the base site opens up the help panel
+        Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
     },
 
     onRouteName: function (name) {
