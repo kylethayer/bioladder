@@ -423,7 +423,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         },
         
         getCssTransitionAttribute: function(){
-            if(Ext.browser.is.Chrome) {
+            if(Ext.browser.is.Chrome || Ext.browser.is.Safari) {
                 return "-webkit-transform";
             }
             if(Ext.browser.is.Firefox) {
@@ -436,7 +436,7 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         },
         
         getCssTransitionAttributeAccessor: function(){
-            if(Ext.browser.is.Chrome) {
+            if(Ext.browser.is.Chrome || Ext.browser.is.Safari) {
                 return "webkitTransform";
             }
             if(Ext.browser.is.Firefox) {
