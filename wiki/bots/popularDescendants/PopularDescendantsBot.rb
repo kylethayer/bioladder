@@ -44,9 +44,9 @@ def processPopularSubtaxaForTaxon(parentTaxonName)
   #For each of the results gather the popular descendants and such
   popularityEntries = []
   descendants.each do |descendant|
-    descendantName = descendant.name
-    if(descendant.elements["printouts"].elements["Has_Popularity"].first)
-        descendantPopularity = descendant.elements["printouts"].elements["Has_Popularity"].first.first.to_s.to_f
+    descendantName = getEntryName(descendant)
+    if(getEntryFieldValue(descendant, "Has Popularity"))
+        descendantPopularity = getEntryFieldValue(descendant, "Has Popularity").to_f
 
         puts "#{descendantName}:#{descendantPopularity}"
         popularityEntries.push({
@@ -58,13 +58,14 @@ def processPopularSubtaxaForTaxon(parentTaxonName)
     end
     
     #Get PopularSubtaxa w/ popularity and add to hash under current branch
-    subPopularSubtaxa = descendant.elements["printouts"].elements["Has_Popular_Subtaxa"].to_a
+    subPopularSubtaxa = getEntryField(descendant, "Has Popular Subtaxa").to_a
     subPopularSubtaxa.each do |subDescendant|
-      subDescendantName = subDescendant.attribute('fulltext').value
+      subDescendantName = getEntryName(subDescendant)
       subQueryResults = $mw.semantic_query("[[#{subDescendantName}]]", ['?Has Popularity'])
       subDescendantResult = subQueryResults.elements["query"].elements["results"].first
-      if(subDescendantResult.elements["printouts"].elements["Has_Popularity"].first)
-        subDescendantPopularity = subDescendantResult.elements["printouts"].elements["Has_Popularity"].first.first.to_s.to_f
+      if(getEntryFieldValue(subDescendantResult, "Has Popularity"))
+        subDescendantPopularity = getEntryFieldValue(subDescendantResult, "Has Popularity").to_f
+        
         puts "#{subDescendantName}:#{subDescendantPopularity}"
         popularityEntries.push({
           :name => subDescendantName,
@@ -136,18 +137,17 @@ end
 
 
 def processTaxon(entry)
-  entryName = entry.name
-  outOfDate = entry.elements["printouts"].elements["Are_Popular_Subtaxa_Out_Of_Date"].first.first
-
+  entryName = getEntryName(entry)
+  outOfDate = getEntryFieldValue(entry, "Are Popular Subtaxa Out Of Date")
   
   if(outOfDate == 'self' or outOfDate == 'self and parent')
     processPopularSubtaxaForTaxon(entryName)
   end
   
   if(outOfDate == 'parent' or outOfDate == 'self and parent')
-    parentTaxon = entry.elements["printouts"].elements["Has_Parent_Taxon"].first
+    parentTaxon = getEntryField(entry, "Has Parent Taxon").first
     if(parentTaxon)
-      parentTaxonName = parentTaxon.attribute('fulltext').value
+      parentTaxonName = getEntryName(parentTaxon)
   
       #now find all descendants of the parentTaxon and their ('?Popular Subtaxa', '?Has Popularity')
       processPopularSubtaxaForTaxon(parentTaxonName)
@@ -174,11 +174,33 @@ def getNextOutOfDateTaxon
   return queryResults.elements["query"].elements["results"].first
 end
 
+def getEntryName(entry)
+    return entry.attribute("fulltext").value
+end
+
+def getEntryField(entry, fieldName)
+    entry.elements["printouts"].each do |a|
+        if(a.attribute('label').to_s == fieldName)
+            return a
+        end
+    end
+    return nil
+end
+
+def getEntryFieldValue(entry, fieldName)
+    entryField = getEntryField(entry, fieldName)
+    if(entryField && entryField.first)
+        return entryField.first.first.to_s
+    end
+    return nil
+end
+
+
 maxEntriesToProcess = 25
 (1..maxEntriesToProcess).each do |i|
   entry = getNextOutOfDateTaxon()
   if(entry)
-    puts "#{i}, #{entry.name}"
+    puts "#{i}, #{getEntryName(entry)}"
     processTaxon(entry)
   else
     break
