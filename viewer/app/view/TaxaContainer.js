@@ -49,7 +49,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
     initialize: function () {
         var me = this;
         me.firstLoad = true;
-        me.__displayedTaxonBoxInfo = []; //TODO, store Elbow connectors with this?
+        me.__displayedTaxonBoxInfo = [];
         me.__deleteItem = function(item){
             me.remove(item, true);
         };
@@ -94,6 +94,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     },
                 }
              });
+             Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
          }
         
         //display current taxon

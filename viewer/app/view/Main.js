@@ -37,6 +37,9 @@ Ext.define('BioLadderOrg.view.Main', {
             },
             '#searchBtn': {
                 tap: function() {Ext.Viewport.add(Ext.widget('searchPanel')); }
+            },
+            '#helpBtn': {
+                tap: function() {Ext.Viewport.add(Ext.widget('aboutCladesPanel')); }
             }
         },
 
@@ -46,14 +49,19 @@ Ext.define('BioLadderOrg.view.Main', {
             title: 'BioLadder.org - The Interactive Tree of Life Viewer and Wiki',
             items: [{
                 xtype: 'button',
+                align: 'left',
+                html: 'How To Help',
+                itemId: 'howToHelpBtn'
+            }, {
+                xtype: 'button',
                 align: 'right',
                 iconCls: 'search',
                 itemId: 'searchBtn'
             }, {
                 xtype: 'button',
                 align: 'right',
-                html: 'How To Help',
-                itemId: 'howToHelpBtn'
+                html: '<span style="font-size:16pt;">?<span>',
+                itemId: 'helpBtn'
             }]
         }, {
             xtype: 'taxacontainer'
