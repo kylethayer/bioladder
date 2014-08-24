@@ -17,13 +17,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('BioLadderOrg.view.HowToHelpPanel', {
-    xtype: 'howToHelpPanel',
+Ext.define('BioLadderOrg.view.ParentCladePopup', {
+    xtype: 'parentCladePopup',
     extend: 'Ext.Panel',
 
     config: {
         control: {
-            '#HowToHelpCloseBtn': {
+            '#ParentCladePopupCloseBtn': {
                 tap: function () {this.hide(); }
             }
         },
@@ -33,30 +33,41 @@ Ext.define('BioLadderOrg.view.HowToHelpPanel', {
         items: [{
             xtype: 'titlebar',
             docked: 'top',
-            title: 'How to Help',
+            title: 'Parent Clade',
             items: [{
                 xtype: 'button',
                 html: 'close',
                 align: 'right',
                 ui: 'confirm',
-                itemId: 'HowToHelpCloseBtn'
+                itemId: 'ParentCladePopupCloseBtn'
             }]
         }, {
             xtype: 'component',
             html: [
-                
                 '<p>',
-                    'There are two primary ways to help:',
-                '</p><br>',
-                    '<a href="../wiki" target="_blank">Content</a>: You can edit the wiki, where ',
-                    'the information for clades, photos, descriptions, and wikipedia links are saved.',
+                    'A parent clade is a group of organizms that includes all its children clades ',
+                    'and represents an earlier branching in evolution.',
                 '</p><br>',
                 '<p>',
-                    '<a href="https://code.google.com/p/bioladder/" target="_blank">Open Source ',
-                    'Code</a>: BioLadder.Org is an open source project hosted on Google Code. ',
-                    'You can help with the Wiki coding or with the Viewer coding.',
-                '</p>'].join(''),
+                    'For example, the clade <a href="#Simian" target="_blank">Simian</a> is made up of ',
+                    'monkeys and apes. The parent clade <a href="#Haplorhini" target="_blank">Haplorhini</a> ',
+                    'includes all <a href="#Simian" target="_blank">Simians</a> along with ',
+                    '<a href="#Tarsier" target="_blank">Tarsier</a> (small primates with huge eyes). <a href="#Tarsier" target="_blank">Tarsiers</a> ',
+                    'split from <a href="#Simian" target="_blank">Simians</a> earlier in evolutionary history ',
+                    'than monkeys and apes split.',
+                '</p><br>'].join(''),
             style: 'font-size: 16px; margin-left: 10px; margin-top: 5px; margin-right: 5px;'
+        }, {
+            xtype: 'button',
+            baseCls: 'no-formatting',
+            html: '<span id="moreCladeInfoBtn" class="no-underline-link-btn" style="font-size:12px;font-weight:bold">Click here</span> <span style="font-size:12px">for more about clades.</span>',
+            listeners: {
+                tap: function(obj, e){
+                    if(e.target.id == "moreCladeInfoBtn"){
+                        Ext.Viewport.add({xtype:'aboutCladesPanel', skipToClades:true});
+                    }
+                },
+            }
         }],
         maxHeight: 300,
         maxWidth: 400,

@@ -48,6 +48,8 @@ Ext.define('BioLadderOrg.view.SearchPanel', {
             items: [{
                 xtype: 'button',
                 html: 'close',
+                align: 'right',
+                ui: 'confirm',
                 itemId: 'searchCloseBtn'
             }]
         }, {

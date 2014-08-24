@@ -17,13 +17,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-Ext.define('BioLadderOrg.view.HowToHelpPanel', {
-    xtype: 'howToHelpPanel',
+Ext.define('BioLadderOrg.view.ChildCladePopup', {
+    xtype: 'childCladePopup',
     extend: 'Ext.Panel',
 
     config: {
         control: {
-            '#HowToHelpCloseBtn': {
+            '#ChildCladePopupCloseBtn': {
                 tap: function () {this.hide(); }
             }
         },
@@ -33,30 +33,40 @@ Ext.define('BioLadderOrg.view.HowToHelpPanel', {
         items: [{
             xtype: 'titlebar',
             docked: 'top',
-            title: 'How to Help',
+            title: 'Child Clade',
             items: [{
                 xtype: 'button',
                 html: 'close',
                 align: 'right',
                 ui: 'confirm',
-                itemId: 'HowToHelpCloseBtn'
+                itemId: 'ChildCladePopupCloseBtn'
             }]
         }, {
             xtype: 'component',
             html: [
-                
                 '<p>',
-                    'There are two primary ways to help:',
-                '</p><br>',
-                    '<a href="../wiki" target="_blank">Content</a>: You can edit the wiki, where ',
-                    'the information for clades, photos, descriptions, and wikipedia links are saved.',
+                    'A child clade is a group of organizms that includes some of the members of it\'s parent clade and represents a later branching in evolution.',
                 '</p><br>',
                 '<p>',
-                    '<a href="https://code.google.com/p/bioladder/" target="_blank">Open Source ',
-                    'Code</a>: BioLadder.Org is an open source project hosted on Google Code. ',
-                    'You can help with the Wiki coding or with the Viewer coding.',
-                '</p>'].join(''),
+                    'For example, the clade <a href="#Simian" target="_blank">Simian</a> has two child clades: ',
+                    '<a href="#New World monkey" target="_blank">New World Monkeys</a> and <a href="#Catarrhini" target="_blank">Catarrhini</a> ',
+                    '(<a href="#Old World monkey" target="_blank">Old World Monkeys</a> and <a href="#Ape" target="_blank">Apes</a>). ',
+                    'This means that some of the first <a href="#Simian" target="_blank">Simians</a> split into two groups. ',
+                    'One group was the ancestor of all <a href="#New World monkey" target="_blank">New World Monkeys</a>, ',
+                    'and the other group was the ancestor of all <a href="#Catarrhini" target="_blank">Catarrhini</a>',
+                '</p><br>'].join(''),
             style: 'font-size: 16px; margin-left: 10px; margin-top: 5px; margin-right: 5px;'
+        }, {
+            xtype: 'button',
+            baseCls: 'no-formatting',
+            html: '<span id="moreCladeInfoBtn" class="no-underline-link-btn" style="font-size:12px;font-weight:bold">Click here</span> <span style="font-size:12px">for more about clades.</span>',
+            listeners: {
+                tap: function(obj, e){
+                    if(e.target.id == "moreCladeInfoBtn"){
+                        Ext.Viewport.add({xtype:'aboutCladesPanel', skipToClades:true});
+                    }
+                },
+            }
         }],
         maxHeight: 300,
         maxWidth: 400,

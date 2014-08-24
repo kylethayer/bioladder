@@ -28,16 +28,15 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         'BioLadderOrg.view.TaxonBox.TaxonBox',
         'BioLadderOrg.view.TaxaContainerPositionCalculator',
         'BioLadderOrg.view.ElbowConnector',
-        'BioLadderOrg.view.LoadingSpinner'
+        'BioLadderOrg.view.LoadingSpinner',
+        'BioLadderOrg.view.ParentCladePopup',
+        'BioLadderOrg.view.ChildCladePopup'
     ],
 
     config: {
         control: {
             'taxonbox': {
                 navigatetotaxon: 'onNavigateToTaxon'
-            },
-            '#aboutCladesBtn': {
-                tap: function () {Ext.Viewport.add(Ext.widget('aboutCladesPanel')); }
             }
         },
         taxon: null,
@@ -83,13 +82,16 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             var cladeLegend = me.add({
                 xtype: 'button', //button allows tap event capture
                 baseCls: 'no-formatting',
-                html: '<span style="font-size:10px">Parent Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span><br>&#8593;<br>&#8595;<br><span style="font-size:10px">Child Clade</span> <span id="aboutCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span>',
+                html: '<span style="font-size:10px">Parent Clade</span> <span id="parentCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span><br>&#8593;<br>&#8595;<br><span style="font-size:10px">Child Clade</span> <span id="childCladesBtn" class="no-underline-link-btn" style="font-size:10px">[?]</span>',
                 top: 5,
                 left: 5,
                 listeners: {
                     tap: function(obj, e){
-                        if(e.target.id == "aboutCladesBtn"){
-                            Ext.Viewport.add(Ext.widget('aboutCladesPanel'));
+                        if(e.target.id == "childCladesBtn"){
+                            Ext.Viewport.add(Ext.widget('childCladePopup'));
+                        }
+                        if(e.target.id == "parentCladesBtn"){
+                            Ext.Viewport.add(Ext.widget('parentCladePopup'));
                         }
                     },
                 }
