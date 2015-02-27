@@ -26,22 +26,42 @@
     return true;
   }
   
-  if(preg_match("/\|Popular Subtaxa Out Of Date=self and parent/", $text, $matches)){
+  if(preg_match("/\|Popular Subtaxa Out Of Date=self and parent and children/", $text, $matches)){
     return true;
   }
   
-  if(preg_match("/\|Popular Subtaxa Out Of Date=self/", $text, $matches)){
-    $text = preg_replace("(\|Popular Subtaxa Out Of Date=self)", "|Popular Subtaxa Out Of Date=self and parent", $text);
+  if(preg_match("/\|Popular Subtaxa Out Of Date=self and parent/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=self)", "|Popular Subtaxa Out Of Date=self and parent and children", $text);
+    return true;
+  }
+  
+  if(preg_match("/\|Popular Subtaxa Out Of Date=parent and children/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=parent)", "|Popular Subtaxa Out Of Date=self and parent and children", $text);
     return true;
   }
   
   if(preg_match("/\|Popular Subtaxa Out Of Date=parent/", $text, $matches)){
-    $text = preg_replace("(\|Popular Subtaxa Out Of Date=parent)", "|Popular Subtaxa Out Of Date=self and parent", $text);
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=parent)", "|Popular Subtaxa Out Of Date=self and parent and children", $text);
+    return true;
+  }
+  
+  if(preg_match("/\|Popular Subtaxa Out Of Date=self and children/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=self)", "|Popular Subtaxa Out Of Date=self and parent and children", $text);
+    return true;
+  }
+  
+  if(preg_match("/\|Popular Subtaxa Out Of Date=self/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=self)", "|Popular Subtaxa Out Of Date=self and parent and children", $text);
+    return true;
+  }
+  
+  if(preg_match("/\|Popular Subtaxa Out Of Date=children/", $text, $matches)){
+    $text = preg_replace("(\|Popular Subtaxa Out Of Date=parent)", "|Popular Subtaxa Out Of Date=self and parent and children", $text);
     return true;
   }
   
   if(preg_match("/^{{Taxon/", $text, $matches)){
-    $text = preg_replace("(^{{Taxon)", "{{Taxon\n|Popular Subtaxa Out Of Date=self and parent", $text);
+    $text = preg_replace("(^{{Taxon)", "{{Taxon\n|Popular Subtaxa Out Of Date=self and parent and children", $text);
   }
   
   return true;

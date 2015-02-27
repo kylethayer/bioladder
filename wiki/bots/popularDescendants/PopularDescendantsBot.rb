@@ -22,6 +22,10 @@ require 'rubygems'
 require 'media_wiki'
 require 'yaml'
 #see https://github.com/jpatokal/mediawiki-gateway
+#https://github.com/jpatokal/mediawiki-gateway/blob/master/lib/media_wiki/gateway.rb
+#https://www.mediawiki.org/wiki/API:Edit
+
+WeightAgainstBranchFraction = 0.7
 
 credentials = YAML.load_file('LoginCredentials.yaml')
 $mw = MediaWiki::Gateway.new(credentials['URL'])
@@ -35,13 +39,44 @@ def $mw.bot_edit(title, content, options={})
   make_api_request(form_data)
 end
 
-WeightAgainstBranchFraction = 0.7
-
-def processPopularSubtaxaForTaxon(parentTaxonName)
-  puts "processPopularSubtaxaForTaxon #{parentTaxonName}..."
-  queryResults = $mw.semantic_query("[[Has Parent Taxon::#{parentTaxonName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
+def processPopularSubtaxaForTaxon(taxonName)
+  puts "processPopularSubtaxaForTaxon #{taxonName}..."
+  queryResults = $mw.semantic_query("[[Has Parent Taxon::#{taxonName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
   descendants = queryResults.elements["query"].elements["results"].to_a
   #For each of the results gather the popular descendants and such
+  
+  newPopularSubtaxaString = findPopularSubtaxaString(descendants)
+  
+  currentTaxonText = $mw.get(taxonName)
+  
+  currentPopularSubtaxaMatch = /\|Popular Subtaxa=([^\n^\r^\|^}]*)/.match(currentTaxonText)
+  if(currentPopularSubtaxaMatch)
+    if(newPopularSubtaxaString == currentPopularSubtaxaMatch[1])
+      currentTaxonText = markOutOfDateAsNoneInText(currentTaxonText)
+      $mw.bot_edit(taxonName, currentTaxonText, {})
+      return
+    end
+  end
+
+  #Update this Taxon with the new popular entries
+  if(currentPopularSubtaxaMatch)
+    puts "updating PopularSubtaxa #{newPopularSubtaxaString}"
+    currentTaxonText.sub!(/\|Popular Subtaxa=[^\n^\r^\|^}]*/, '|Popular Subtaxa=' + newPopularSubtaxaString)
+  else
+    puts "adding PopularSubtaxa #{newPopularSubtaxaString}"
+    currentTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa=" +newPopularSubtaxaString)
+  end
+    
+  currentTaxonText = markAsParentOutOfDateInText(currentTaxonText)
+  
+  puts ""
+  puts "saving #{taxonName}..."
+  puts currentTaxonText
+  puts ""
+  $mw.bot_edit(taxonName, currentTaxonText, {})
+end
+
+def findPopularSubtaxaString(descendants)
   popularityEntries = []
   descendants.each do |descendant|
     descendantName = getEntryName(descendant)
@@ -98,59 +133,68 @@ def processPopularSubtaxaForTaxon(parentTaxonName)
   end
   
   newPopularSubtaxaString = newPopularSubtaxa.map{|pd| "#{pd[:name]}]](#{pd[:popularity]})"}.join(",")
-  
-  ancestorTaxonText = $mw.get(parentTaxonName)
-  
-  currentPopularSubtaxaMatch = /\|Popular Subtaxa=([^\n^\r^\|^}]*)/.match(ancestorTaxonText)
-  if(currentPopularSubtaxaMatch)
-    if(newPopularSubtaxaString == currentPopularSubtaxaMatch[1])
-        ancestorTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '')
-        $mw.bot_edit(parentTaxonName, ancestorTaxonText, {})
-      return
-    end
-  end
-  #Update this Taxon with the new popular entries
-  if(currentPopularSubtaxaMatch)
-    puts "updating PopularSubtaxa #{newPopularSubtaxaString}"
-    ancestorTaxonText.sub!(/\|Popular Subtaxa=[^\n^\r^\|^}]*/, '|Popular Subtaxa=' + newPopularSubtaxaString)
-  else
-    puts "adding PopularSubtaxa #{newPopularSubtaxaString}"
-    ancestorTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa=" +newPopularSubtaxaString)
-  end
-  
-  if(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/.match(ancestorTaxonText))
-    ancestorTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=parent')
-  else
-    ancestorTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa Out Of Date=parent")
-  end
-  puts ""
-  puts "saving #{parentTaxonName}..."
-  puts ancestorTaxonText
-  puts ""
-  $mw.bot_edit(parentTaxonName, ancestorTaxonText, {})
+  return newPopularSubtaxaString
 end
 
-#https://github.com/jpatokal/mediawiki-gateway/blob/master/lib/media_wiki/gateway.rb
-#https://www.mediawiki.org/wiki/API:Edit
+def markOutOfDateAsNoneInText(taxonText)
+  return taxonText.sub(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '')
+end
 
+def markAsParentOutOfDateInText(currentTaxonText)
+  currentOutOfDateMatch = /\|Popular Subtaxa Out Of Date=([^\n^\r^\|^}]*)/.match(currentTaxonText)
+  if(currentOutOfDateMatch)
+    if(!currentOutOfDateMatch[1].include?("parent"))
+      newValue = "parent"
+      if(currentOutOfDateMatch[1] == "self")
+        newValue = "self and parent"
+      elsif (currentOutOfDateMatch[1] == "children")
+        newValue = "parent and children"
+      elsif (currentOutOfDateMatch[1] == "self and children")
+        newValue = "self and parent and children"
+      end
+      return currentTaxonText.sub(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date='+newValue)
+    end
+  else
+    return currentTaxonText.sub(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa Out Of Date=parent")
+  end
+  return currentTaxonText
+end
 
-
+def markTaxonAsSelfOutOfDate(taxonName)
+  currentTaxonText = $mw.get(taxonName)
+  currentOutOfDateMatch = /\|Popular Subtaxa Out Of Date=([^\n^\r^\|^}]*)/.match(currentTaxonText)
+  if(currentOutOfDateMatch)
+    if(currentPopularSubtaxaMatch[1].include?("self"))
+	  return #Already marked
+	end
+    if(currentPopularSubtaxaMatch[1] == "")
+      currentTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=self')
+    else
+      currentTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=self and '+currentPopularSubtaxaMatch[1])
+    end
+  else
+    currentTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa Out Of Date=self")
+  end
+  
+  puts "Marking #{taxonName} as out of date"
+  $mw.bot_edit(taxonName, currentTaxonText, {})
+end
 
 def processTaxon(entry)
   entryName = getEntryName(entry)
   outOfDate = getEntryFieldValue(entry, "Are Popular Subtaxa Out Of Date")
   
-  if(outOfDate == 'self' or outOfDate == 'self and parent')
+  if(outOfDate.include?('self'))
     processPopularSubtaxaForTaxon(entryName)
   end
   
-  if(outOfDate == 'parent' or outOfDate == 'self and parent')
+  if(outOfDate.include?('parent'))
     parentTaxon = getEntryField(entry, "Has Parent Taxon").first
     if(parentTaxon)
       parentTaxonName = getEntryName(parentTaxon)
   
-      #now find all descendants of the parentTaxon and their ('?Popular Subtaxa', '?Has Popularity')
-      processPopularSubtaxaForTaxon(parentTaxonName)
+      #now mark the parentTaxon as needing to be updated
+      markTaxonAsSelfOutOfDate(parentTaxonName)
     end
   end
   pageText = $mw.get(entryName)

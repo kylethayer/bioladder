@@ -1,0 +1,41 @@
+http://localhost/bioladder/wiki/index.php/Special:CreateProperty
+
+Has Popular Ancestor 1 - page - Taxon
+Has Popular Ancestor 2 - page - Taxon
+Has Popular Ancestor 3 - page - Taxon
+Has Popular Ancestor 4 - page - Taxon
+
+http://localhost/bioladder/wiki/index.php?title=Form:Taxon&action=edit
+
+|-
+! Popular Ancestor 1:
+| {{{field|Popular Ancestor 1|hidden}}}
+|-
+! Popular Ancestor 2:
+| {{{field|Popular Ancestor 2|hidden}}}
+|-
+! Popular Ancestor 3:
+| {{{field|Popular Ancestor 3|hidden}}}
+|-
+! Popular Ancestor 4:
+| {{{field|Popular Ancestor 4|hidden}}}
+
+http://localhost/bioladder/wiki/index.php?title=Template:Taxon&action=edit
+
+|Popular Ancestor 1=
+|Popular Ancestor 2=
+|Popular Ancestor 3=
+|Popular Ancestor 4=
+
+! Popular Ancestor 1
+| {{#arraymap:{{{Popular Ancestor 1|}}}|,|z|[[Has Popular Ancestor 1::z]]}}
+|-
+! Popular Ancestor 2
+| {{#arraymap:{{{Popular Ancestor 2|}}}|,|z|[[Has Popular Ancestor 2::z]]}}
+|-
+! Popular Ancestor 3
+| {{#arraymap:{{{Popular Ancestor 3|}}}|,|z|[[Has Popular Ancestor 3::z]]}}
+|-
+! Popular Ancestor 4
+| {{#arraymap:{{{Popular Ancestor 4|}}}|,|z|[[Has Popular Ancestor 4::z]]}}
+|-
