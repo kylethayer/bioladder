@@ -25,6 +25,7 @@ require 'yaml'
 #https://github.com/jpatokal/mediawiki-gateway/blob/master/lib/media_wiki/gateway.rb
 #https://www.mediawiki.org/wiki/API:Edit
 
+maxEntriesToProcess = 25
 WeightAgainstBranchFraction = 0.7
 AncestorPopWeight = 0.85
 
@@ -84,12 +85,12 @@ def processPopularAncestorsForTaxon(taxonEntry)
     
     #Now try inserting the parent in the first spot
     #Using pAncestor, pAncestorPop, parentTaxonName, parentPopularity
-    if(parentPopularity > ancestorPop[0] * (AncestorPopWeight ** 3))
+    if(parentPopularity > ancestorPop[0] * (AncestorPopWeight ** 3) || ancestor[3] == "")
       #We now will put parent in the ancestor[0] spot. 
       #See if Ancestor[0] should go into Ancestor[1] (each level works similarly)
-      if(ancestorPop[0] > ancestorPop[1] * (AncestorPopWeight ** 2))
-        if(ancestorPop[1] > ancestorPop[2] * (AncestorPopWeight ** 1))
-          if(ancestorPop[2] > ancestorPop[3])
+      if(ancestorPop[0] > ancestorPop[1] * (AncestorPopWeight ** 2) || ancestor[3] == "")
+        if(ancestorPop[1] > ancestorPop[2] * (AncestorPopWeight ** 1) || ancestor[3] == "")
+          if(ancestorPop[2] > ancestorPop[3] || ancestor[3] == "")
             ancestor[3] = ancestor[2]
             ancestorPop[3] = ancestorPop[2]
           end
@@ -380,8 +381,6 @@ def getEntryFieldValue(entry, fieldName)
     return nil
 end
 
-
-maxEntriesToProcess = 25
 (1..maxEntriesToProcess).each do |i|
   entry = getNextOutOfDateTaxon()
   if(entry)
