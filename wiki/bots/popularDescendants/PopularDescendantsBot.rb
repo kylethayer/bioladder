@@ -85,18 +85,18 @@ def processPopularAncestorsForTaxon(taxonEntry)
     
     #Now see if it deserves a spot on the list
     #Using pAncestor, pAncestorPop, parentTaxonName, parentPopularity
-    if(    parentPopularity > ancestorPop[0] * (AncestorPopWeight ** 3) 
-	    || parentPopularity > ancestorPop[1] * (AncestorPopWeight ** 2)
-        || parentPopularity > ancestorPop[2] * (AncestorPopWeight ** 1) ||	   
-	    || parentPopularity > ancestorPop[3] || ancestor[3] == "")
+    if(  parentPopularity > ancestorPop[0] * (AncestorPopWeight ** 3) ||
+	     parentPopularity > ancestorPop[1] * (AncestorPopWeight ** 2) ||
+         parentPopularity > ancestorPop[2] * (AncestorPopWeight ** 1) ||	   
+	     parentPopularity > ancestorPop[3] || ancestor[3] == "")
       #We now will put parent in the ancestor[0] spot. 
       #See if Ancestor[0] should go into Ancestor[1] (each level works similarly)
-      if(    ancestorPop[0] > ancestorPop[1] * (AncestorPopWeight ** 2) 
-	      || ancestorPop[0] > ancestorPop[2] * (AncestorPopWeight ** 1)
-	      || ancestorPop[0] > ancestorPop[3] || ancestor[3] == "")
+      if(  ancestorPop[0] > ancestorPop[1] * (AncestorPopWeight ** 2) ||
+	       ancestorPop[0] > ancestorPop[2] * (AncestorPopWeight ** 1) ||
+	       ancestorPop[0] > ancestorPop[3] || ancestor[3] == "")
 		  
-        if(    ancestorPop[1] > ancestorPop[2] * (AncestorPopWeight ** 1) 
-		    || ancestorPop[1] > ancestorPop[3] || ancestor[3] == "")
+        if(  ancestorPop[1] > ancestorPop[2] * (AncestorPopWeight ** 1) ||
+		     ancestorPop[1] > ancestorPop[3] || ancestor[3] == "")
 			
           if(ancestorPop[2] > ancestorPop[3] || ancestor[3] == "")
             ancestor[3] = ancestor[2]
