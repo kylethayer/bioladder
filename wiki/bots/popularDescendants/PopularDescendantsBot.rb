@@ -42,6 +42,7 @@ end
 
 def processPopularAncestorsForTaxon(taxonEntry)
   taxonName = getEntryName(taxonEntry)
+  puts ""
   puts "processPopularAncestorsForTaxon #{taxonName}..."
   parentTaxonField = getEntryField(taxonEntry, "Has Parent Taxon").first
   ancestor = []
@@ -109,6 +110,7 @@ def processPopularAncestorsForTaxon(taxonEntry)
   
   ancestor.each_with_index do |pAncestorName, index|
     newVal= "#{ancestor[index]}]](#{ancestorPop[index]})"
+	puts "#{ancestor[index]}: #{ancestorPop[index]}"
     
     regexString = "\\|Popular Ancestor #{index+1}=([^\\n^\\r^\\|^}]*)"
     currentValMatch = (Regexp.new regexString).match(currentTaxonText)
@@ -117,7 +119,10 @@ def processPopularAncestorsForTaxon(taxonEntry)
         anyChanges = true
         currentTaxonText.sub!((Regexp.new regexString), "|Popular Ancestor #{index+1}=" + newVal)
       end
-    end
+    else
+	  anyChanges = true
+	  currentTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Ancestor #{index+1}=" + newVal)
+	end
   end
 
   if(anyChanges)
@@ -335,7 +340,7 @@ def processTaxon(entry)
   
   puts ""
   puts "saving #{entryName}... (mark as everything updated)"
-  puts pageText
+  #puts pageText
   puts ""
   $mw.bot_edit(entryName, pageText, {})
   return true
@@ -376,7 +381,7 @@ def getEntryFieldValue(entry, fieldName)
 end
 
 
-maxEntriesToProcess = 1
+maxEntriesToProcess = 25
 (1..maxEntriesToProcess).each do |i|
   entry = getNextOutOfDateTaxon()
   if(entry)
