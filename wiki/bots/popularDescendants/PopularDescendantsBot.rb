@@ -111,11 +111,11 @@ def processPopularAncestorsForTaxon(taxonEntry)
     newVal= "#{ancestor[index]}]](#{ancestorPop[index]})"
     
     regexString = "\\|Popular Ancestor #{index+1}=([^\\n^\\r^\\|^}]*)"
-    currentValMatch = (Regexp.new str).match(currentTaxonText)
+    currentValMatch = (Regexp.new regexString).match(currentTaxonText)
     if(currentValMatch)
       if(newVal != currentValMatch[1])
         anyChanges = true
-        currentTaxonText.sub!((Regexp.new str), "|Popular Ancestor #{index+1}=" + newVal)
+        currentTaxonText.sub!((Regexp.new regexString), "|Popular Ancestor #{index+1}=" + newVal)
       end
     end
   end
@@ -309,7 +309,7 @@ def processTaxon(entry)
   queryResults = $mw.semantic_query("[[#{entryName}]]", ['?Are Popular Subtaxa Out Of Date', '?Has Parent Taxon'])
   entry = queryResults.elements["query"].elements["results"].first
   outOfDate = getEntryFieldValue(entry, "Are Popular Subtaxa Out Of Date")
-  if(outOfDate.include?('parent'))
+  if(outOfDate.to_s.include?('parent'))
     parentTaxon = getEntryField(entry, "Has Parent Taxon").first
     if(parentTaxon)
       #now mark the parentTaxon as needing to be updated
@@ -320,7 +320,7 @@ def processTaxon(entry)
   queryResults = $mw.semantic_query("[[#{entryName}]]", ['?Are Popular Subtaxa Out Of Date'])
   entry = queryResults.elements["query"].elements["results"].first
   outOfDate = getEntryFieldValue(entry, "Are Popular Subtaxa Out Of Date")
-  if(outOfDate.include?('children'))
+  if(outOfDate.to_s.include?('children'))
     queryResults = $mw.semantic_query("[[Has Parent Taxon::#{entryName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
     descendants = queryResults.elements["query"].elements["results"].to_a
     #now mark the children taxons as needing to be updated
