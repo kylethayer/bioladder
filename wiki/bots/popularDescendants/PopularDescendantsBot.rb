@@ -40,10 +40,10 @@ def $mw.bot_edit(title, content, options={})
   make_api_request(form_data)
 end
 
-def processPopularAncestorsForTaxon(taxonNameEntry)
-  taxonName = getEntryName(taxonNameEntry)
+def processPopularAncestorsForTaxon(taxonEntry)
+  taxonName = getEntryName(taxonEntry)
   puts "processPopularAncestorsForTaxon #{taxonName}..."
-  parentTaxonField = getEntryField(entry, "Has Parent Taxon").first
+  parentTaxonField = getEntryField(taxonEntry, "Has Parent Taxon").first
   ancestor = []
   ancestor[0] = ""
   ancestor[1] = ""
@@ -57,50 +57,50 @@ def processPopularAncestorsForTaxon(taxonNameEntry)
   ancestorPop[3] = 0
   if(parentTaxonField)
     #now mark the parentTaxon as needing to be updated
-    parentTaxonName = getEntryName(parentTaxon)
-	
-	queryResults = $mw.semantic_query("[[#{parentTaxonName}]]", ['?Has Popularity', '?Has Popular Ancestor 1', 
-	               '?Has Popular Ancestor 2', '?Has Popular Ancestor 3', '?Has Popular Ancestor 4'])
-	parentTaxonEntry = queryResults.elements["query"].elements["results"].to_a.first
-	
-	ancestor[0] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 1").first)
-	ancestor[1] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 2").first)
-	ancestor[2] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 3").first)
-	ancestor[3] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 4").first)
-	
-	ancestor.each_with_index do |pAncestorName, index|
-      QueryResults = $mw.semantic_query("[[#{pAncestorName}]]", ['?Has Popularity'])
-      ancestorResult = QueryResults.elements["query"].elements["results"].first
-      if(getEntryFieldValue(ancestorResult, "Has Popularity"))
-        ancestorPopPopularity = getEntryFieldValue(ancestorResult, "Has Popularity").to_f
-        ancestorPop[index] = ancestorPopPopularity
-	  else
-	    ancestorPop[index] = 0
+    parentTaxonName = getEntryName(parentTaxonField)
+    
+    queryResults = $mw.semantic_query("[[#{parentTaxonName}]]", ['?Has Popularity', '?Has Popular Ancestor 1', 
+                   '?Has Popular Ancestor 2', '?Has Popular Ancestor 3', '?Has Popular Ancestor 4'])
+    parentTaxonEntry = queryResults.elements["query"].elements["results"].to_a.first
+    
+    ancestor[0] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 1").first)
+    ancestor[1] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 2").first)
+    ancestor[2] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 3").first)
+    ancestor[3] = getEntryName(getEntryField(parentTaxonEntry, "Has Popular Ancestor 4").first)
+    
+    ancestor.each_with_index do |pAncestorName, index|
+      if(pAncestorName.to_s != "")
+        queryResults = $mw.semantic_query("[[#{pAncestorName}]]", ['?Has Popularity'])
+        ancestorResult = queryResults.elements["query"].elements["results"].first
+        if(getEntryFieldValue(ancestorResult, "Has Popularity"))
+          ancestorPopPopularity = getEntryFieldValue(ancestorResult, "Has Popularity").to_f
+          ancestorPop[index] = ancestorPopPopularity
+        end
       end
-	end
+    end
 
-	parentPopularity = getEntryFieldValue(parentTaxonEntry, "Has Popularity").to_f
-	
-	#Now try inserting the parent in the first spot
-	#Using pAncestor, pAncestorPop, parentTaxonName, parentPopularity
-	if(parentPopularity > ancestorPop[0] * (AncestorPopWeight ** 3))
-	  #We now will put parent in the ancestor[0] spot. 
-	  #See if Ancestor[0] should go into Ancestor[1] (each level works similarly)
-	  if(ancestorPop[0] > ancestorPop[1] * (AncestorPopWeight ** 2))
-	    if(ancestorPop[1] > ancestorPop[2] * (AncestorPopWeight ** 1))
-		  if(ancestorPop[2] > ancestorPop[3])
-		    ancestor[3] = ancestor[2]
-	        ancestorPop[3] = ancestorPop[2]
-		  end
-		  ancestor[2] = ancestor[1]
-	      ancestorPop[2] = ancestorPop[1]
-		end
-		  ancestor[1] = ancestor[0]
-	      ancestorPop[1] = ancestorPop[0]
-	  end
-	  ancestor[0] = parentTaxonName
-	  ancestorPop[0] = parentPopularity
-	end
+    parentPopularity = getEntryFieldValue(parentTaxonEntry, "Has Popularity").to_f
+    
+    #Now try inserting the parent in the first spot
+    #Using pAncestor, pAncestorPop, parentTaxonName, parentPopularity
+    if(parentPopularity > ancestorPop[0] * (AncestorPopWeight ** 3))
+      #We now will put parent in the ancestor[0] spot. 
+      #See if Ancestor[0] should go into Ancestor[1] (each level works similarly)
+      if(ancestorPop[0] > ancestorPop[1] * (AncestorPopWeight ** 2))
+        if(ancestorPop[1] > ancestorPop[2] * (AncestorPopWeight ** 1))
+          if(ancestorPop[2] > ancestorPop[3])
+            ancestor[3] = ancestor[2]
+            ancestorPop[3] = ancestorPop[2]
+          end
+          ancestor[2] = ancestor[1]
+          ancestorPop[2] = ancestorPop[1]
+        end
+          ancestor[1] = ancestor[0]
+          ancestorPop[1] = ancestorPop[0]
+      end
+      ancestor[0] = parentTaxonName
+      ancestorPop[0] = parentPopularity
+    end
   end
   
   #compare the new list to the current list, update if needed
@@ -109,13 +109,13 @@ def processPopularAncestorsForTaxon(taxonNameEntry)
   
   ancestor.each_with_index do |pAncestorName, index|
     newVal= "#{ancestor[index]}]](#{ancestorPop[index]})"
-	
+    
     regexString = "\\|Popular Ancestor #{index+1}=([^\\n^\\r^\\|^}]*)"
     currentValMatch = (Regexp.new str).match(currentTaxonText)
     if(currentValMatch)
       if(newVal != currentValMatch[1])
-	    anyChanges = true
-		currentTaxonText.sub!((Regexp.new str), "|Popular Ancestor #{index+1}=" + newVal)
+        anyChanges = true
+        currentTaxonText.sub!((Regexp.new str), "|Popular Ancestor #{index+1}=" + newVal)
       end
     end
   end
@@ -281,13 +281,13 @@ def markTaxonAsSelfOutOfDate(taxonName)
   currentTaxonText = $mw.get(taxonName)
   currentOutOfDateMatch = /\|Popular Subtaxa Out Of Date=([^\n^\r^\|^}]*)/.match(currentTaxonText)
   if(currentOutOfDateMatch)
-    if(currentPopularSubtaxaMatch[1].include?("self"))
-	  return #Already marked
-	end
-    if(currentPopularSubtaxaMatch[1] == "")
+    if(currentOutOfDateMatch[1].include?("self"))
+      return #Already marked
+    end
+    if(currentOutOfDateMatch[1] == "")
       currentTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=self')
     else
-      currentTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=self and '+currentPopularSubtaxaMatch[1])
+      currentTaxonText.sub!(/\|Popular Subtaxa Out Of Date[^\n^\r^\|^}]*/, '|Popular Subtaxa Out Of Date=self and '+currentOutOfDateMatch[1])
     end
   else
     currentTaxonText.sub!(/\{\{Taxon/, "{{Taxon\n|Popular Subtaxa Out Of Date=self")
@@ -303,11 +303,11 @@ def processTaxon(entry)
 
   if(outOfDate.include?('self'))
     processPopularSubtaxaForTaxon(entryName)
-	processPopularAncestorsForTaxon(entry)
+    processPopularAncestorsForTaxon(entry)
   end
 
-  queryResults = $mw.semantic_query("[[#{entryName}]]", ['?Are Popular Subtaxa Out Of Date'])
-  entry = subQueryResults.elements["query"].elements["results"].first
+  queryResults = $mw.semantic_query("[[#{entryName}]]", ['?Are Popular Subtaxa Out Of Date', '?Has Parent Taxon'])
+  entry = queryResults.elements["query"].elements["results"].first
   outOfDate = getEntryFieldValue(entry, "Are Popular Subtaxa Out Of Date")
   if(outOfDate.include?('parent'))
     parentTaxon = getEntryField(entry, "Has Parent Taxon").first
@@ -318,15 +318,15 @@ def processTaxon(entry)
   end
   
   queryResults = $mw.semantic_query("[[#{entryName}]]", ['?Are Popular Subtaxa Out Of Date'])
-  entry = subQueryResults.elements["query"].elements["results"].first
+  entry = queryResults.elements["query"].elements["results"].first
   outOfDate = getEntryFieldValue(entry, "Are Popular Subtaxa Out Of Date")
   if(outOfDate.include?('children'))
-    queryResults = $mw.semantic_query("[[Has Parent Taxon::#{taxonName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
+    queryResults = $mw.semantic_query("[[Has Parent Taxon::#{entryName}]]", ['?Has Popular Subtaxa', '?Has Popularity'])
     descendants = queryResults.elements["query"].elements["results"].to_a
-	#now mark the children taxons as needing to be updated
-	descendants.each do |descendant|
-	  markTaxonAsSelfOutOfDate(getEntryName(descendant))
-	end
+    #now mark the children taxons as needing to be updated
+    descendants.each do |descendant|
+      markTaxonAsSelfOutOfDate(getEntryName(descendant))
+    end
   end
   
   pageText = $mw.get(entryName)
@@ -346,15 +346,15 @@ def getNextOutOfDateTaxon
   queryResults = $mw.semantic_query(
     '[[Are Popular Subtaxa Out Of Date::+]]', 
     ['?Are Popular Subtaxa Out Of Date','?Has Parent Taxon', '?Popular Subtaxa', '?Has Popularity', '?Has Popular Ancestor 1', 
-	               '?Has Popular Ancestor 2', '?Has Popular Ancestor 3', '?Has Popular Ancestor 4', 'limit=1']
+                   '?Has Popular Ancestor 2', '?Has Popular Ancestor 3', '?Has Popular Ancestor 4', 'limit=1']
   )
   return queryResults.elements["query"].elements["results"].first
 end
 
 def getEntryName(entry)
     if(entry.nil?)
-	  return ""
-	end
+      return ""
+    end
     return entry.attribute("fulltext").value
 end
 
@@ -376,7 +376,7 @@ def getEntryFieldValue(entry, fieldName)
 end
 
 
-maxEntriesToProcess = 25
+maxEntriesToProcess = 1
 (1..maxEntriesToProcess).each do |i|
   entry = getNextOutOfDateTaxon()
   if(entry)
