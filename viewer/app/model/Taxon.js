@@ -68,6 +68,66 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return parentTaxon;
                 }
             }, {  
+                name: 'popularAncestor1',
+                type: 'auto',
+                convert: function (popAncestor, record) {
+                    if (popAncestor && typeof popAncestor === 'string') {
+                        //make sure the name is a legitimate name
+                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                            window.console.error('Parent Taxon name must be normal characters:', ancestor);
+                            return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
+                        }
+                        //convert it into an popAncestor object
+                        return Ext.getStore('Taxa').findOrCreateTaxon(popAncestor);
+                    }
+                    return popAncestor;
+                }
+            }, {  
+                name: 'popularAncestor2',
+                type: 'auto',
+                convert: function (popAncestor, record) {
+                    if (popAncestor && typeof popAncestor === 'string') {
+                        //make sure the name is a legitimate name
+                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                            window.console.error('Parent Taxon name must be normal characters:', ancestor);
+                            return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
+                        }
+                        //convert it into an popAncestor object
+                        return Ext.getStore('Taxa').findOrCreateTaxon(popAncestor);
+                    }
+                    return popAncestor;
+                }
+            }, {  
+                name: 'popularAncestor3',
+                type: 'auto',
+                convert: function (popAncestor, record) {
+                    if (popAncestor && typeof popAncestor === 'string') {
+                        //make sure the name is a legitimate name
+                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                            window.console.error('Parent Taxon name must be normal characters:', ancestor);
+                            return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
+                        }
+                        //convert it into an popAncestor object
+                        return Ext.getStore('Taxa').findOrCreateTaxon(popAncestor);
+                    }
+                    return popAncestor;
+                }
+            }, {  
+                name: 'popularAncestor4',
+                type: 'auto',
+                convert: function (popAncestor, record) {
+                    if (popAncestor && typeof popAncestor === 'string') {
+                        //make sure the name is a legitimate name
+                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                            window.console.error('Parent Taxon name must be normal characters:', ancestor);
+                            return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
+                        }
+                        //convert it into an popAncestor object
+                        return Ext.getStore('Taxa').findOrCreateTaxon(popAncestor);
+                    }
+                    return popAncestor;
+                }
+            }, {  
                 name: 'popularSubTaxa',
                 type: 'auto',
                 convert: function (popularSubTaxa, record) {
@@ -211,7 +271,8 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
             }
         }
         requestFields =  ['Has Parent Taxon', 'Has Popular Subtaxa', 'Has Example Member', 'Has Example Member Text',
-            'Has Taxonomic Rank', 'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 'Has Wikipedia Page' ];
+            'Has Taxonomic Rank', 'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 
+            'Has Wikipedia Page', 'Has Popular Ancestor 1', 'Has Popular Ancestor 2', 'Has Popular Ancestor 3', 'Has Popular Ancestor 4',  ];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -266,6 +327,18 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                         }
                         if (printouts['Has Example Member Text'] && printouts['Has Example Member Text'].length > 0) {
                             taxonFields.exampleMemberText = printouts['Has Example Member Text'][0];
+                        }
+                        if (printouts['Has Popular Ancestor 1'] && printouts['Has Popular Ancestor 1'].length > 0) {
+                            taxonFields.popularAncestor1 = printouts['Has Popular Ancestor 1'][0].fulltext;
+                        }
+                        if (printouts['Has Popular Ancestor 2'] && printouts['Has Popular Ancestor 2'].length > 0) {
+                            taxonFields.popularAncestor2 = printouts['Has Popular Ancestor 2'][0].fulltext;
+                        }
+                        if (printouts['Has Popular Ancestor 3'] && printouts['Has Popular Ancestor 3'].length > 0) {
+                            taxonFields.popularAncestor3 = printouts['Has Popular Ancestor 3'][0].fulltext;
+                        }
+                        if (printouts['Has Popular Ancestor 4'] && printouts['Has Popular Ancestor 4'].length > 0) {
+                            taxonFields.popularAncestor4 = printouts['Has Popular Ancestor 4'][0].fulltext;
                         }
                         if (printouts['Has Popular Subtaxa'] && printouts['Has Popular Subtaxa'].length > 0) {
                             popularSubTaxa = [];

@@ -184,20 +184,35 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             parentTaxon.whenLoaded(function (loadedTaxon) {
                 me.destroyParentLoadingSpinner(parentTaxonDisplayInfo);
                 if(taxon === me.getTaxon()){
-                    var grandParentTaxon = loadedTaxon.get('parentTaxon');
+                    //get up to 4 Popular Ancestors
+                    popAncestors = [];
 
-                    if(grandParentTaxon){ //this is going to be offscreen, but it's easier to display the elbow connector if we create it like normal
-                        grandParentTaxonBox = me.findOrCreateTaxonBox(grandParentTaxon);
-
-                        grandParentTaxonDisplayInfo = { taxonBox: grandParentTaxonBox, descendantIndex: -2 };
-                        me.__displayedTaxonBoxInfo.push(grandParentTaxonDisplayInfo);
-                        parentTaxonDisplayInfo.parentTaxonDisplayInfo = grandParentTaxonDisplayInfo;
+                    for(var i = 1; i <= 4; i++){
+                        popAncestor = loadedTaxon.get('popularAncestor'+i);
+                        if(popAncestor != null){
+                            popAncestors.push(popAncestor);
+                        }
+                    }
+                    
+                    var prevTaxonDisplayInfo = parentTaxonDisplayInfo;
+                    for(var i = 0; i < popAncestors.length; i++){
+                        popAncestorTaxonBox = me.findOrCreateTaxonBox(popAncestors[i]);
+                        
+                        popAncestorTaxonDisplayInfo = { taxonBox: popAncestorTaxonBox, descendantIndex: -Infinity, taxonSiblingIndex: popAncestors.length - i - 1, siblingsCount: popAncestors.length}
+                        me.__displayedTaxonBoxInfo.push(popAncestorTaxonDisplayInfo);
+                        prevTaxonDisplayInfo.parentTaxonDisplayInfo = popAncestorTaxonDisplayInfo;
                         
                         //If we aren't currently transitioning to a new taxon
                         if(me.__olddisplayedTaxonBoxInfo.length == 0){
-                            me.fadeInTaxonBox(grandParentTaxonDisplayInfo);
-                            me.fadeInParentElbowConnector(parentTaxonDisplayInfo);
+                            me.fadeInTaxonBox(popAncestorTaxonDisplayInfo);
+                            me.fadeInParentElbowConnector(prevTaxonDisplayInfo);
                         }
+                        prevTaxonDisplayInfo = popAncestorTaxonDisplayInfo;
+                        popAncestors[i].ensureFullyLoaded();
+                    }
+
+                    var grandParentTaxon = loadedTaxon.get('parentTaxon');
+                    if(grandParentTaxon){ 
                         grandParentTaxon.ensureFullyLoaded();
                     }
                 }
