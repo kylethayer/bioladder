@@ -165,7 +165,7 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
         if (taxon) {
             window.open(
                 window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) +
-                    '/wiki/index.php?title=' + taxon.get('name') + '&action=formedit',
+                    '/wiki/index.php?title=' + taxon.get('name'),
                 '_blank'
             );
         }
