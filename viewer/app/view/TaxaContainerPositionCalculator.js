@@ -43,24 +43,24 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
 
             if(taxonDescendantIndex == -Infinity){
                 var totalSiblingWidth  = siblingsCount * PopAncScale * taxonBoxClass.getWidth(false) + (siblingsCount - 1) * 2*this.horizontalSpacing;
-                x = (taxaContainer.element.getWidth() - totalSiblingWidth) / 2 + taxonSiblingIndex * (PopAncScale * (taxonBoxClass.getWidth(false)) + 2*this.horizontalSpacing);
-                y = this.topSpacing;
+				x = (taxaContainer.element.getWidth() - totalSiblingWidth) / 2 + taxonSiblingIndex * (PopAncScale * (taxonBoxClass.getWidth(false)) + 2*this.horizontalSpacing);
+                y = this.topSpacing  + taxonSiblingIndex * 1.5 / siblingsCount *this.topSpacing ;
                 return [x, y];
             }
             if(taxonDescendantIndex == -1){
                 x = taxaContainer.element.getWidth() / 2 - taxonBoxClass.getWidth(false) / 2;
-                y = this.topSpacing + (PopAncScale *taxonBoxClass.getHeight(false)) + 1.5*this.verticalSpacing;
+                y = this.topSpacing + (PopAncScale *taxonBoxClass.getHeight(false)) + 2*this.verticalSpacing;
                 return [x, y];
             }
             if(taxonDescendantIndex == 0){
                 x = taxaContainer.element.getWidth() / 2 - taxonBoxClass.getWidth(true) / 2;
-                y = this.topSpacing + (1+PopAncScale)*taxonBoxClass.getHeight(false) + 2.5*this.verticalSpacing;
+                y = this.topSpacing + (1+PopAncScale)*taxonBoxClass.getHeight(false) + 3*this.verticalSpacing;
                 return [x, y];
             }
             if(taxonDescendantIndex == 1){
                 var totalSiblingWidth  = siblingsCount * taxonBoxClass.getWidth(false) + (siblingsCount - 1) * this.horizontalSpacing;
                 x = (taxaContainer.element.getWidth() - totalSiblingWidth) / 2 + taxonSiblingIndex * (taxonBoxClass.getWidth(false) + this.horizontalSpacing);
-                y = this.topSpacing + (1+PopAncScale)*taxonBoxClass.getHeight(false) + 2.5*this.verticalSpacing + taxonBoxClass.getHeight(true) + this.verticalSpacing * 2;
+                y = this.topSpacing + (1+PopAncScale)*taxonBoxClass.getHeight(false) + 3*this.verticalSpacing + taxonBoxClass.getHeight(true) + this.verticalSpacing * 2;
                 return [x, y];
             }
             if(taxonDescendantIndex == Infinity){
