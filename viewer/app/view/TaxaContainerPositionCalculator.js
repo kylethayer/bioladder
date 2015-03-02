@@ -39,25 +39,25 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
                 taxonBoxClass = BioLadderOrg.view.TaxonBox.TaxonBox;
 
             if(taxonDescendantIndex == -Infinity){
-                var totalSiblingWidth  = siblingsCount * taxonBoxClass.getWidth(false) + (siblingsCount - 1) * this.horizontalSpacing;
-                x = (taxaContainer.element.getWidth() - totalSiblingWidth) / 2 + taxonSiblingIndex * (taxonBoxClass.getWidth(false) + this.horizontalSpacing);
+                var totalSiblingWidth  = siblingsCount * taxonBoxClass.getWidth(false) + (siblingsCount - 1) * 2*this.horizontalSpacing;
+                x = (taxaContainer.element.getWidth() - totalSiblingWidth) / 2 + taxonSiblingIndex * (taxonBoxClass.getWidth(false) + 2*this.horizontalSpacing);
                 y = this.topSpacing;
                 return [x, y];
             }
             if(taxonDescendantIndex == -1){
                 x = taxaContainer.element.getWidth() / 2 - taxonBoxClass.getWidth(false) / 2;
-                y = this.topSpacing + taxonBoxClass.getHeight(false) + this.verticalSpacing;
+                y = this.topSpacing + taxonBoxClass.getHeight(false) + 1.5*this.verticalSpacing;
                 return [x, y];
             }
             if(taxonDescendantIndex == 0){
                 x = taxaContainer.element.getWidth() / 2 - taxonBoxClass.getWidth(true) / 2;
-                y = this.topSpacing + 2*(taxonBoxClass.getHeight(false) + this.verticalSpacing);
+                y = this.topSpacing + 2*taxonBoxClass.getHeight(false) + 2.5*this.verticalSpacing;
                 return [x, y];
             }
             if(taxonDescendantIndex == 1){
                 var totalSiblingWidth  = siblingsCount * taxonBoxClass.getWidth(false) + (siblingsCount - 1) * this.horizontalSpacing;
                 x = (taxaContainer.element.getWidth() - totalSiblingWidth) / 2 + taxonSiblingIndex * (taxonBoxClass.getWidth(false) + this.horizontalSpacing);
-                y = this.topSpacing + 2*(taxonBoxClass.getHeight(false) + this.verticalSpacing) + taxonBoxClass.getHeight(true) + this.verticalSpacing * 2;
+                y = this.topSpacing + 2*taxonBoxClass.getHeight(false) + 2.5*this.verticalSpacing + taxonBoxClass.getHeight(true) + this.verticalSpacing * 2;
                 return [x, y];
             }
             if(taxonDescendantIndex == Infinity){
@@ -133,7 +133,9 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         },
 
         getElbowConnecterStyleFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
-            if(taxonBoxDisplayInfo.descendantIndex == Infinity || taxonBoxDisplayInfo.descendantIndex == -Infinity){
+            if(  taxonBoxDisplayInfo.descendantIndex == Infinity || 
+			     taxonBoxDisplayInfo.descendantIndex == -Infinity ||
+				 taxonBoxDisplayInfo.descendantIndex == -1){
                 return 'dashed';
             }else{
                 return 'solid';
@@ -141,7 +143,9 @@ Ext.define('BioLadderOrg.view.TaxaContainerPositionCalculator', {
         },
         
         getElbowConnecterLineWidthFromDisplayInfo: function(taxaContainer, taxonBoxDisplayInfo){
-            if(taxonBoxDisplayInfo.descendantIndex == Infinity || taxonBoxDisplayInfo.descendantIndex == -Infinity){
+            if(  taxonBoxDisplayInfo.descendantIndex == Infinity || 
+			     taxonBoxDisplayInfo.descendantIndex == -Infinity ||
+				 taxonBoxDisplayInfo.descendantIndex == -1){
                 return 1;
             }else{
                 return 2;

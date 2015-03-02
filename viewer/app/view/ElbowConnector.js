@@ -36,7 +36,9 @@ Ext.define('BioLadderOrg.view.ElbowConnector', {
         endX: 0,
         endY: 0,
         lineStyle: 'solid',
-        lineWidth: 2
+        lineWidth: 2,
+        bottomTaxonName: "", //for easier debugging
+        topTaxonName: "" //for easier debugging
     },
 
     initialize: function () {
@@ -167,16 +169,30 @@ Ext.define('BioLadderOrg.view.ElbowConnector', {
     getDivTop: function(id){
         var me = this;
         if(id == 'line1_' + this.__lineId){
-            return me.getStartY();
-        }else if(id == 'line2_' + this.__lineId || id == 'line3_' + this.__lineId){
+            if(me.getEndY() <= me.getStartY()){
+                return me.getStartY() + (me.getEndY() - me.getStartY()) / 2;
+            }else{
+                return me.getStartY();
+            }
+        }else if(id == 'line2_' + this.__lineId){
             return me.getStartY() + (me.getEndY() - me.getStartY()) / 2;
+        }else if(id == 'line3_' + this.__lineId){
+            if(me.getEndY() <= me.getStartY()){
+                return  me.getEndY();
+            }else{
+                return me.getStartY() + (me.getEndY() - me.getStartY()) / 2;
+            }
         }
     },
     
     getDivHeight: function(id){
         var me = this;
         if(id == 'line1_' + this.__lineId || id == 'line3_' + this.__lineId){
-            return (me.getEndY() - me.getStartY()) / 2;
+            if(me.getEndY() <= me.getStartY()){
+                return (me.getStartY() - me.getEndY()) / 2;
+            }else{
+                return (me.getEndY() - me.getStartY()) / 2;
+            }
         }else if(id == 'line2_' + this.__lineId){
             return 0;
         }
@@ -206,7 +222,8 @@ Ext.define('BioLadderOrg.view.ElbowConnector', {
     
     createHtmlForLine: function(id){
         var me = this;
-        html = '<div id="'+id+'" style="position:absolute;';
+        html = '<div id="'+id+'" topTaxonName="'+me.get("topTaxonName")+'" bottomTaxonName="'+me.get("bottomTaxonName")+'"';
+        html += ' style="position:absolute;';
         html +=    'left:'+me.getDivLeft(id)+'px;';
         html +=    'top:'+me.getDivTop(id)+'px;';
         html +=    'height:'+me.getDivHeight(id)+'px;';
