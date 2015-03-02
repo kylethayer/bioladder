@@ -345,7 +345,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     newBoxInfo.oldParentConnectionTaxon = oldDisplayInfo.parentTaxonDisplayInfo.taxonBox.getTaxon();
                 }
                 
-                taxonBox.animateTo(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation);
+                taxonBox.animateTo(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation, taxonPositionConfigs.taxonBoxScale);
             }else{ //animate in from off screen
                 taxonBox.setCollapsed(true);
                 var taxonBoxStyle = {}
@@ -365,7 +365,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                     
                     taxonBox.setLeft(offScreenPos[0]);
                     taxonBox.setTop(offScreenPos[1]);
-                    taxonBox.animateTo(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation);
+                    taxonBox.animateTo(taxonPositionConfigs.taxonBoxPos, taxonPositionConfigs.taxonBoxCollapsed, taxonPositionConfigs.taxonBoxRotation, taxonPositionConfigs.taxonBoxScale);
                 }
             }
             
@@ -385,7 +385,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
                 oldTaxonBoxDispInfo.offScreenEndPosConfig = offScreenEndPosConfig; 
                 var offScreenPos = offScreenEndPosConfig.taxonBoxPos;
                 newBoxInfo.deleteWhenDone = true;
-                taxonBoxToRemove.animateTo(offScreenPos, offScreenEndPosConfig.taxonBoxCollapsed, offScreenEndPosConfig.taxonBoxRotation, me.__deleteItem);
+                taxonBoxToRemove.animateTo(offScreenPos, offScreenEndPosConfig.taxonBoxCollapsed, offScreenEndPosConfig.taxonBoxRotation, taxonPositionConfigs.taxonBoxScale, me.__deleteItem);
             }
         }
         //then remove all their elbow connectors:
@@ -530,7 +530,8 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
         taxonBox.setLeft(taxonPositionConfigs.taxonBoxPos[0]);
         taxonBox.setTop(taxonPositionConfigs.taxonBoxPos[1]);
         var taxonBoxStyle = {};
-        taxonBoxStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+taxonPositionConfigs.taxonBoxRotation+'deg)';
+        taxonBoxStyle[posCalc.getCssTransitionAttribute()] = 'rotate('+taxonPositionConfigs.taxonBoxRotation+'deg)'+
+            ' scale(' +taxonPositionConfigs.taxonBoxScale+')';
         taxonBox.setStyle(taxonBoxStyle);
 
         taxonBox.fadeIn();
