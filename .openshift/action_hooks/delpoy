@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "test"
+echo pwd
+
+cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
