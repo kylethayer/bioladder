@@ -1,1 +1,6 @@
+#!/bin/bash
+
+echo "test"
+echo pwd
+
 cp ~/app-root/data/LocalSettings.php wiki/
