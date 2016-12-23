@@ -3,4 +3,4 @@
 echo "test"
 echo pwd
 
-cp ~/app-root/data/LocalSettings.php wiki/
+cp $OPENSHIFT_DATA_DIR/LocalSettings.php  $OPENSHIFT_REPO_DIR/wiki/
