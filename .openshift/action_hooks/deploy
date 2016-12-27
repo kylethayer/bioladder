@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "test"
-echo pwd
+echo "--> ACTION HOOK: deploy <--"
 
-cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
+#cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
+#cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  ~/app-deployments/current/repo/wiki/
