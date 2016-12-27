@@ -45,8 +45,8 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 name: 'name',
                 type: 'string',
                 convert: function (name, record) { //make sure the name is a legitimate name
+					name = name.replace(/%20/g, " ");
                     if (typeof name !== 'string' || !/^[-_\w\s]+$/.test(name)) {
-						name = name.replace(/%20/g, " ");
                         window.console.error('Name must be normal characters:', name);
                         return 'Could not parse name';
                     }
