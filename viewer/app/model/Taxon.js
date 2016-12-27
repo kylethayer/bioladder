@@ -22,7 +22,20 @@ Ext.define('BioLadderOrg.model.Taxon', {
 
     config: {
         fields: [
-            { name: 'description', type: 'string' },
+            { 
+				name: 'description', 
+				type: 'string',
+				convert: function (name, record) {
+                    if (name && typeof name === 'string') {
+						name = name.replace(/%20/g, " ");
+                        //make sure the name is a legitimate name
+                        if (!/^[-_\w\s]+$/.test(name)) {
+                            window.console.error('Name must be normal characters:', name);
+                        }
+                    }
+                    return name;
+                }
+			},
             {
                 name: 'exampleMember',
                 type: 'auto',
