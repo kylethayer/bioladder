@@ -141,7 +141,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     if(popularSubTaxa != null && popularSubTaxa.length > 0){
                         for(var i = 0; i < popularSubTaxa.length; i++){
                             if (popularSubTaxa[i] && typeof popularSubTaxa[i] === 'string') {
-								popularSubTaxa = popularSubTaxa.replace(/%20/g, " ");
+								popularSubTaxa[i] = popularSubTaxa[i].replace(/%20/g, " ");
                                 //make sure the name is a legitimate name
                                 if (!/^[-_\w\s]+$/.test(popularSubTaxa[i])) {
                                     window.console.error('Popular Subtaxa name must be normal characters:', popularSubTaxa[i]);
