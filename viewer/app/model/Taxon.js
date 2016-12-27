@@ -28,6 +28,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (exampleMember, record) {
                     if (exampleMember && typeof exampleMember === 'string') {
+						exampleMember = exampleMember.replace(/%20/g, " ");
                         //make sure the name is a legitimate name
                         if (!/^[-_\w\s]+$/.test(exampleMember)) {
                             window.console.error('Example Member name must be normal characters:', ancestor);
@@ -45,6 +46,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'string',
                 convert: function (name, record) { //make sure the name is a legitimate name
                     if (typeof name !== 'string' || !/^[-_\w\s]+$/.test(name)) {
+						name = name.replace(/%20/g, " ");
                         window.console.error('Name must be normal characters:', name);
                         return 'Could not parse name';
                     }
@@ -58,6 +60,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 convert: function (parentTaxon, record) {
                     if (parentTaxon && typeof parentTaxon === 'string') {
                         //make sure the name is a legitimate name
+						parentTaxon = parentTaxon.replace(/%20/g, " ");
                         if (!/^[-_\w\s]+$/.test(parentTaxon)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
@@ -73,6 +76,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
                         //make sure the name is a legitimate name
+						popAncestor = popAncestor.replace(/%20/g, " ");
                         if (!/^[-_\w\s]+$/.test(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
@@ -87,6 +91,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
+						popAncestor = popAncestor.replace(/%20/g, " ");
                         //make sure the name is a legitimate name
                         if (!/^[-_\w\s]+$/.test(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
@@ -102,6 +107,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
+						popAncestor = popAncestor.replace(/%20/g, " ");
                         //make sure the name is a legitimate name
                         if (!/^[-_\w\s]+$/.test(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
@@ -117,6 +123,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
+						popAncestor = popAncestor.replace(/%20/g, " ");
                         //make sure the name is a legitimate name
                         if (!/^[-_\w\s]+$/.test(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
@@ -134,6 +141,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     if(popularSubTaxa != null && popularSubTaxa.length > 0){
                         for(var i = 0; i < popularSubTaxa.length; i++){
                             if (popularSubTaxa[i] && typeof popularSubTaxa[i] === 'string') {
+								popularSubTaxa = popularSubTaxa.replace(/%20/g, " ");
                                 //make sure the name is a legitimate name
                                 if (!/^[-_\w\s]+$/.test(popularSubTaxa[i])) {
                                     window.console.error('Popular Subtaxa name must be normal characters:', popularSubTaxa[i]);
