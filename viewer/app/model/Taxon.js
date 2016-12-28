@@ -269,7 +269,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
 Ext.define('BioLadderOrg.model.TaxonSearch', {
     runSearch: function (args) {
         var me =  this, requestFields, i, property,
-            url = window.location.pathname.slice(0, window.location.pathname.search('/viewer/') + 1) + '/wiki/api.php?action=ask';
+            url = window.location.pathname.slice(0, window.location.pathname.search('/viewer/')) + '/wiki/api.php?action=ask';
 
         //build
         url += '&query=';
