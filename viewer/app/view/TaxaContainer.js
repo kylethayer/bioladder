@@ -67,7 +67,7 @@ Ext.define('BioLadderOrg.view.TaxaContainer', {
             
         me.__olddisplayedTaxonBoxInfo = me.__displayedTaxonBoxInfo;
 
-        taxon = Ext.getStore('Taxa').findOrCreateTaxon(name);
+        taxon = Ext.getStore('Taxa').findOrCreateTaxon(name.replace(/%20/g, " "));
 
         me.setTaxon(taxon);
         //clear current display

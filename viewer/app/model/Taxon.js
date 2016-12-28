@@ -320,7 +320,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                 taxaStore = Ext.getStore('Taxa');
                 for (taxonName in results) {
                     taxonFields = {
-                        'name': results[taxonName].fulltext,
+                        'name': results[taxonName].fulltext.replace(/%20/g, " "),
                         'wikiPage': results[taxonName].fullurl
                     };
                     if (typeof taxonFields.name !== 'string' || !/^[-_\w\s]+$/.test(taxonFields.name)) {
