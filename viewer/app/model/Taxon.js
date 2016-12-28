@@ -24,17 +24,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
         fields: [
             { 
 				name: 'description', 
-				type: 'string',
-				convert: function (name, record) {
-                    if (name && typeof name === 'string') {
-						name = name.replace(/%20/g, " ");
-                        //make sure the name is a legitimate name
-                        if (!/^[-_\w\s]+$/.test(name)) {
-                            window.console.error('Name must be normal characters:', name);
-                        }
-                    }
-                    return name;
-                }
+				type: 'string'
 			},
             {
                 name: 'exampleMember',
@@ -279,7 +269,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
 Ext.define('BioLadderOrg.model.TaxonSearch', {
     runSearch: function (args) {
         var me =  this, requestFields, i, property,
-            url = window.location.pathname.slice(0, window.location.pathname.search('/\/viewer/') - 7) + '/wiki/api.php?action=ask';
+            url = window.location.pathname.slice(0, window.location.pathname.search('/viewer/') + 1) + '/wiki/api.php?action=ask';
 
         //build
         url += '&query=';

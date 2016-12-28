@@ -22,10 +22,13 @@ Ext.define('BioLadderOrg.overrides.fx.runner.CssTransitionPatch', {
 
     refreshRunningAnimationsData: function(element, propertyNames, interrupt, replace) {
         //For whatever reason, Firefox accepts the CSS transorm as "-moz-transform" but returns the property animated as "transform"
-        // This just guarantees that "-moz-transform" is there for Firefox to handle properly.
-        if(propertyNames.indexOf("transform") >= 0 && propertyNames.indexOf("-moz-transform") < 0){
-            propertyNames.push("-moz-transform");
-        }
+		// same goes for chrome and "-webkit-transform"
+		if(propertyNames.indexOf("transform") >= 0 && propertyNames.indexOf("-moz-transform") < 0){
+			propertyNames.push("-moz-transform");
+			propertyNames.push("-webkit-transform");
+		}
+		
+
         return this.callParent(arguments);
     }
 });
