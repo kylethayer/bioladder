@@ -2,5 +2,9 @@
 
 echo "--> ACTION HOOK: build <--"
 
+echo "--> Copying LocalSettings.php for wiki <--"
 cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
-#cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  ~/app-deployments/current/repo/wiki/
+
+echo "--> Copying production build version of the viewer <--"
+mv "${OPENSHIFT_REPO_DIR}viewer/"  "${OPENSHIFT_REPO_DIR}viewer-src/"
+mv "${OPENSHIFT_REPO_DIR}viewer-src/build/production/BioLadderOrg/"  "${OPENSHIFT_REPO_DIR}viewer/"
