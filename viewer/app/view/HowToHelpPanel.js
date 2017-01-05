@@ -52,7 +52,7 @@ Ext.define('BioLadderOrg.view.HowToHelpPanel', {
                     'the information for clades, photos, descriptions, and wikipedia links are saved.',
                 '</p><br>',
                 '<p>',
-                    '<a href="hhttps://github.com/kylethayer/bioladder" target="_blank">Open Source ',
+                    '<a href="https://github.com/kylethayer/bioladder" target="_blank">Open Source ',
                     'Code</a>: BioLadder is an open source project hosted on github. ',
                     'You can help with the Wiki coding or with the Viewer coding.',
                 '</p>'].join(''),
