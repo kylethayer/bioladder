@@ -1,9 +1,9 @@
-BioLadder.org is an interactive tree of life viewer and wiki, 
+BioLadder is an interactive tree of life viewer and wiki, 
 and is open source under the GPL-V3 License. 
 
 It is hosted at:
-http://bioladder.org/
-https://code.google.com/p/bioladder/
+http://bioladder.kylethayer.com/
+https://github.com/kylethayer/bioladder
 
 ***********************************************************
     Installing to run the site:
@@ -26,7 +26,7 @@ and press the "Initialise or upgrade tables" button
 
 Next you need data in your wiki. In order to set up the semantic forms
 like they are on BioLadder.Org. Copy the source following pages from
-     http://bioladder.org/wiki/index.php?title=
+     http://bioladder.kylethayer.com/wiki/index.php?title=
  to  http://localhost/wiki/index.php?title=
 For the following pages:
   Property:Has_Simplified_Ancestor
@@ -38,7 +38,7 @@ For the following pages:
   Project:Main
 
 Now you can use the forms to fill out data, so Copy the data from, 
-for example, bioladder.org/wiki/index.php?title=Human
+for example, http://bioladder.kylethayer.com/wiki/index.php?title=Human
 to http://localhost/wiki/index.php?title=Human
 "human" (http://localhost/wiki/index.php?title=Human&action=edit) 
 
