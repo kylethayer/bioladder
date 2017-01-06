@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#only do five minutes
+if [ $minute != 5 ]; then
+    exit
+fi
+ 
+# run ruby bot adn email if something done
+ruby ${OPENSHIFT_REPO_DIR}/wiki/bots/popularDescendants/PopularDescendantsBot.rb 2>&1 | tee output.txt | mail -s "BioladderBot" kylethayer@gmail.com

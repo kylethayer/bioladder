@@ -5,6 +5,10 @@ echo "--> ACTION HOOK: build <--"
 echo "--> Copying LocalSettings.php for wiki <--"
 cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
 
+echo "--> LoginCredentials.yaml for wiki bot <--"
+cp "${OPENSHIFT_DATA_DIR}LoginCredentials.yaml"  "${OPENSHIFT_REPO_DIR}wiki/bots/popularDescendants/"
+
+
 echo "--> Copying production build version of the viewer <--"
 mv "${OPENSHIFT_REPO_DIR}viewer/"  "${OPENSHIFT_REPO_DIR}viewer-src/"
 mv "${OPENSHIFT_REPO_DIR}viewer-src/build/production/BioLadderOrg/"  "${OPENSHIFT_REPO_DIR}viewer/"
