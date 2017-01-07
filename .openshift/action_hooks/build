@@ -4,7 +4,8 @@ echo "--> ACTION HOOK: build <--"
 
 
 echo "--> Checking for LocalSettings.php for wiki <--"
-if [-f "${OPENSHIFT_DATA_DIR}LocalSettings.php" ]
+if [-f "${OPENSHIFT_DATA_DIR}LocalSettings.php" ]; then
+
 	echo "--> Copying LocalSettings.php for wiki <--"
 	cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
 	
@@ -12,6 +13,7 @@ if [-f "${OPENSHIFT_DATA_DIR}LocalSettings.php" ]
 	mv "${OPENSHIFT_REPO_DIR}viewer/"  "${OPENSHIFT_REPO_DIR}viewer-src/"
 	mv "${OPENSHIFT_REPO_DIR}viewer-src/build/production/BioLadderOrg/"  "${OPENSHIFT_REPO_DIR}viewer/"
 	mv "${OPENSHIFT_REPO_DIR}viewer-src/resources/images/"  "${OPENSHIFT_REPO_DIR}viewer/resources/images/"
+	
 fi
 
 echo "--> Checking for LoginCredentials.yaml for wiki bot <--"
