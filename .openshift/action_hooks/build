@@ -2,14 +2,21 @@
 
 echo "--> ACTION HOOK: build <--"
 
-echo "--> Copying LocalSettings.php for wiki <--"
-cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
 
-echo "--> LoginCredentials.yaml for wiki bot <--"
-cp "${OPENSHIFT_DATA_DIR}LoginCredentials.yaml"  "${OPENSHIFT_REPO_DIR}wiki/bots/popularDescendants/"
+echo "--> Checking for LocalSettings.php for wiki <--"
+if [-f "${OPENSHIFT_DATA_DIR}LocalSettings.php" ]
+	echo "--> Copying LocalSettings.php for wiki <--"
+	cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
+	
+	echo "--> Copying production build version of the viewer <--"
+	mv "${OPENSHIFT_REPO_DIR}viewer/"  "${OPENSHIFT_REPO_DIR}viewer-src/"
+	mv "${OPENSHIFT_REPO_DIR}viewer-src/build/production/BioLadderOrg/"  "${OPENSHIFT_REPO_DIR}viewer/"
+	mv "${OPENSHIFT_REPO_DIR}viewer-src/resources/images/"  "${OPENSHIFT_REPO_DIR}viewer/resources/images/"
+fi
 
+echo "--> Checking for LoginCredentials.yaml for wiki bot <--"
+if [-f "${OPENSHIFT_DATA_DIR}LocalSettings.php" ]
+	echo "--> Copying LoginCredentials.yaml for wiki bot <--"
+	cp "${OPENSHIFT_DATA_DIR}LoginCredentials.yaml"  "${OPENSHIFT_REPO_DIR}wiki/bots/popularDescendants/"
+fi
 
-echo "--> Copying production build version of the viewer <--"
-mv "${OPENSHIFT_REPO_DIR}viewer/"  "${OPENSHIFT_REPO_DIR}viewer-src/"
-mv "${OPENSHIFT_REPO_DIR}viewer-src/build/production/BioLadderOrg/"  "${OPENSHIFT_REPO_DIR}viewer/"
-mv "${OPENSHIFT_REPO_DIR}viewer-src/resources/images/"  "${OPENSHIFT_REPO_DIR}viewer/resources/images/"
