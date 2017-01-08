@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #make sure there are login credentials
-if [ -f "${OPENSHIFT_REPO_DIR}wiki/bots/popularDescendants/LoginCredentials.yaml" ]
+if [ -f $OPENSHIFT_REPO_DIR/wiki/bots/popularDescendants/LoginCredentials.yaml ]; then
 
 	#only do five minutes
 	if [ ! -f $OPENSHIFT_DATA_DIR/last_run ]; then
