@@ -17,7 +17,7 @@ if [ -f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
 fi
 
 echo "--> Checking for LoginCredentials.yaml for wiki bot <--"
-if [ -f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
+if [ -f $OPENSHIFT_DATA_DIR/LoginCredentials.yaml ]; then
 	echo "--> Copying LoginCredentials.yaml for wiki bot <--"
 	cp "${OPENSHIFT_DATA_DIR}LoginCredentials.yaml"  "${OPENSHIFT_REPO_DIR}wiki/bots/popularDescendants/"
 fi
