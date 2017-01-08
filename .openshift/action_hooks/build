@@ -4,7 +4,7 @@ echo "--> ACTION HOOK: build <--"
 
 
 echo "--> Checking for LocalSettings.php for wiki <--"
-if [-f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
+if [ -f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
 
 	echo "--> Copying LocalSettings.php for wiki <--"
 	cp "${OPENSHIFT_DATA_DIR}LocalSettings.php"  "${OPENSHIFT_REPO_DIR}wiki/"
@@ -17,7 +17,7 @@ if [-f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
 fi
 
 echo "--> Checking for LoginCredentials.yaml for wiki bot <--"
-if [-f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
+if [ -f $OPENSHIFT_DATA_DIR/LocalSettings.php ]; then
 	echo "--> Copying LoginCredentials.yaml for wiki bot <--"
 	cp "${OPENSHIFT_DATA_DIR}LoginCredentials.yaml"  "${OPENSHIFT_REPO_DIR}wiki/bots/popularDescendants/"
 fi
