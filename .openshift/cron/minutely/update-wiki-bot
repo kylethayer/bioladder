@@ -10,8 +10,10 @@ if [ -f $OPENSHIFT_REPO_DIR/wiki/bots/popularDescendants/LoginCredentials.yaml ]
 	if [[ $(find $OPENSHIFT_DATA_DIR/last_run -mmin +4) ]]; then #run every 5 mins
 	 
 		# run ruby bot adn email if something done
-		ruby ${OPENSHIFT_REPO_DIR}/wiki/bots/popularDescendants/PopularDescendantsBot.rb 2>&1 | tee output.txt | mail -s "BioladderBot" kylethayer@gmail.com
-
+		pushd ${OPENSHIFT_REPO_DIR}/wiki/bots/popularDescendants/
+		ruby PopularDescendantsBot.rb 2>&1 | tee output.txt | mail -s "BioladderBot" kylethayer@gmail.com
+		popd
+		
 	  rm -f $OPENSHIFT_DATA_DIR/last_run
 	  touch $OPENSHIFT_DATA_DIR/last_run
 	  # The command(s) that you want to run every 5 minutes
