@@ -11,7 +11,7 @@ if [ -f $OPENSHIFT_REPO_DIR/wiki/bots/popularDescendants/LoginCredentials.yaml ]
 	 
 		# run ruby bot adn email if something done
 		pushd ${OPENSHIFT_REPO_DIR}/wiki/bots/popularDescendants/
-		ruby PopularDescendantsBot.rb 2>&1 | tee output.txt | mail -s "BioladderBot" kylethayer@gmail.com
+		ruby PopularDescendantsBot.rb 2>&1 | tee output.txt | mail -s -E "BioladderBot" kylethayer@gmail.com
 		popd
 		
 	  rm -f $OPENSHIFT_DATA_DIR/last_run
