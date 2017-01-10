@@ -30,7 +30,7 @@ WeightAgainstBranchFraction = 0.7
 AncestorPopWeight = 0.85
 
 credentials = YAML.load_file('LoginCredentials.yaml')
-$mw = MediaWiki::Gateway.new(credentials['URL'])
+$mw = MediaWiki::Gateway.new(credentials['URL']) #, options={loglevel: Logger::DEBUG})
 $mw.login(credentials['UserName'], credentials['Password'])
 
 def $mw.bot_edit(title, content, options={})
