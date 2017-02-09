@@ -158,6 +158,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return popularSubTaxa;
                 }
             },
+			{ name: 'popularity', type: 'float'},
             { name: 'scientificName', type: 'string' },
             { name: 'subTaxa', type: 'auto' },
             {
@@ -283,7 +284,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
         }
         requestFields =  ['Has Parent Taxon', 'Has Popular Subtaxa', 'Has Example Member', 'Has Example Member Text',
             'Has Taxonomic Rank', 'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 
-            'Has Wikipedia Page', 'Has Popular Ancestor 1', 'Has Popular Ancestor 2', 'Has Popular Ancestor 3', 'Has Popular Ancestor 4',  ];
+            'Has Wikipedia Page', 'Has Popular Ancestor 1', 'Has Popular Ancestor 2', 'Has Popular Ancestor 3', 'Has Popular Ancestor 4', 'Has Popularity' ];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -377,8 +378,9 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                         if (printouts['Has Wikipedia Page'] && printouts['Has Wikipedia Page'].length > 0) {
                             taxonFields.wikipediaPage = printouts['Has Wikipedia Page'][0];
                         }
-                        
- 
+						if (printouts['Has Popularity'] && printouts['Has Popularity'].length > 0) {
+                            taxonFields.popularity = printouts['Has Popularity'][0];
+                        }
                         
                     }
                     //check if Taxon already exists, if so add details to it, if not, create it and add to store
