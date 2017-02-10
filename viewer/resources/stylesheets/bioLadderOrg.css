@@ -1,0 +1,96 @@
+/* line 1, ../sass/bioLadderOrg.scss */
+.link-btn {
+  font-weight: normal;
+  text-decoration: underline;
+  cursor: pointer;
+  color: blue;
+  font-size: small;
+}
+
+/* line 9, ../sass/bioLadderOrg.scss */
+.no-underline-link-btn {
+  font-weight: normal;
+  cursor: pointer;
+  color: blue;
+  font-size: small;
+}
+
+/* line 16, ../sass/bioLadderOrg.scss */
+.taxon-panel {
+  border-color: dark-grey;
+  border-style: solid;
+}
+
+/* line 20, ../sass/bioLadderOrg.scss */
+.taxon-panel.x-floating {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  -ms-border-radius: 0;
+  -o-border-radius: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* line 31, ../sass/bioLadderOrg.scss */
+.taxon-panel.x-panel.x-floating .x-panel-inner {
+  background-color: #EEE;
+}
+
+/* line 35, ../sass/bioLadderOrg.scss */
+.taxon-panel-label {
+  background: LightGreen;
+  cursor: pointer;
+}
+
+/* line 40, ../sass/bioLadderOrg.scss */
+.taxon-panel-label .extinct {
+  background: LightCoral;
+}
+
+/* line 43, ../sass/bioLadderOrg.scss */
+.taxon-panel-label .alive {
+  background: LightGreen;
+}
+
+/* line 47, ../sass/bioLadderOrg.scss */
+.taxon-box-contents .wikipedia-image {
+  float: left;
+  display: inline;
+  max-width: 250px;
+  max-height: 250px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  background: #ffffff;
+}
+
+/* line 57, ../sass/bioLadderOrg.scss */
+.taxon-box-contents .example-member {
+  float: left;
+  display: inline;
+  height: 250px;
+  width: 250px;
+  border: solid;
+  padding: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+/* line 68, ../sass/bioLadderOrg.scss */
+.taxon-box-contents .example-wikipedia-image {
+  background: #ffffff;
+  max-width: 235px;
+  max-height: 180px;
+}
+
+/* line 74, ../sass/bioLadderOrg.scss */
+.taxon-box-contents .description-text {
+  font-size: 15px;
+}
+
+/* line 78, ../sass/bioLadderOrg.scss */
+.about-clades-panel-text {
+  font-size: 16px;
+  margin-left: 10px;
+  margin-top: 5px;
+  margin-right: 5px;
+}

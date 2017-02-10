@@ -56,6 +56,19 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     return name;
                 }
             }, 
+			{ 
+				name: 'isExtinct', 
+				type: 'string',
+				convert: function (name, record) { //make sure the name is a legitimate name
+					if(name == "t"){
+						return "Extinct";
+					} else if (name == "f"){
+						return "Living";
+					}else{
+						return null;
+					}
+                }
+			},
             { name: 'otherNames', type: 'string' },
             {
                 name: 'parentTaxon',
@@ -284,7 +297,7 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
         }
         requestFields =  ['Has Parent Taxon', 'Has Popular Subtaxa', 'Has Example Member', 'Has Example Member Text',
             'Has Taxonomic Rank', 'Has Scientific Name', 'Has Other Names', 'Has Description', 'Has Taxon Wikipedia Image', 
-            'Has Wikipedia Page', 'Has Popular Ancestor 1', 'Has Popular Ancestor 2', 'Has Popular Ancestor 3', 'Has Popular Ancestor 4', 'Has Popularity' ];
+            'Has Wikipedia Page', 'Has Popular Ancestor 1', 'Has Popular Ancestor 2', 'Has Popular Ancestor 3', 'Has Popular Ancestor 4', 'Has Popularity', 'Is Extinct' ];
         for (i = 0; i < requestFields.length; i++) {
             url += '|?' + requestFields[i];
         }
@@ -380,6 +393,9 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                         }
 						if (printouts['Has Popularity'] && printouts['Has Popularity'].length > 0) {
                             taxonFields.popularity = printouts['Has Popularity'][0];
+                        }
+						if (printouts['Is Extinct'] && printouts['Is Extinct'].length > 0) {
+                            taxonFields.isExtinct = printouts['Is Extinct'][0];
                         }
                         
                     }

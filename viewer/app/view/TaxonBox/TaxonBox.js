@@ -150,13 +150,21 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
                     me.onExampleMemberLoaded(exampleMember);
                 });
             }
+			
 			var popularity = newTaxon.get('popularity');
-			var shadowOpacity = popularity / 100.0 * 0.9;
 			var minShadowWidth = popularity / 100.0 * 0.3;
 			var maxShadowWidth = popularity / 100.0 * 0.9;
-			//me.setStyle('box-shadow: rgba(0,0,0,'+shadowOpacity+') 0 0.2em 0.6em;');
 			me.setStyle('box-shadow: rgba(0,0,0,0.8) 0 '+minShadowWidth+'em '+maxShadowWidth+'em;');
-            
+			
+			var isExtinct = newTaxon.get('isExtinct');
+			console.log("isExtinct", isExtinct);
+			if(isExtinct){
+				if(isExtinct == "Extinct"){
+					me.down('#taxonLabel').setStyle('background: #ffcccc;'); //LightGreen
+				} else{
+					me.down('#taxonLabel').setStyle('background: LightGreen'); //LightGreen
+				}
+			}
         }
     },
     
