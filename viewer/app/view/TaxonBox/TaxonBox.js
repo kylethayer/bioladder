@@ -157,12 +157,11 @@ Ext.define('BioLadderOrg.view.TaxonBox.TaxonBox', {
 			me.setStyle('box-shadow: rgba(0,0,0,0.8) 0 '+minShadowWidth+'em '+maxShadowWidth+'em;');
 			
 			var isExtinct = newTaxon.get('isExtinct');
-			console.log("isExtinct", isExtinct);
 			if(isExtinct){
 				if(isExtinct == "Extinct"){
 					me.down('#taxonLabel').setStyle('background: #ffcccc;'); //LightGreen
 				} else{
-					me.down('#taxonLabel').setStyle('background: LightGreen'); //LightGreen
+					me.down('#taxonLabel').setStyle('background: #b5e3b5'); //LightGreen
 				}
 			}
         }
