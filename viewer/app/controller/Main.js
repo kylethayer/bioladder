@@ -40,6 +40,9 @@ Ext.define('BioLadderOrg.controller.Main', {
     },
 
     onNavigateToTaxon: function (name) {
+		name = name
+				.replace(/'/g, "%27")
+				.replace(/ñ/g, "%F1");
         this.redirectTo(name);
     },
 

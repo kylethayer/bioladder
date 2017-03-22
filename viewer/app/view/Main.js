@@ -36,7 +36,8 @@ Ext.define('BioLadderOrg.view.Main', {
                 tap: function() {Ext.Viewport.add(Ext.widget('howToHelpPanel')); }
             },
             '#searchBtn': {
-                tap: function() {Ext.Viewport.add(Ext.widget('searchPanel')); }
+                tap: function() {
+					Ext.Viewport.add(Ext.widget('searchPanel')); }
             },
             '#helpBtn': {
                 tap: function() {Ext.Viewport.add(Ext.widget('aboutCladesPanel')); }
