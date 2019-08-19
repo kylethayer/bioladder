@@ -1,62 +1,45 @@
 <?php
 
-use SMW\DataItemException;
+use SMW\Exception\DataItemException;
 
 /**
- * Implementation of dataitems that are geographic coordinates.
- *
- * @since 1.6
- *
- * @file SMW_DI_GeoCoord.php
- * @ingroup SemanticMaps
- *
- * @licence GNU GPL v3
+ * @license GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class SMWDIGeoCoord extends SMWDataItem {
 
 	/**
-	 * The locations latitude.
-	 * 
-	 * @since 1.6
 	 * @var float
 	 */
-	protected $latitude;
-	
-	/**
-	 * The locations longitude.
-	 * 
-	 * @since 1.6
-	 * @var float
-	 */
-	protected $longitude;
-	
-	/**
-	 * The locations altitude.
-	 * 
-	 * @since 1.7
-	 * @var float|null
-	 */
-	protected $altitude = null;
+	private $latitude;
 
 	/**
-	 * Constructor.
+	 * @var float
+	 */
+	private $longitude;
+
+	/**
+	 * @var float|null
+	 */
+	private $altitude = null;
+
+	/**
 	 * Takes a latitude and longitude, and optionally an altitude. These can be provided in 2 forms:
 	 * * An associative array with lat, lon and alt keys
 	 * * Lat, lon and alt arguments
-	 * 
+	 *
 	 * The second way to provide the arguments, as well as the altitude argument, where introduced in SMW 1.7.
 	 */
 	public function __construct() {
 		$args = func_get_args();
-		
+
 		$count = count( $args );
-		
+
 		if ( $count === 1 && is_array( $args[0] ) ) {
 			if ( array_key_exists( 'lat', $args[0] ) && array_key_exists( 'lon', $args[0] ) ) {
-				$this->latitude = (float)$args[0]['lat'];
-				$this->longitude = (float)$args[0]['lon'];
-				
+				$this->setLatitude( $args[0]['lat'] );
+				$this->setLongitude( $args[0]['lon'] );
+
 				if ( array_key_exists( 'alt', $args[0] ) ) {
 					$this->altitude = (float)$args[0]['alt'];
 				}
@@ -66,9 +49,9 @@ class SMWDIGeoCoord extends SMWDataItem {
 			}
 		}
 		elseif ( $count === 2 || $count === 3 ) {
-			$this->latitude = (float)$args[0];
-			$this->longitude = (float)$args[1];
-			
+			$this->setLatitude( $args[0] );
+			$this->setLongitude( $args[1] );
+
 			if ( $count === 3 ) {
 				$this->altitude = (float)$args[2];
 			}
@@ -78,6 +61,30 @@ class SMWDIGeoCoord extends SMWDataItem {
 		}
 	}
 
+	private function setLatitude( $latitude ) {
+		if ( is_int( $latitude ) ) {
+			$latitude = (float)$latitude;
+		}
+
+		if ( !is_float( $latitude ) ) {
+			throw new DataItemException( '$latitude should be a float' );
+		}
+
+		$this->latitude = $latitude;
+	}
+
+	private function setLongitude( $longitude ) {
+		if ( is_int( $longitude ) ) {
+			$longitude = (float)$longitude;
+		}
+
+		if ( !is_float( $longitude ) ) {
+			throw new DataItemException( '$longitude should be a float' );
+		}
+
+		$this->longitude = $longitude;
+	}
+
 	/**
 	 * (non-PHPdoc)
 	 * @see SMWDataItem::getDIType()
@@ -85,22 +92,20 @@ class SMWDIGeoCoord extends SMWDataItem {
 	public function getDIType() {
 		return SMWDataItem::TYPE_GEO;
 	}
-	
+
 	/**
 	 * Returns the coordinate set as an array with lat and long (and alt) keys
 	 * pointing to float values.
-	 * 
-	 * @since 1.6
 	 *
 	 * @return array
 	 */
 	public function getCoordinateSet() {
-		$coords = array( 'lat' => $this->latitude, 'lon' => $this->longitude );
-		
+		$coords = [ 'lat' => $this->latitude, 'lon' => $this->longitude ];
+
 		if ( !is_null( $this->altitude ) ) {
 			$coords['alt'] = $this->altitude;
 		}
-		
+
 		return $coords;
 	}
 
@@ -109,8 +114,7 @@ class SMWDIGeoCoord extends SMWDataItem {
 	 * @see SMWDataItem::getSortKey()
 	 */
 	public function getSortKey() {
-		// Maybe also add longitude here? Or is there a more meaningfull value we can return?
-		return $this->latitude;
+		return $this->latitude . ',' . $this->longitude . ( $this->altitude !== null ? ','. $this->altitude : '' );
 	}
 
 	/**
@@ -126,57 +130,45 @@ class SMWDIGeoCoord extends SMWDataItem {
 	 * ID.
 	 * @note PHP can convert any string to some number, so we do not do
 	 * validation here (because this would require less efficient parsing).
-	 * 
-	 * @since 1.6
-	 * 
+	 *
 	 * @param string $serialization
-	 * 
-	 * @return SMWDIGeoCoord
+	 *
+	 * @return self
 	 */
 	public static function doUnserialize( $serialization ) {
 		$parts = explode( ',', $serialization );
 		$count = count( $parts );
-		
+
 		if ( $count !== 2 && $count !== 3 ) {
 			throw new DataItemException( 'Unserialization of coordinates failed' );
 		}
-		
-		$coords = array( 'lat' => (float)$parts[0], 'lon' => (float)$parts[1] );
-		
+
+		$coords = [ 'lat' => (float)$parts[0], 'lon' => (float)$parts[1] ];
+
 		if ( $count === 3 ) {
 			$coords['alt'] = (float)$parts[2];
 		}
 
 		return new self( $coords );
 	}
-	
+
 	/**
-	 * Returns the latitude.
-	 * 
-	 * @since 1.6
-	 * 
 	 * @return float
 	 */
 	public function getLatitude() {
 		return $this->latitude;
 	}
-	
+
 	/**
-	 * Returns the longitude.
-	 * 
-	 * @since 1.6
-	 * 
 	 * @return float
 	 */
 	public function getLongitude() {
 		return $this->longitude;
 	}
-	
+
 	/**
 	 * Returns the altitude if set, null otherwise.
-	 * 
-	 * @since 1.7
-	 * 
+	 *
 	 * @return float|null
 	 */
 	public function getAltitude() {

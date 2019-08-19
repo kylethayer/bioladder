@@ -6,10 +6,14 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'ValueValidators\\' => array($vendorDir . '/data-values/interfaces/src'),
-    'ValueParsers\\' => array($vendorDir . '/data-values/interfaces/src', $vendorDir . '/data-values/common/src', $vendorDir . '/data-values/geo/src'),
-    'ValueFormatters\\' => array($vendorDir . '/data-values/interfaces/src', $vendorDir . '/data-values/common/src', $vendorDir . '/data-values/geo/src'),
-    'DataValues\\' => array($vendorDir . '/data-values/data-values/src', $vendorDir . '/data-values/common/src', $vendorDir . '/data-values/geo/src'),
-    'Composer\\Installers\\' => array($vendorDir . '/composer/installers/src'),
+    'TextCat' => array($vendorDir . '/wikimedia/textcat/src'),
+    'PEAR' => array($vendorDir . '/pear/pear_exception'),
+    'Net' => array($vendorDir . '/pear/net_smtp', $vendorDir . '/pear/net_socket'),
+    'Mail' => array($vendorDir . '/pear/mail', $vendorDir . '/pear/mail_mime'),
+    'Liuggio' => array($vendorDir . '/liuggio/statsd-php-client/src'),
+    'Less' => array($vendorDir . '/wikimedia/less.php/lib'),
+    'Console' => array($vendorDir . '/pear/console_getopt'),
+    'ComposerVendorHtaccessCreator' => array($baseDir . '/includes/composer'),
     'ComposerHookHandler' => array($baseDir . '/includes/composer'),
+    '' => array($vendorDir . '/cssjanus/cssjanus/src', $vendorDir . '/pear/pear-core-minimal/src'),
 );

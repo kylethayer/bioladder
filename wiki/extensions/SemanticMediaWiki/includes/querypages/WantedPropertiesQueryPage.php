@@ -23,8 +23,10 @@ class WantedPropertiesQueryPage extends QueryPage {
 	/** @var Settings */
 	protected $settings;
 
-	/** @var Collector */
-	protected $collector;
+	/**
+	 * @var ListLookup
+	 */
+	private $listLookup;
 
 	/**
 	 * @since 1.9
@@ -35,6 +37,14 @@ class WantedPropertiesQueryPage extends QueryPage {
 	public function __construct( Store $store, Settings $settings ) {
 		$this->store = $store;
 		$this->settings = $settings;
+	}
+
+	/**
+	 * @codeCoverageIgnore
+	 * @return string
+	 */
+	public function setTitle( $title ) {
+		$this->title = $title;
 	}
 
 	/**
@@ -63,10 +73,71 @@ class WantedPropertiesQueryPage extends QueryPage {
 
 	/**
 	 * @codeCoverageIgnore
+	 * Returns available cache information (takes into account user preferences)
+	 *
+	 * @since 1.9
+	 *
+	 * @return string
+	 */
+	public function getCacheInfo() {
+
+		if ( $this->listLookup->isFromCache() ) {
+			return $this->msg( 'smw-sp-properties-cache-info', $this->getLanguage()->userTimeAndDate( $this->listLookup->getTimestamp(), $this->getUser() ) )->parse();
+		}
+
+		return '';
+	}
+
+	/**
+	 * @codeCoverageIgnore
 	 * @return string
 	 */
 	function getPageHeader() {
-		return Html::element( 'p', array(), $this->msg( 'smw_wantedproperties_docu' )->text() );
+
+		$filer = $this->getRequest()->getVal( 'filter', '' );
+
+		if ( $filer !== 'unapprove' ) {
+			$label = $this->msg( 'smw-special-wantedproperties-filter-unapproved' )->text();
+			$title = $this->msg( 'smw-special-wantedproperties-filter-unapproved-desc' )->text();
+		} else {
+			$label = $this->msg( 'smw-special-wantedproperties-filter-none' )->text();
+			$title = '';
+		}
+
+		$filter = Html::rawElement(
+			'div',
+			[
+				'class' => 'smw-special-filter'
+			],
+			$this->msg( 'smw-special-wantedproperties-filter-label' )->text() .
+			'&nbsp;' .
+			Html::rawElement(
+				'span',
+				[
+					'class' => 'smw-special-filter-button',
+					'title' => $title
+				],
+				Html::element(
+					'a',
+					[
+						'href'  => $this->title->getLocalURL( [ 'filter' => $filer !== '' ? '' : 'unapprove' ] ),
+						'rel'   => 'nofollow'
+					],
+					$label
+				)
+			)
+		);
+
+		return Html::rawElement(
+			'p',
+			[ 'class' => 'smw-wantedproperties-docu plainlinks' ],
+			$this->msg( 'smw-special-wantedproperties-docu' )->parse()
+		) . $this->getSearchForm( $this->getRequest()->getVal( 'property' ), $this->getCacheInfo(), false, $filter )  .
+		Html::element(
+			'h2',
+			[],
+			$this->msg( 'smw-sp-properties-header-label' )->text()
+		);
 	}
 
 	/**
@@ -76,22 +147,31 @@ class WantedPropertiesQueryPage extends QueryPage {
 	 * @return string
 	 */
 	function formatResult( $skin, $result ) {
-
-		$proplink = '';
-
 		// Only display user-defined properties because it can happen that
 		// custom predefined (fixed) properties are mixed within the result
 		// (did not use their own fixedProperty table and therefore were
 		// selected as well e.g _SF_PDF etc.)
-		if ( $result[0] instanceof DIProperty && $result[0]->isUserDefined() ) {
-			$proplink = $this->getLinker()->link(
-				$result[0]->getDiWikiPage()->getTitle(),
-				htmlspecialchars( $result[0]->getLabel() ),
-				array( 'action' => 'view' )
-			);
+		if ( !$result[0] instanceof DIProperty || !$result[0]->isUserDefined() ) {
+			return '';
 		}
 
-		return $proplink ? $this->msg( 'smw_wantedproperty_template', $proplink, $result[1] )->text() : '';
+		$title = $result[0]->getDiWikiPage()->getTitle();
+
+		if ( !$title instanceof \Title ) {
+			return '';
+		}
+
+		$proplink = $this->getLinker()->link(
+			$title,
+			htmlspecialchars( $result[0]->getLabel() ),
+			[],
+			[ 'action' => 'view' ]
+		);
+
+		return $this->msg( 'smw-special-wantedproperties-template' )
+			->rawParams( $proplink )
+			->params( $result[1] )
+			->escaped();
 	}
 
 	/**
@@ -101,7 +181,7 @@ class WantedPropertiesQueryPage extends QueryPage {
 	 * @return array of SMWDIProperty|SMWDIError
 	 */
 	function getResults( $requestoptions ) {
-		$this->collector = $this->store->getWantedPropertiesSpecial( $requestoptions );
-		return $this->collector->getResults();
+		$this->listLookup = $this->store->getWantedPropertiesSpecial( $requestoptions );
+		return $this->listLookup->fetchList();
 	}
 }

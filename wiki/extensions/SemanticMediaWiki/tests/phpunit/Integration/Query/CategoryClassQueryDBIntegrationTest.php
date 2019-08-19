@@ -2,32 +2,25 @@
 
 namespace SMW\Tests\Integration\Query;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\SemanticDataFactory;
-use SMW\Tests\Util\QueryResultValidator;
-
-use SMW\DIWikiPage;
-use SMW\DIProperty;
 use SMW\DataValueFactory;
-
-use SMWDIBlob as DIBlob;
-use SMWQuery as Query;
-use SMWQueryResult as QueryResult;
-use SMWDataValue as DataValue;
-use SMWDataItem as DataItem;
-use SMWSomeProperty as SomeProperty;
-use SMWPrintRequest as PrintRequest;
+use SMW\DIProperty;
+use SMW\DIWikiPage;
+use SMW\Query\Language\ClassDescription;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ThingDescription;
+use SMW\Query\PrintRequest as PrintRequest;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\UtilityFactory;
 use SMWPropertyValue as PropertyValue;
-use SMWThingDescription as ThingDescription;
-use SMWClassDescription as ClassDescription;
+use SMWQuery as Query;
 
 /**
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
+ *
  * @group semantic-mediawiki-integration
  * @group semantic-mediawiki-query
+ *
  * @group mediawiki-database
  * @group medium
  *
@@ -38,10 +31,9 @@ use SMWClassDescription as ClassDescription;
  */
 class CategoryClassQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	protected $databaseToBeExcluded = array( 'sqlite' );
-
-	private $subjectsToBeCleared = array();
+	private $subjectsToBeCleared = [];
 	private $semanticDataFactory;
+
 	private $dataValueFactory;
 	private $queryResultValidator;
 
@@ -49,8 +41,8 @@ class CategoryClassQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		parent::setUp();
 
 		$this->dataValueFactory = DataValueFactory::getInstance();
-		$this->semanticDataFactory = new SemanticDataFactory();
-		$this->queryResultValidator = new QueryResultValidator();
+		$this->queryResultValidator = UtilityFactory::getInstance()->newValidatorFactory()->newQueryResultValidator();
+		$this->semanticDataFactory = UtilityFactory::getInstance()->newSemanticDataFactory();
 	}
 
 	protected function tearDown() {
@@ -66,7 +58,7 @@ class CategoryClassQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$property = new DIProperty( '_INST' );
 
-		$dataValue = $this->dataValueFactory->newPropertyObjectValue( $property, 'SomeCategory' );
+		$dataValue = $this->dataValueFactory->newDataValueByProperty( $property, 'SomeCategory' );
 
 		$semanticData = $this->semanticDataFactory->newEmptySemanticData( __METHOD__ );
 

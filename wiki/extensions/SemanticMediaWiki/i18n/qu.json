@@ -5,5 +5,7 @@
 		]
 	},
 	"smw_purge": "Musuqchay",
-	"smw_browselink": "Kaqninkunapi wamp'uy"
+	"browse": "Wikipi wamp'uy",
+	"smw_browselink": "Kaqninkunapi wamp'uy",
+	"smw-livepreview-loading": "Chaqnamuspa…"
 }

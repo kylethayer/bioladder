@@ -2,17 +2,14 @@
 
 namespace SMW\Tests\Integration\SQLStore;
 
-use SMW\Tests\Util\PageDeleter;
-use SMW\Tests\Util\PageCreator;
-use SMW\Tests\Util\MwHooksHandler;
-
 use SMW\Tests\MwDBaseUnitTestCase;
-
-use WikiPage;
+use SMW\Tests\Utils\MwHooksHandler;
+use SMW\Tests\Utils\PageCreator;
+use SMW\Tests\Utils\PageDeleter;
 use Title;
+use WikiPage;
 
 /**
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -82,22 +79,27 @@ class RefreshSQLStoreDBIntegrationTest extends MwDBaseUnitTestCase {
 	protected function assertStoreHasDataToRefresh( $useJobs ) {
 		$refreshPosition = $this->title->getArticleID();
 
-		$refreshProgress = $this->getStore()->refreshData(
+		$entityRebuildDispatcher = $this->getStore()->refreshData(
 			$refreshPosition,
 			1,
 			false,
 			$useJobs
 		);
 
-		$this->assertGreaterThan( 0, $refreshProgress );
+		$entityRebuildDispatcher->rebuild( $refreshPosition );
+
+		$this->assertGreaterThan(
+			0,
+			$entityRebuildDispatcher->getEstimatedProgress()
+		);
 	}
 
 	public function titleProvider() {
-		$provider = array();
+		$provider = [];
 
-		$provider[] = array( NS_MAIN, 'withInterWiki', 'foo' );
-		$provider[] = array( NS_MAIN, 'normalTite', '' );
-		$provider[] = array( NS_MAIN, 'useUpdateJobs', '' );
+	//	$provider[] = array( NS_MAIN, 'withInterWiki', 'commons' );
+		$provider[] = [ NS_MAIN, 'normalTite', '' ];
+		$provider[] = [ NS_MAIN, 'useUpdateJobs', '' ];
 
 		return $provider;
 	}

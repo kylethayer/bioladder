@@ -2,9 +2,8 @@
 
 namespace SMW\Test;
 
-use SMW\ResultPrinter;
-
 use ReflectionClass;
+use SMW\ResultPrinter;
 
 /**
  * Class contains methods to access data in connection with the QueryPrinter
@@ -20,8 +19,6 @@ use ReflectionClass;
 /**
  * Class contains methods to access data in connection with the QueryPrinter
  *
- * @ingroup Test
- * @ingroup QueryPrinterTest
  *
  * @group SMW
  * @group SMWExtension
@@ -62,7 +59,7 @@ abstract class QueryPrinterTestCase extends \PHPUnit_Framework_TestCase {
 	protected function arrayWrap( array $elements ) {
 		return array_map(
 			function ( $element ) {
-				return array( $element );
+				return [ $element ];
 			},
 			$elements
 		);

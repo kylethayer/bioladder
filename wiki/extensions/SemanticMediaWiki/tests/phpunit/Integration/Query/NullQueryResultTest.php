@@ -1,19 +1,16 @@
 <?php
 
-namespace SMW\Tests\SPARQLStore;
+namespace SMW\Tests\Integration\Query;
 
+use SMW\ApplicationFactory;
 use SMW\DIWikiPage;
-use SMW\Application;
-
+use SMW\Query\Language\Conjunction;
+use SMW\Query\Language\Disjunction;
+use SMW\Query\Language\NamespaceDescription;
+use SMW\Query\Language\ValueDescription;
 use SMWQuery as Query;
-use SMWValueDescription as ValueDescription;
-use SMWConjunction as Conjunction;
-use SMWDisjunction as Disjunction;
-use SMWNamespaceDescription as NamespaceDescription;
 
 /**
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
  *
@@ -46,16 +43,16 @@ class NullQueryResultTest extends \PHPUnit_Framework_TestCase {
 		$namespacesDisjunction = new Disjunction(
 			array_map( function ( $ns ) {
 				return new NamespaceDescription( $ns );
-			}, array( NS_MAIN ) )
+			}, [ NS_MAIN ] )
 		);
 
-		$description = new Conjunction( array( $description, $namespacesDisjunction ) );
+		$description = new Conjunction( [ $description, $namespacesDisjunction ] );
 
 		$query->setDescription( $description );
 
 		$this->assertInstanceOf(
 			'\SMWQueryResult',
-			Application::getInstance()->getStore()->getQueryResult( $query )
+			ApplicationFactory::getInstance()->getStore()->getQueryResult( $query )
 		);
 	}
 

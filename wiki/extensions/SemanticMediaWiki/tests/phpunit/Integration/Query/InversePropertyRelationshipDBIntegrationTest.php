@@ -2,38 +2,25 @@
 
 namespace SMW\Tests\Integration\Query;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\SemanticDataFactory;
-use SMW\Tests\Util\QueryResultValidator;
-
-use SMW\DIWikiPage;
-use SMW\DIProperty;
-use SMW\SemanticData;
+use SMW\ApplicationFactory;
 use SMW\DataValueFactory;
-use SMW\Subobject;
-
-use SMWQueryParser as QueryParser;
-use SMWDIBlob as DIBlob;
-use SMWDINumber as DINumber;
+use SMW\DIProperty;
+use SMW\DIWikiPage;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ValueDescription;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\UtilityFactory;
 use SMWQuery as Query;
-use SMWQueryResult as QueryResult;
-use SMWDataValue as DataValue;
-use SMWDataItem as DataItem;
-use SMWSomeProperty as SomeProperty;
-use SMWPrintRequest as PrintRequest;
-use SMWPropertyValue as PropertyValue;
-use SMWThingDescription as ThingDescription;
-use SMWValueDescription as ValueDescription;
 
 /**
  * @see http://semantic-mediawiki.org/wiki/Inverse_Properties
  *
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
+ *
  * @group semantic-mediawiki-integration
  * @group semantic-mediawiki-query
+ *
  * @group mediawiki-database
  * @group medium
  *
@@ -44,21 +31,22 @@ use SMWValueDescription as ValueDescription;
  */
 class InversePropertyRelationshipDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	protected $databaseToBeExcluded = array( 'sqlite' );
+	private $subjectsToBeCleared = [];
 
-	private $subjectsToBeCleared = array();
 	private $semanticDataFactory;
 	private $dataValueFactory;
+
 	private $queryResultValidator;
 	private $queryParser;
 
 	protected function setUp() {
 		parent::setUp();
 
+		$this->queryResultValidator = UtilityFactory::getInstance()->newValidatorFactory()->newQueryResultValidator();
+		$this->semanticDataFactory = UtilityFactory::getInstance()->newSemanticDataFactory();
+
 		$this->dataValueFactory = DataValueFactory::getInstance();
-		$this->semanticDataFactory = new SemanticDataFactory();
-		$this->queryResultValidator = new QueryResultValidator();
-		$this->queryParser = new QueryParser();
+		$this->queryParser = ApplicationFactory::getInstance()->getQueryFactory()->newQueryParser();
 	}
 
 	protected function tearDown() {
@@ -114,18 +102,18 @@ class InversePropertyRelationshipDBIntegrationTest extends MwDBaseUnitTestCase {
 			$queryResult->getCount()
 		);
 
-		$expectedSubjects = array(
+		$expectedSubjects = [
 			new DIWikiPage( 'Carol', NS_MAIN, '' )
-		);
+		];
 
 		$this->queryResultValidator->assertThatQueryResultHasSubjects(
 			$expectedSubjects,
 			$queryResult
 		);
 
-		$this->subjectsToBeCleared = array(
+		$this->subjectsToBeCleared = [
 			$semanticData->getSubject()
-		);
+		];
 	}
 
 	private function newDataValueForPagePropertyValue( $property, $value ) {
@@ -135,7 +123,7 @@ class InversePropertyRelationshipDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$dataItem = new DIWikiPage( $value, NS_MAIN, '' );
 
-		return $this->dataValueFactory->newDataItemValue(
+		return $this->dataValueFactory->newDataValueByItem(
 			$dataItem,
 			$property
 		);

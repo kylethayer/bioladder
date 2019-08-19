@@ -15,11 +15,9 @@ class MultilingualTextValue extends DataValueObject {
 	/**
 	 * Array with language codes pointing to their associated texts.
 	 *
-	 * @since 0.1
-	 *
 	 * @var MonolingualTextValue[]
 	 */
-	protected $texts = array();
+	private $texts = array();
 
 	/**
 	 * @since 0.1
@@ -34,20 +32,18 @@ class MultilingualTextValue extends DataValueObject {
 				throw new IllegalValueException( 'Can only construct MultilingualTextValue from MonolingualTextValue objects' );
 			}
 
-			$langCode = $monolingualValue->getLanguageCode();
+			$languageCode = $monolingualValue->getLanguageCode();
 
-			if ( array_key_exists( $langCode, $this->texts ) ) {
+			if ( array_key_exists( $languageCode, $this->texts ) ) {
 				throw new IllegalValueException( 'Can only add a single MonolingualTextValue per language to a MultilingualTextValue' );
 			}
 
-			$this->texts[$langCode] = $monolingualValue;
+			$this->texts[$languageCode] = $monolingualValue;
 		}
 	}
 
 	/**
 	 * @see Serializable::serialize
-	 *
-	 * @since 0.1
 	 *
 	 * @return string
 	 */
@@ -58,11 +54,7 @@ class MultilingualTextValue extends DataValueObject {
 	/**
 	 * @see Serializable::unserialize
 	 *
-	 * @since 0.1
-	 *
 	 * @param string $value
-	 *
-	 * @return MultilingualTextValue
 	 */
 	public function unserialize( $value ) {
 		$this->__construct( unserialize( $value ) );
@@ -70,8 +62,6 @@ class MultilingualTextValue extends DataValueObject {
 
 	/**
 	 * @see DataValue::getType
-	 *
-	 * @since 0.1
 	 *
 	 * @return string
 	 */
@@ -81,8 +71,6 @@ class MultilingualTextValue extends DataValueObject {
 
 	/**
 	 * @see DataValue::getSortKey
-	 *
-	 * @since 0.1
 	 *
 	 * @return string|float|int
 	 */
@@ -105,8 +93,6 @@ class MultilingualTextValue extends DataValueObject {
 	 * Returns the multilingual text value
 	 * @see DataValue::getValue
 	 *
-	 * @since 0.1
-	 *
 	 * @return MultilingualTextValue
 	 */
 	public function getValue() {
@@ -115,8 +101,6 @@ class MultilingualTextValue extends DataValueObject {
 
 	/**
 	 * @see DataValue::getArrayValue
-	 *
-	 * @since 0.1
 	 *
 	 * @return mixed
 	 */
@@ -142,8 +126,8 @@ class MultilingualTextValue extends DataValueObject {
 	 *
 	 * @param mixed $data
 	 *
-	 * @throws IllegalValueException
-	 * @return MultilingualTextValue if $data is not an array.
+	 * @throws IllegalValueException if $data is not an array.
+	 * @return MultilingualTextValue
 	 */
 	public static function newFromArray( $data ) {
 		if ( !is_array( $data ) ) {

@@ -7,44 +7,36 @@ namespace ParamProcessor;
  *
  * Based on http://blog.metafoundry.com/2007/09/topological-sort-in-php.html
  *
- * usage:
- * $t = new TopologicalSort($dependency_pairs);
- * $load_order = $t->doSort();
- *
- * where dependency_pairs is in the form:
- * $name => (depends on) $value
- * 
- * @author Eddie Haber
- * @author Jeroen De Dauw
- *
- * TODO: handle dependency loops and other crap more nicely
+ * @deprecated since 1.7
+ * @codingStandardsIgnoreFile
  */
 class TopologicalSort {
-	
-	private $mNodes = array();
-	private $mNodeNames = array();
-	
+
+	private $mNodes = [];
+	private $mNodeNames = [];
+
 	/**
 	 * Dependency pairs are a list of arrays in the form
 	 * $name => $val where $key must come before $val in load order.
 	 */
-	public function __construct( array $dependencies = array(), $parse = true ) {
+	public function __construct( array $dependencies = [], $parse = true ) {
 		$this->mNodeNames = array_keys( $dependencies );
-		
+
 		if ( $parse ) {
 			$dependencies = $this->parseDependencyList( $dependencies );
 		}
-		
+
 		// turn pairs into double-linked node tree
 		foreach ( $dependencies as $dpair ) {
-			list ( $module, $dependency ) = each ( $dpair );
+			$module = key( $dpair );
+			$dependency = current( $dpair );
 			if ( !isset( $this->mNodes[$module] ) ) $this->mNodes[$module] = new TSNode( $module );
 			if ( !isset( $this->mNodes[$dependency] ) ) $this->mNodes[$dependency] = new TSNode( $dependency );
 			if ( !in_array( $dependency, $this->mNodes[$module]->children ) ) $this->mNodes[$module]->children[] = $dependency;
 			if ( !in_array( $module, $this->mNodes[$dependency]->parents ) ) $this->mNodes[$dependency]->parents[] = $module;
 		}
 	}
-	
+
 	/**
 	 * Perform Topological Sort.
 	 *
@@ -52,24 +44,24 @@ class TopologicalSort {
 	 */
 	public function doSort() {
 		$nodes = $this->mNodes;
-			
+
 		// get nodes without parents
 		$root_nodes = array_values( $this->getRootNodes( $nodes ) );
-		
+
 		// begin algorithm
-		$sorted = array();
+		$sorted = [];
 		while ( count( $nodes ) > 0 ) {
 			// check for circular reference
-			if ( $root_nodes === array() ) {
-				return array();
+			if ( $root_nodes === [] ) {
+				return [];
 			}
-				
-				
+
+
 			// remove this node from root_nodes
 			// and add it to the output
 			$n = array_pop( $root_nodes );
 			$sorted[] = $n->name;
-			
+
 			// for each of its  children
 			// queue the new node finally remove the original
 			for ( $i = count( $n->children ) - 1; $i >= 0; $i -- ) {
@@ -88,12 +80,12 @@ class TopologicalSort {
 					array_push( $root_nodes, $nodes [$childnode] );
 				}
 			}
-			
+
 			// nodes.Remove(n);
 			unset( $nodes[$n->name] );
 		}
-		
-		$looseNodes = array();
+
+		$looseNodes = [];
 
 		// Return the result with the loose nodes (items with no dependencies) appended.
 		foreach( $this->mNodeNames as $name ) {
@@ -101,29 +93,29 @@ class TopologicalSort {
 				$looseNodes[] = $name;
 			}
 		}
-		
+
 		return array_merge( $sorted, $looseNodes );
 	}
-	
+
 	/**
 	 * Returns a list of node objects that do not have parents
 	 *
 	 * @param array $nodes array of node objects
-	 * 
+	 *
 	 * @return array of node objects
 	 */
 	private function getRootNodes( array $nodes ) {
-		$output = array ();
-		
+		$output =  [];
+
 		foreach ( $nodes as $name => $node ) {
 			if ( !count ( $node->parents ) ) {
 				$output[$name] = $node;
 			}
 		}
-				
+
 		return $output;
 	}
-	
+
 	/**
 	 * Parses an array of dependencies into an array of dependency pairs
 	 *
@@ -135,30 +127,30 @@ class TopologicalSort {
 	 * );
 	 *
 	 * @param array $dlist Array of dependency pairs for use as parameter in doSort method
-	 * 
+	 *
 	 * @return array
 	 */
-	private function parseDependencyList( array $dlist = array() ) {
-		$output = array();
-		
+	private function parseDependencyList( array $dlist = [] ) {
+		$output = [];
+
 		foreach ( $dlist as $name => $dependencies ) {
 			foreach ( $dependencies as $d ) {
-				array_push ( $output, array ( $d => $name ) );
+				$output[] = [ $d => $name ];
 			}
 		}
-			
+
 		return $output;
 	}
 }
 
 /**
- * Node class for Topological Sort Class
+ * @deprecated since 1.7
  */
 class TSNode {
 	public $name;
-	public $children = array();
-	public $parents = array();
-	
+	public $children = [];
+	public $parents = [];
+
 	public function __construct( $name = '' ) {
 		if ( !is_string( $name ) ) {
 			throw new \InvalidArgumentException( 'Name needs to be a string' );

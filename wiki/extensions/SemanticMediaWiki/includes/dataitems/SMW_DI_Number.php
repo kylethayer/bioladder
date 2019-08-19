@@ -1,10 +1,9 @@
 <?php
 /**
- * @file
  * @ingroup SMWDataItems
  */
 
-use SMW\DataItemException;
+use SMW\Exception\DataItemException;
 
 /**
  * This class implements number data items.
@@ -18,7 +17,7 @@ class SMWDINumber extends SMWDataItem {
 
 	/**
 	 * Internal value.
-	 * @var numeric
+	 * @var float|int
 	 */
 	protected $m_number;
 

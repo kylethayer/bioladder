@@ -12,51 +12,20 @@ namespace ParamProcessor;
  */
 class ProcessedParam {
 
-	/**
-	 * @since 1.0
-	 *
-	 * @var mixed
-	 */
-	protected $value;
+	private $value;
+	private $name;
+	private $wasSetToDefault;
+	private $originalValue = null;
+	private $originalName = null;
 
 	/**
-	 * @since 1.0
-	 *
-	 * @var string
-	 */
-	protected $name;
-
-	/**
-	 * @since 1.0
-	 *
-	 * @var bool
-	 */
-	protected $wasSetToDefault;
-
-	/**
-	 * @since 1.0
-	 *
-	 * @var null|mixed
-	 */
-	protected $originalValue = null;
-
-	/**
-	 * @since 1.0
-	 *
-	 * @var null|string
-	 */
-	protected $originalName = null;
-
-	/**
-	 * @since 1.0
-	 *
 	 * @param string $name
 	 * @param mixed $value
 	 * @param boolean $wasSetToDefault
 	 * @param string|null $originalName
 	 * @param mixed $originalValue
 	 */
-	public function __construct( $name, $value, $wasSetToDefault, $originalName = null, $originalValue = null ) {
+	public function __construct( string $name, $value, bool $wasSetToDefault, string $originalName = null, $originalValue = null ) {
 		$this->name = $name;
 		$this->value = $value;
 		$this->wasSetToDefault = $wasSetToDefault;
@@ -64,18 +33,11 @@ class ProcessedParam {
 		$this->originalValue = $originalValue;
 	}
 
-	/**
-	 * @since 1.0
-	 *
-	 * @param string $originalName
-	 */
-	public function setOriginalName( $originalName ) {
+	public function setOriginalName( string $originalName ) {
 		$this->originalName = $originalName;
 	}
 
 	/**
-	 * @since 1.0
-	 *
 	 * @param mixed $originalValue
 	 */
 	public function setOriginalValue( $originalValue ) {
@@ -83,47 +45,28 @@ class ProcessedParam {
 	}
 
 	/**
-	 * @since 1.0
-	 *
 	 * @return mixed
 	 */
 	public function getValue() {
 		return $this->value;
 	}
 
-	/**
-	 * @since 1.0
-	 *
-	 * @return string
-	 */
-	public function getName() {
+	public function getName(): string {
 		return $this->name;
 	}
 
-	/**
-	 * @since 1.0
-	 *
-	 * @return bool
-	 */
-	public function wasSetToDefault() {
+	public function wasSetToDefault(): bool {
 		return $this->wasSetToDefault;
 	}
 
 	/**
-	 * @since 1.0
-	 *
 	 * @return null|mixed
 	 */
 	public function getOriginalValue() {
 		return $this->originalValue;
 	}
 
-	/**
-	 * @since 1.0
-	 *
-	 * @return null|string
-	 */
-	public function getOriginalName() {
+	public function getOriginalName(): ?string {
 		return $this->originalName;
 	}
 

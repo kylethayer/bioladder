@@ -43,21 +43,30 @@ via TravisCI, as a TravisCI configuration file is also provided in the root dire
 
 ## Authors
 
-DataValues Validators has been written by the Wikidata team, as [Wikimedia Germany]
-(https://wikimedia.de) employees for the [Wikidata project](https://wikidata.org/).
+DataValues Validators has been written by the Wikidata team, as [Wikimedia Germany](https://wikimedia.de)
+employees for the [Wikidata project](https://wikidata.org/).
 
-It is based upon and contains a lot of code written by [Jeroen De Dauw]
-(https://github.com/JeroenDeDauw) for the [Maps](https://github.com/JeroenDeDauw/Maps) and
+It is based upon and contains a lot of code written by [Jeroen De Dauw](https://github.com/JeroenDeDauw)
+for the [Maps](https://github.com/JeroenDeDauw/Maps) and
 [Semantic MediaWiki](https://semantic-mediawiki.org/) projects.
 
 ## Release notes
 
-### 1.0.1 (2014-03-27)
+### 0.1.3 (2018-08-02)
+
+* Made component installable with DataValues 2.x
+* Removed MediaWiki integration
+
+### 0.1.2 (2014-10-09)
+
+* Made component installable with DataValues 1.x
+
+### 0.1.1 (2014-03-27)
 
 * Changed autoloading from PSR-0 to PSR-4
 * Added tests for DimensionValidator
 
-### 0.1 (2013-11-17)
+### 0.1.0 (2013-11-17)
 
 Initial release with these features:
 

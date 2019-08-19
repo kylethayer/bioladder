@@ -5,7 +5,7 @@ namespace ValueValidators;
 /**
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class Error {
@@ -21,8 +21,6 @@ class Error {
 	protected $params;
 
 	/**
-	 * Create a new error.
-	 *
 	 * @since 0.1
 	 *
 	 * @param string      $text
@@ -30,10 +28,10 @@ class Error {
 	 * @param string      $code
 	 * @param array       $params
 	 *
-	 * @return Error
+	 * @return self
 	 */
-	public static function newError( $text = '', $property = null, $code = 'invalid', $params = array() ) {
-		return new static( $text, Error::SEVERITY_ERROR, $property, $code, $params );
+	public static function newError( $text = '', $property = null, $code = 'invalid', array $params = [] ) {
+		return new static( $text, self::SEVERITY_ERROR, $property, $code, $params );
 	}
 
 	/**
@@ -44,10 +42,8 @@ class Error {
 	 * @param string|null $property
 	 * @param string      $code
 	 * @param array       $params
-	 *
-	 * @return \ValueValidators\Error
 	 */
-	protected function __construct( $text, $severity, $property, $code, $params ) {
+	protected function __construct( $text, $severity, $property, $code, array $params ) {
 		$this->text = $text;
 		$this->severity = $severity;
 		$this->property = $property;
@@ -56,8 +52,6 @@ class Error {
 	}
 
 	/**
-	 * Returns the error text.
-	 *
 	 * @since 0.1
 	 *
 	 * @return string
@@ -67,8 +61,6 @@ class Error {
 	}
 
 	/**
-	 * Returns the severity of the error
-	 *
 	 * @since 0.1
 	 *
 	 * @return integer, element of the ValueValidatorError::SEVERITY_ enum
@@ -103,8 +95,3 @@ class Error {
 	}
 
 }
-
-/**
- * @deprecated
- */
-class ErrorObject extends Error {}

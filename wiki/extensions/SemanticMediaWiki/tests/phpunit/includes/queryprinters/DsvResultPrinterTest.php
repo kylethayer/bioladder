@@ -7,7 +7,6 @@ use SMW\DsvResultPrinter;
 /**
  * @covers \SMW\DsvResultPrinter
  *
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -29,7 +28,7 @@ class DsvResultPrinterTest extends QueryPrinterTestCase {
 	/**
 	 * @return DsvResultPrinter
 	 */
-	private function getInstance( $parameters = array() ) {
+	private function getInstance( $parameters = [] ) {
 		return $this->setParameters( new DsvResultPrinter( 'dsv' ), $parameters );
 	}
 

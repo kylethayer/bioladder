@@ -2,119 +2,176 @@
 
 namespace SMW;
 
-use SMWThingDescription;
-use SMWSomeProperty;
-use SMWPageLister;
-
 use Html;
+use SMW\Page\ListPager;
+use SMW\Page\ListBuilder;
+use SMW\SQLStore\SQLStore;
+use SMW\Utils\HtmlTabs;
+use SMW\ApplicationFactory;
+use SMW\MediaWiki\Collator;
 
 /**
  * Special page that lists available concepts
- *
- * @file
  *
  * @license GNU GPL v2+
  * @since   1.9
  *
  * @author mwjames
  */
+class SpecialConcepts extends \SpecialPage {
 
-/**
- * Special page that lists available concepts
- *
- * @ingroup SpecialPage
- */
-class SpecialConcepts extends SpecialPage {
+	/**
+	 * @var Store
+	 */
+	private $store;
 
 	/**
 	 * @see SpecialPage::__construct
-	 * @codeCoverageIgnore
 	 */
 	public function __construct() {
 		parent::__construct( 'Concepts' );
 	}
 
 	/**
-	 * Returns concept pages
-	 *
+	 * @see SpecialPage::execute
+	 */
+	public function execute( $param ) {
+
+		$this->setHeaders();
+		$out = $this->getOutput();
+		$out->addModuleStyles( 'ext.smw.page.styles' );
+
+		$limit = $this->getRequest()->getVal( 'limit', 50 );
+		$offset = $this->getRequest()->getVal( 'offset', 0 );
+
+		$this->store = ApplicationFactory::getInstance()->getStore();
+
+		$diWikiPages = $this->fetchFromTable( $limit, $offset );
+		$html = $this->getHtml( $diWikiPages, $limit, $offset );
+
+		$this->addHelpLink( wfMessage( 'smw-helplink-concepts' )->escaped(), true );
+
+		$out->setPageTitle( $this->msg( 'concepts' )->text() );
+		$out->addHTML( $html );
+	}
+
+	/**
 	 * @since 1.9
 	 *
 	 * @param integer $limit
-	 * @param integer $from
-	 * @param integer $until
+	 * @param integer $offset
 	 *
 	 * @return DIWikiPage[]
 	 */
-	public function getResults( $limit, $from, $until ) {
-		$description = new SMWSomeProperty( new DIProperty( '_CONC' ), new SMWThingDescription() );
-		$query = SMWPageLister::getQuery( $description, $limit, $from, $until );
-		return $this->getStore()->getQueryResult( $query )->getResults();
+	public function fetchFromTable( $limit, $offset ) {
+
+		$connection = $this->store->getConnection( 'mw.db' );
+		$results = [];
+
+		$fields = [
+			'smw_id',
+			'smw_title'
+		];
+
+		$conditions = [
+			'smw_namespace' => SMW_NS_CONCEPT,
+			'smw_iw' => '',
+			'smw_subobject' => '',
+			'smw_proptable_hash IS NOT NULL',
+			'concept_features > 0'
+		];
+
+		$options = [
+			'LIMIT' => $limit + 1,
+			'OFFSET' => $offset,
+		];
+
+		$res = $connection->select(
+			[
+				$connection->tableName( SQLStore::ID_TABLE ),
+				$connection->tableName( SQLStore::CONCEPT_TABLE )
+			],
+			$fields,
+			$conditions,
+			__METHOD__,
+			$options,
+			[
+				$connection->tableName( SQLStore::ID_TABLE ) => [ 'INNER JOIN', [ 'smw_id=s_id' ] ]
+			]
+		);
+
+		foreach ( $res as $row ) {
+			$results[] = new DIWikiPage( $row->smw_title, SMW_NS_CONCEPT );
+		}
+
+		return $results;
 	}
 
 	/**
-	 * Returns html
-	 *
 	 * @since 1.9
 	 *
-	 * @param DIWikiPage[] $diWikiPages
+	 * @param DIWikiPage[] $dataItems
 	 * @param integer $limit
-	 * @param integer $from
-	 * @param integer $until
+	 * @param integer $offset
 	 *
 	 * @return string
 	 */
-	public function getHtml( $diWikiPages, $limit, $from, $until ) {
-		$resultNumber = min( $limit, count( $diWikiPages ) );
-		$pageLister   = new SMWPageLister( $diWikiPages, null, $limit, $from, $until );
-		$key = $resultNumber == 0 ? 'smw-sp-concept-empty' : 'smw-sp-concept-count';
+	public function getHtml( $dataItems, $limit, $offset ) {
 
-		// Deprecated: Use of SpecialPage::getTitle was deprecated in MediaWiki 1.23
-		$title = method_exists( $this, 'getPageTitle') ? $this->getPageTitle() : $this->getTitle();
+		if ( $this->store === null ) {
+			$this->store = ApplicationFactory::getInstance()->getStore();
+		}
 
-		return Html::rawElement(
-			'span',
-			array( 'class' => 'smw-sp-concept-docu' ),
-			$this->msg( 'smw-sp-concept-docu' )->parse()
-			) .
+		$count = count( $dataItems );
+		$resultNumber = min( $limit, $count );
+
+		if ( $resultNumber == 0 ) {
+			$key = 'smw-special-concept-empty';
+		} else {
+			$key = 'smw-special-concept-count';
+		}
+
+		$listBuilder = new ListBuilder(
+			$this->store,
+			Collator::singleton()
+		);
+
+		$htmlTabs = new HtmlTabs();
+		$htmlTabs->setGroup( 'concept' );
+
+		$html = Html::rawElement(
+				'div',
+				[ 'id' => 'mw-pages'],
 			Html::rawElement(
 				'div',
-				array( 'id' => 'mw-pages'),
-				Html::element(
-					'h2',
-					array(),
-					$this->msg( 'smw-sp-concept-header' )->text()
-				) .
-				Html::element(
-					'span',
-					array( 'class' => $key ),
-					$this->msg( $key, $resultNumber )->parse()
-				) .	' ' .
-				$pageLister->getNavigationLinks( $title ) .
-				$pageLister->formatList()
-			);
+				[ 'class' => 'smw-page-navigation' ],
+				ListPager::pagination( $this->getPageTitle(), $limit, $offset, $count )
+			) . Html::element(
+				'div',
+				[ 'class' => $key, 'style' => 'margin-top:10px;margin-bottom:10px;' ],
+				$this->msg( $key, $resultNumber )->parse()
+			) . $listBuilder->getColumnList( $dataItems )
+		);
+
+		$htmlTabs->tab( 'smw-concept-list', $this->msg( 'smw-concept-tab-list' ) );
+		$htmlTabs->content( 'smw-concept-list', $html );
+
+		$html = $htmlTabs->buildHTML(
+			[ 'class' => 'smw-concept clearfix' ]
+		);
+
+		return Html::rawElement(
+			'p',
+			[ 'class' => 'smw-special-concept-docu plainlinks' ],
+			$this->msg( 'smw-special-concept-docu' )->parse()
+		) . $html;
 	}
 
 	/**
-	 * Executes and outputs results for available concepts
-	 *
-	 * @since 1.9
-	 *
-	 * @param array $param
+	 * @see SpecialPage::getGroupName
 	 */
-	public function execute( $param ) {
-		Profiler::In( __METHOD__ );
-
-		$this->getOutput()->setPageTitle( $this->msg( 'concepts' )->text() );
-
-		$from  = $this->getRequest()->getVal( 'from' , '' );
-		$until = $this->getRequest()->getVal( 'until', '' );
-		$limit = $this->getRequest()->getVal( 'limit', 50 );
-
-		$diWikiPages = $this->getResults( $limit, $from, $until );
-		$diWikiPages = $until !== '' ? array_reverse( $diWikiPages ) : $diWikiPages;
-
-		$this->getOutput()->addHTML( $this->getHtml( $diWikiPages, $limit, $from , $until ) );
-
-		Profiler::Out( __METHOD__ );
+	protected function getGroupName() {
+		return 'pages';
 	}
+
 }

@@ -1,7 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Veeven"
+			"Veeven",
+			"రహ్మానుద్దీన్",
+			"Ravichandra"
 		]
 	},
 	"smw_finallistconjunct": ", మరియు",
@@ -45,6 +47,7 @@
 	"smw_ask_otheroptions": "ఇతర ఎంపికలు",
 	"smw_sbv_property": "లక్షణం:",
 	"smw_sbv_value": "విలువ:",
+	"browse": "వికీను దర్శించండి",
 	"smw_browse_go": "వెళ్ళు",
 	"smw_browse_no_outgoing": "ఈ పేజీలో లక్షణాలేమీ లేవు.",
 	"smw_browse_no_incoming": "ఈ పేజీకి లంకె వేస్తున్న లక్షణాలేమీ లేవు.",
@@ -57,5 +60,7 @@
 	"smw_smwadmin_db": "డాటాబేసు స్థాపన మరియు నవీకరణ",
 	"smw_smwadmin_announce": "మీ వికీని ప్రకటించండి",
 	"smw_smwadmin_datarefreshbutton": "భోగట్టాను తాజాకరించడం మొదలుపెట్టు",
-	"smw_smwadmin_support": "తోడ్పాటుని పొందడం"
+	"smw_smwadmin_support": "తోడ్పాటుని పొందడం",
+	"smw-ui-tooltip-title-quantity": "ప్రమాణం మార్పు",
+	"smw-livepreview-loading": "లోడవుతోంది..."
 }

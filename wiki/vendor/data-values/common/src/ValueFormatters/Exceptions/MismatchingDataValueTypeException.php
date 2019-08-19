@@ -2,6 +2,7 @@
 
 namespace ValueFormatters\Exceptions;
 
+use Exception;
 use ValueFormatters\FormattingException;
 
 /**
@@ -15,21 +16,21 @@ class MismatchingDataValueTypeException extends FormattingException {
 	/**
 	 * @var string
 	 */
-	protected $expectedValueType;
+	private $expectedValueType;
 
 	/**
 	 * @var string
 	 */
-	protected $dataValueType;
+	private $dataValueType;
 
 	/**
 	 * @param string $expectedValueType
 	 * @param string $dataValueType
 	 * @param string $message
-	 * @param \Exception $previous
+	 * @param Exception $previous
 	 */
 	public function __construct( $expectedValueType, $dataValueType, $message = '',
-		\Exception $previous = null
+		Exception $previous = null
 	) {
 		$this->expectedValueType = $expectedValueType;
 		$this->dataValueType = $dataValueType;

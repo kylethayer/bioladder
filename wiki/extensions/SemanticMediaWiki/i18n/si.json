@@ -1,7 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"පසිඳු කාවින්ද"
+			"පසිඳු කාවින්ද",
+			"Susith Chandira Gts",
+			"SusithCM"
 		]
 	},
 	"smw_viewasrdf": "RDF පෝෂකය",
@@ -71,13 +73,13 @@
 	"smw_wantedproperty_template": "$1 ({{PLURAL:$2|භාවිතයන්}} $2)",
 	"smw_purge": "නැවත ප්‍රාණවත් කරන්න",
 	"types": "වර්ග",
-	"semanticstatistics": "අර්ථ විචාර සංඛ්‍යාලේඛන",
+
 	"ask": "අර්ථ විචාර සෙවුම",
 	"smw_ask_sortby": "තීරුව අනුව පෙළගස්වන්න (වෛකල්පික)",
 	"smw_ask_ascorder": "ආරෝහණ",
 	"smw_ask_descorder": "අවරෝහණ",
 	"smw_ask_submit": "ප්‍රතිඵල සොයන්න",
-	"smw_ask_editquery": "[ප්‍රශ්නය සංස්කරණය කරන්න]",
+	"smw_ask_editquery": "ප්‍රශ්නය සංස්කරණය කරන්න",
 	"smw_add_sortcondition": "[පෙළගැස්වීම් කොන්දේසියක් එක් කරන්න]",
 	"smw_ask_hidequery": "ප්‍රශ්නය සඟවන්න",
 	"smw_ask_help": "විමසුම් උදව්",
@@ -141,5 +143,10 @@
 	"smw-ui-tooltip-title-note": "සටහන",
 	"smw-ui-tooltip-title-legend": "ප්‍රබන්ධය",
 	"smw_unknowntype": "මෙම වත්කමේ වර්ගය වලංගු නොවේ",
-	"smw_concept_header": "\"$1\" සංකල්පයේ පිටු"
+	"smw_concept_header": "\"$1\" සංකල්පයේ පිටු",
+	"smw-livepreview-loading": "බා ගැනෙමින්…",
+	"smw-sp-searchbyproperty-description": "මෙම පිටුව [https://www.semantic-mediawiki.org/wiki/Help:Browsing_interfaces browsing interface] නාමික අගය හා හිමිකම් පැහැදිලි කිරීම් සෙවුම් සදහා විස්තර ලබා දේ.\nතවත් පවතින අතුරුමුහුණත් සෙවුම් ඇතුළත් කරනවා [[Special:PageProperty|page property search]], සහ [[Special:Ask|ask query builder]].",
+	"smw-sp-searchbyproperty-resultlist-header": "ප්‍රතිපල ලැයිස්තුව",
+	"smw-sp-searchbyproperty-nonvaluequery": "\"$1\" සදහා ඇති වටිනාකම් ලැයිස්තුව පවරන ලදී.",
+	"smw-sp-searchbyproperty-valuequery": "\"$2\"ක අගයේ \"$1\" හිමිකම් ඇති පිටු ලැයිස්තුව විස්තර කරන ලදී."
 }

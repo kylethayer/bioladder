@@ -9,8 +9,6 @@ namespace SMW\Tests;
  * @file
  * @since 1.8
  *
- * @ingroup SMW
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -40,25 +38,10 @@ class SMWDIBooleanTest extends DataItemTest {
 	 * @return array
 	 */
 	public function constructorProvider() {
-		return array(
-			array( false ),
-			array( true ),
-		);
-	}
-
-	/**
-	 * @see DataItemTest::invalidConstructorArgsProvider
-	 *
-	 * @since 1.9
-	 *
-	 * @return array
-	 */
-	public function invalidConstructorArgsProvider() {
-		return array(
-			array( 42 ),
-			array( array() ),
-			array( 'abc' ),
-		);
+		return [
+			[ false ],
+			[ true ],
+		];
 	}
 
 }

@@ -2,17 +2,17 @@
 
 use ParamProcessor\Definition\StringParam;
 use ParamProcessor\IParam;
+use SMW\Query\PrintRequest;
 
 /**
  * Definition for the format parameter.
- * 
+ *
  * @since 1.6.2
  * @deprecated since 1.9
- * 
- * @file
+ *
  * @ingroup SMW
  * @ingroup ParamDefinition
- * 
+ *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
@@ -22,29 +22,31 @@ class SMWParamFormat extends StringParam {
 	 * List of the queries print requests, used to determine the format
 	 * when it's not provided. Set with setPrintRequests before passing
 	 * to Validator.
-	 * 
+	 *
 	 * @since 1.6.2
-	 * 
-	 * @var SMWPrintRequest[]
+	 *
+	 * @var PrintRequest[]
 	 */
-	protected $printRequests = array();
+	protected $printRequests = [];
+
+	protected $showMode = false;
 
 	/**
 	 * Takes a format name, which can be an alias and returns a format name
 	 * which will be valid for sure. Aliases are resolved. If the given
 	 * format name is invalid, the predefined default format will be returned.
-	 * 
+	 *
 	 * @since 1.6.2
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return string
 	 */
 	protected function getValidFormatName( $value ) {
 		global $smwgResultFormats;
-		
+
 		$value = strtolower( trim( $value ) );
-		
+
 		if ( !array_key_exists( $value, $smwgResultFormats ) ) {
 			$isAlias = self::resolveFormatAliases( $value );
 
@@ -56,7 +58,7 @@ class SMWParamFormat extends StringParam {
 
 		return $value;
 	}
-	
+
 	/**
 	 * Turns format aliases into main formats.
 	 *
@@ -81,49 +83,63 @@ class SMWParamFormat extends StringParam {
 
 		return $isAlias;
 	}
-	
+
 	/**
 	 * Determines and returns the default format, based on the queries print
 	 * requests, if provided.
-	 * 
+	 *
 	 * @since 1.6.2
-	 * 
+	 *
 	 * @return string Array key in $smwgResultFormats
 	 */
 	protected function getDefaultFormat() {
+
 		if ( empty( $this->printRequests ) ) {
 			return 'table';
 		}
-		else {
-			$format = false;
-			
-			/**
-			 * This hook allows extensions to override SMWs implementation of default result
-			 * format handling.
-			 * 
-			 * @since 1.5.2
-			 */
-			wfRunHooks( 'SMWResultFormat', array( &$format, $this->printRequests, array() ) );		
 
-			// If no default was set by an extension, use a table or list, depending on the column count.
-			if ( $format === false ) {
-				$format = count( $this->printRequests ) == 1 ? 'list' : 'table';
-			}
-			
+		$format = false;
+
+		/**
+		 * This hook allows extensions to override SMWs implementation of default result
+		 * format handling.
+		 *
+		 * @since 1.5.2
+		 */
+		\Hooks::run( 'SMWResultFormat', [ &$format, $this->printRequests, [] ] );
+
+		if ( $format !== false ) {
 			return $format;
 		}
+
+		// If no default was set by an extension, use a table, plainlist or list, depending on showMode and column count.
+		if ( count( $this->printRequests ) > 1 ) {
+			return 'table';
+		}
+
+		return 'plainlist';
 	}
-	
+
 	/**
 	 * Sets the print requests of the query, used for determining
 	 * the default format if none is provided.
-	 * 
+	 *
 	 * @since 1.6.2
-	 * 
-	 * @param SMWPrintRequest[] $printRequests
+	 *
+	 * @param PrintRequest[] $printRequests
 	 */
 	public function setPrintRequests( array $printRequests ) {
 		$this->printRequests = $printRequests;
+	}
+
+	/**
+	 *
+	 * @since 3.0
+	 *
+	 * @param bool $showMode
+	 */
+	public function setShowMode( $showMode ) {
+		$this->showMode = $showMode;
 	}
 
 	/**

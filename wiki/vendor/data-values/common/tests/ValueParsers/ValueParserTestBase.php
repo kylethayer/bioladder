@@ -2,7 +2,9 @@
 
 namespace ValueParsers\Test;
 
+use Comparable;
 use DataValues\DataValue;
+use PHPUnit_Framework_TestCase;
 use ValueParsers\ParserOptions;
 use ValueParsers\ValueParser;
 
@@ -17,52 +19,51 @@ use ValueParsers\ValueParser;
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-abstract class ValueParserTestBase extends \PHPUnit_Framework_TestCase {
+abstract class ValueParserTestBase extends PHPUnit_Framework_TestCase {
 
 	/**
 	 * @since 0.1
-	 * @return string
-	 */
-	protected abstract function getParserClass();
-
-	/**
-	 * @since 0.1
+	 *
+	 * @return array[]
 	 */
 	public abstract function validInputProvider();
 
 	/**
 	 * @since 0.1
+	 *
+	 * @return array[]
 	 */
-	public function invalidInputProvider() {
-		return array();
-	}
+	public abstract function invalidInputProvider();
 
 	/**
 	 * @since 0.1
+	 *
 	 * @return ValueParser
 	 */
-	protected function getInstance() {
-		$class = $this->getParserClass();
-		return new $class( $this->newParserOptions() );
-	}
+	protected abstract function getInstance();
 
 	/**
-	 * @dataProvider validInputProvider
 	 * @since 0.1
-	 * @param $value
+	 *
+	 * @dataProvider validInputProvider
+	 * @param mixed $value
 	 * @param mixed $expected
 	 * @param ValueParser|null $parser
 	 */
 	public function testParseWithValidInputs( $value, $expected, ValueParser $parser = null ) {
-		if ( is_null( $parser ) ) {
+		if ( $parser === null ) {
 			$parser = $this->getInstance();
 		}
 
 		$this->assertSmartEquals( $expected, $parser->parse( $value ) );
 	}
 
+	/**
+	 * @param DataValue|mixed $expected
+	 * @param DataValue|mixed $actual
+	 */
 	private function assertSmartEquals( $expected, $actual ) {
-		if ( $this->requireDataValue() || $expected instanceof \Comparable ) {
+		if ( $this->requireDataValue() || $expected instanceof Comparable ) {
 			if ( $expected instanceof DataValue && $actual instanceof DataValue ) {
 				$msg = "testing equals():\n"
 					. preg_replace( '/\s+/', ' ', print_r( $actual->toArray(), true ) ) . " should equal\n"
@@ -79,18 +80,18 @@ abstract class ValueParserTestBase extends \PHPUnit_Framework_TestCase {
 	}
 
 	/**
-	 * @dataProvider invalidInputProvider
 	 * @since 0.1
-	 * @param $value
+	 *
+	 * @dataProvider invalidInputProvider
+	 * @param mixed $value
 	 * @param ValueParser|null $parser
 	 */
 	public function testParseWithInvalidInputs( $value, ValueParser $parser = null ) {
-		if ( is_null( $parser ) ) {
+		if ( $parser === null ) {
 			$parser = $this->getInstance();
 		}
 
 		$this->setExpectedException( 'ValueParsers\ParseException' );
-
 		$parser->parse( $value );
 	}
 
@@ -99,21 +100,10 @@ abstract class ValueParserTestBase extends \PHPUnit_Framework_TestCase {
 	 *
 	 * @since 0.1
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function requireDataValue() {
 		return true;
-	}
-
-	/**
-	 * Returns some parser options object with all required options for the parser under test set.
-	 *
-	 * @since 0.1
-	 *
-	 * @return ParserOptions
-	 */
-	protected function newParserOptions() {
-		return new ParserOptions();
 	}
 
 }

@@ -1,7 +1,5 @@
 <?php
 /**
- * Module for resource loader initialization.
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,202 +20,309 @@
  * @author Roan Kattouw
  */
 
+use MediaWiki\MediaWikiServices;
+
+/**
+ * Module for ResourceLoader initialization.
+ *
+ * See also <https://www.mediawiki.org/wiki/ResourceLoader/Features#Startup_Module>
+ *
+ * The startup module, as being called only from ResourceLoaderClientHtml, has
+ * the ability to vary based extra query parameters, in addition to those
+ * from ResourceLoaderContext:
+ *
+ * - target: Only register modules in the client intended for this target.
+ *   Default: "desktop".
+ *   See also: OutputPage::setTarget(), ResourceLoaderModule::getTargets().
+ *
+ * - safemode: Only register modules that have ORIGIN_CORE as their origin.
+ *   This effectively disables ORIGIN_USER modules. (T185303)
+ *   See also: OutputPage::disallowUserJs()
+ */
 class ResourceLoaderStartUpModule extends ResourceLoaderModule {
-
-	/* Protected Members */
-
-	protected $modifiedTime = array();
-	protected $configVars = array();
-	protected $targets = array( 'desktop', 'mobile' );
-
-	/* Protected Methods */
+	protected $targets = [ 'desktop', 'mobile' ];
 
 	/**
 	 * @param ResourceLoaderContext $context
 	 * @return array
 	 */
-	protected function getConfig( $context ) {
+	private function getConfigSettings( $context ) {
+		$conf = $this->getConfig();
 
-		$hash = $context->getHash();
-		if ( isset( $this->configVars[$hash] ) ) {
-			return $this->configVars[$hash];
+		// We can't use Title::newMainPage() if 'mainpage' is in
+		// $wgForceUIMsgAsContentMsg because that will try to use the session
+		// user's language and we have no session user. This does the
+		// equivalent but falling back to our ResourceLoaderContext language
+		// instead.
+		$mainPage = Title::newFromText( $context->msg( 'mainpage' )->inContentLanguage()->text() );
+		if ( !$mainPage ) {
+			$mainPage = Title::newFromText( 'Main Page' );
 		}
-
-		global $wgLoadScript, $wgScript, $wgStylePath, $wgScriptExtension,
-			$wgArticlePath, $wgScriptPath, $wgServer, $wgContLang,
-			$wgVariantArticlePath, $wgActionPaths, $wgVersion,
-			$wgEnableAPI, $wgEnableWriteAPI, $wgDBname,
-			$wgSitename, $wgFileExtensions, $wgExtensionAssetsPath,
-			$wgCookiePrefix, $wgResourceLoaderMaxQueryLength,
-			$wgResourceLoaderStorageEnabled, $wgResourceLoaderStorageVersion,
-			$wgSearchType;
-
-		$mainPage = Title::newMainPage();
 
 		/**
 		 * Namespace related preparation
 		 * - wgNamespaceIds: Key-value pairs of all localized, canonical and aliases for namespaces.
 		 * - wgCaseSensitiveNamespaces: Array of namespaces that are case-sensitive.
 		 */
-		$namespaceIds = $wgContLang->getNamespaceIds();
-		$caseSensitiveNamespaces = array();
+		$contLang = MediaWikiServices::getInstance()->getContentLanguage();
+		$namespaceIds = $contLang->getNamespaceIds();
+		$caseSensitiveNamespaces = [];
 		foreach ( MWNamespace::getCanonicalNamespaces() as $index => $name ) {
-			$namespaceIds[$wgContLang->lc( $name )] = $index;
+			$namespaceIds[$contLang->lc( $name )] = $index;
 			if ( !MWNamespace::isCapitalized( $index ) ) {
 				$caseSensitiveNamespaces[] = $index;
 			}
 		}
 
+		$illegalFileChars = $conf->get( 'IllegalFileChars' );
+
 		// Build list of variables
-		$vars = array(
-			'wgLoadScript' => $wgLoadScript,
+		$skin = $context->getSkin();
+		$vars = [
+			'wgLoadScript' => wfScript( 'load' ),
 			'debug' => $context->getDebug(),
-			'skin' => $context->getSkin(),
-			'stylepath' => $wgStylePath,
+			'skin' => $skin,
+			'stylepath' => $conf->get( 'StylePath' ),
 			'wgUrlProtocols' => wfUrlProtocols(),
-			'wgArticlePath' => $wgArticlePath,
-			'wgScriptPath' => $wgScriptPath,
-			'wgScriptExtension' => $wgScriptExtension,
-			'wgScript' => $wgScript,
-			'wgSearchType' => $wgSearchType,
-			'wgVariantArticlePath' => $wgVariantArticlePath,
+			'wgArticlePath' => $conf->get( 'ArticlePath' ),
+			'wgScriptPath' => $conf->get( 'ScriptPath' ),
+			'wgScript' => wfScript(),
+			'wgSearchType' => $conf->get( 'SearchType' ),
+			'wgVariantArticlePath' => $conf->get( 'VariantArticlePath' ),
 			// Force object to avoid "empty" associative array from
-			// becoming [] instead of {} in JS (bug 34604)
-			'wgActionPaths' => (object)$wgActionPaths,
-			'wgServer' => $wgServer,
+			// becoming [] instead of {} in JS (T36604)
+			'wgActionPaths' => (object)$conf->get( 'ActionPaths' ),
+			'wgServer' => $conf->get( 'Server' ),
+			'wgServerName' => $conf->get( 'ServerName' ),
 			'wgUserLanguage' => $context->getLanguage(),
-			'wgContentLanguage' => $wgContLang->getCode(),
-			'wgVersion' => $wgVersion,
-			'wgEnableAPI' => $wgEnableAPI,
-			'wgEnableWriteAPI' => $wgEnableWriteAPI,
+			'wgContentLanguage' => $contLang->getCode(),
+			'wgTranslateNumerals' => $conf->get( 'TranslateNumerals' ),
+			'wgVersion' => $conf->get( 'Version' ),
+			'wgEnableAPI' => true, // Deprecated since MW 1.32
+			'wgEnableWriteAPI' => true, // Deprecated since MW 1.32
 			'wgMainPageTitle' => $mainPage->getPrefixedText(),
-			'wgFormattedNamespaces' => $wgContLang->getFormattedNamespaces(),
+			'wgFormattedNamespaces' => $contLang->getFormattedNamespaces(),
 			'wgNamespaceIds' => $namespaceIds,
 			'wgContentNamespaces' => MWNamespace::getContentNamespaces(),
-			'wgSiteName' => $wgSitename,
-			'wgFileExtensions' => array_values( array_unique( $wgFileExtensions ) ),
-			'wgDBname' => $wgDBname,
-			// This sucks, it is only needed on Special:Upload, but I could
-			// not find a way to add vars only for a certain module
-			'wgFileCanRotate' => BitmapHandler::canRotate(),
-			'wgAvailableSkins' => Skin::getSkinNames(),
-			'wgExtensionAssetsPath' => $wgExtensionAssetsPath,
+			'wgSiteName' => $conf->get( 'Sitename' ),
+			'wgDBname' => $conf->get( 'DBname' ),
+			'wgExtraSignatureNamespaces' => $conf->get( 'ExtraSignatureNamespaces' ),
+			'wgExtensionAssetsPath' => $conf->get( 'ExtensionAssetsPath' ),
 			// MediaWiki sets cookies to have this prefix by default
-			'wgCookiePrefix' => $wgCookiePrefix,
-			'wgResourceLoaderMaxQueryLength' => $wgResourceLoaderMaxQueryLength,
+			'wgCookiePrefix' => $conf->get( 'CookiePrefix' ),
+			'wgCookieDomain' => $conf->get( 'CookieDomain' ),
+			'wgCookiePath' => $conf->get( 'CookiePath' ),
+			'wgCookieExpiration' => $conf->get( 'CookieExpiration' ),
 			'wgCaseSensitiveNamespaces' => $caseSensitiveNamespaces,
 			'wgLegalTitleChars' => Title::convertByteClassToUnicodeClass( Title::legalChars() ),
-			'wgResourceLoaderStorageVersion' => $wgResourceLoaderStorageVersion,
-			'wgResourceLoaderStorageEnabled' => $wgResourceLoaderStorageEnabled,
-		);
+			'wgIllegalFileChars' => Title::convertByteClassToUnicodeClass( $illegalFileChars ),
+			'wgResourceLoaderStorageVersion' => $conf->get( 'ResourceLoaderStorageVersion' ),
+			'wgResourceLoaderStorageEnabled' => $conf->get( 'ResourceLoaderStorageEnabled' ),
+			'wgForeignUploadTargets' => $conf->get( 'ForeignUploadTargets' ),
+			'wgEnableUploads' => $conf->get( 'EnableUploads' ),
+			'wgCommentByteLimit' => null,
+			'wgCommentCodePointLimit' => CommentStore::COMMENT_CHARACTER_LIMIT,
+		];
 
-		wfRunHooks( 'ResourceLoaderGetConfigVars', array( &$vars ) );
+		Hooks::run( 'ResourceLoaderGetConfigVars', [ &$vars, $skin ] );
 
-		$this->configVars[$hash] = $vars;
-		return $this->configVars[$hash];
+		return $vars;
+	}
+
+	/**
+	 * Recursively get all explicit and implicit dependencies for to the given module.
+	 *
+	 * @param array $registryData
+	 * @param string $moduleName
+	 * @return array
+	 */
+	protected static function getImplicitDependencies( array $registryData, $moduleName ) {
+		static $dependencyCache = [];
+
+		// The list of implicit dependencies won't be altered, so we can
+		// cache them without having to worry.
+		if ( !isset( $dependencyCache[$moduleName] ) ) {
+			if ( !isset( $registryData[$moduleName] ) ) {
+				// Dependencies may not exist
+				$dependencyCache[$moduleName] = [];
+			} else {
+				$data = $registryData[$moduleName];
+				$dependencyCache[$moduleName] = $data['dependencies'];
+
+				foreach ( $data['dependencies'] as $dependency ) {
+					// Recursively get the dependencies of the dependencies
+					$dependencyCache[$moduleName] = array_merge(
+						$dependencyCache[$moduleName],
+						self::getImplicitDependencies( $registryData, $dependency )
+					);
+				}
+			}
+		}
+
+		return $dependencyCache[$moduleName];
+	}
+
+	/**
+	 * Optimize the dependency tree in $this->modules.
+	 *
+	 * The optimization basically works like this:
+	 * 	Given we have module A with the dependencies B and C
+	 * 		and module B with the dependency C.
+	 * 	Now we don't have to tell the client to explicitly fetch module
+	 * 		C as that's already included in module B.
+	 *
+	 * This way we can reasonably reduce the amount of module registration
+	 * data send to the client.
+	 *
+	 * @param array &$registryData Modules keyed by name with properties:
+	 *  - string 'version'
+	 *  - array 'dependencies'
+	 *  - string|null 'group'
+	 *  - string 'source'
+	 */
+	public static function compileUnresolvedDependencies( array &$registryData ) {
+		foreach ( $registryData as $name => &$data ) {
+			$dependencies = $data['dependencies'];
+			foreach ( $data['dependencies'] as $dependency ) {
+				$implicitDependencies = self::getImplicitDependencies( $registryData, $dependency );
+				$dependencies = array_diff( $dependencies, $implicitDependencies );
+			}
+			// Rebuild keys
+			$data['dependencies'] = array_values( $dependencies );
+		}
 	}
 
 	/**
 	 * Get registration code for all modules.
 	 *
-	 * @param ResourceLoaderContext $context object
+	 * @param ResourceLoaderContext $context
 	 * @return string JavaScript code for registering all modules with the client loader
 	 */
-	public static function getModuleRegistrations( ResourceLoaderContext $context ) {
-		global $wgCacheEpoch;
-		wfProfileIn( __METHOD__ );
-
+	public function getModuleRegistrations( ResourceLoaderContext $context ) {
 		$resourceLoader = $context->getResourceLoader();
-		$target = $context->getRequest()->getVal( 'target', 'desktop' );
+		// Future developers: Use WebRequest::getRawVal() instead getVal().
+		// The getVal() method performs slow Language+UTF logic. (f303bb9360)
+		$target = $context->getRequest()->getRawVal( 'target', 'desktop' );
+		$safemode = $context->getRequest()->getRawVal( 'safemode' ) === '1';
+		// Bypass target filter if this request is Special:JavaScriptTest.
+		// To prevent misuse in production, this is only allowed if testing is enabled server-side.
+		$byPassTargetFilter = $this->getConfig()->get( 'EnableJavaScriptTest' ) && $target === 'test';
 
 		$out = '';
-		$registryData = array();
+		$states = [];
+		$registryData = [];
+		$moduleNames = $resourceLoader->getModuleNames();
+
+		// Preload with a batch so that the below calls to getVersionHash() for each module
+		// don't require on-demand loading of more information.
+		try {
+			$resourceLoader->preloadModuleInfo( $moduleNames, $context );
+		} catch ( Exception $e ) {
+			// Don't fail the request (T152266)
+			// Also print the error in the main output
+			$resourceLoader->outputErrorAndLog( $e,
+				'Preloading module info from startup failed: {exception}',
+				[ 'exception' => $e ]
+			);
+		}
 
 		// Get registry data
-		foreach ( $resourceLoader->getModuleNames() as $name ) {
+		foreach ( $moduleNames as $name ) {
 			$module = $resourceLoader->getModule( $name );
 			$moduleTargets = $module->getTargets();
-			if ( !in_array( $target, $moduleTargets ) ) {
+			if (
+				( !$byPassTargetFilter && !in_array( $target, $moduleTargets ) )
+				|| ( $safemode && $module->getOrigin() > ResourceLoaderModule::ORIGIN_CORE_INDIVIDUAL )
+			) {
 				continue;
 			}
 
-			// getModifiedTime() is supposed to return a UNIX timestamp, but it doesn't always
-			// seem to do that, and custom implementations might forget. Coerce it to TS_UNIX
-			$moduleMtime = wfTimestamp( TS_UNIX, $module->getModifiedTime( $context ) );
-			$mtime = max( $moduleMtime, wfTimestamp( TS_UNIX, $wgCacheEpoch ) );
+			if ( $module->isRaw() ) {
+				// Don't register "raw" modules (like 'startup') client-side because depending on them
+				// is illegal anyway and would only lead to them being loaded a second time,
+				// causing any state to be lost.
 
-			// FIXME: Convert to numbers, wfTimestamp always gives us stings, even for TS_UNIX
+				// ATTENTION: Because of the line below, this is not going to cause infinite recursion.
+				// Think carefully before making changes to this code!
+				// The below code is going to call ResourceLoaderModule::getVersionHash() for every module.
+				// For StartUpModule (this module) the hash is computed based on the manifest content,
+				// which is the very thing we are computing right here. As such, this must skip iterating
+				// over 'startup' itself.
+				continue;
+			}
 
-			$registryData[ $name ] = array(
-				'version' => $mtime,
-				'dependencies' => $module->getDependencies(),
+			try {
+				$versionHash = $module->getVersionHash( $context );
+			} catch ( Exception $e ) {
+				// Don't fail the request (T152266)
+				// Also print the error in the main output
+				$resourceLoader->outputErrorAndLog( $e,
+					'Calculating version for "{module}" failed: {exception}',
+					[
+						'module' => $name,
+						'exception' => $e,
+					]
+				);
+				$versionHash = '';
+				$states[$name] = 'error';
+			}
+
+			if ( $versionHash !== '' && strlen( $versionHash ) !== 7 ) {
+				$context->getLogger()->warning(
+					"Module '{module}' produced an invalid version hash: '{version}'.",
+					[
+						'module' => $name,
+						'version' => $versionHash,
+					]
+				);
+				// Module implementation either broken or deviated from ResourceLoader::makeHash
+				// Asserted by tests/phpunit/structure/ResourcesTest.
+				$versionHash = ResourceLoader::makeHash( $versionHash );
+			}
+
+			$skipFunction = $module->getSkipFunction();
+			if ( $skipFunction !== null && !ResourceLoader::inDebugMode() ) {
+				$skipFunction = ResourceLoader::filter( 'minify-js', $skipFunction );
+			}
+
+			$registryData[$name] = [
+				'version' => $versionHash,
+				'dependencies' => $module->getDependencies( $context ),
 				'group' => $module->getGroup(),
 				'source' => $module->getSource(),
-				'loader' => $module->getLoaderScript(),
-			);
+				'skip' => $skipFunction,
+			];
 		}
+
+		self::compileUnresolvedDependencies( $registryData );
 
 		// Register sources
 		$out .= ResourceLoader::makeLoaderSourcesScript( $resourceLoader->getSources() );
 
-		// Concatenate module loader scripts and figure out the different call
-		// signatures for mw.loader.register
-		$registrations = array();
+		// Figure out the different call signatures for mw.loader.register
+		$registrations = [];
 		foreach ( $registryData as $name => $data ) {
-			if ( $data['loader'] !== false ) {
-				$out .= ResourceLoader::makeCustomLoaderScript(
-					$name,
-					wfTimestamp( TS_ISO_8601_BASIC, $data['version'] ),
-					$data['dependencies'],
-					$data['group'],
-					$data['source'],
-					$data['loader']
-				);
-				continue;
-			}
-
-			if (
-				!count( $data['dependencies'] ) &&
-				$data['group'] === null &&
-				$data['source'] === 'local'
-			) {
-				// Modules without dependencies, a group or a foreign source;
-				// call mw.loader.register(name, timestamp)
-				$registrations[] = array( $name, $data['version'] );
-			} elseif ( $data['group'] === null && $data['source'] === 'local' ) {
-				// Modules with dependencies but no group or foreign source;
-				// call mw.loader.register(name, timestamp, dependencies)
-				$registrations[] = array( $name, $data['version'], $data['dependencies'] );
-			} elseif ( $data['source'] === 'local' ) {
-				// Modules with a group but no foreign source;
-				// call mw.loader.register(name, timestamp, dependencies, group)
-				$registrations[] = array(
-					$name,
-					$data['version'],
-					$data['dependencies'],
-					$data['group']
-				);
-			} else {
-				// Modules with a foreign source;
-				// call mw.loader.register(name, timestamp, dependencies, group, source)
-				$registrations[] = array(
-					$name,
-					$data['version'],
-					$data['dependencies'],
-					$data['group'],
-					$data['source']
-				);
-			}
+			// Call mw.loader.register(name, version, dependencies, group, source, skip)
+			$registrations[] = [
+				$name,
+				$data['version'],
+				$data['dependencies'],
+				$data['group'],
+				// Swap default (local) for null
+				$data['source'] === 'local' ? null : $data['source'],
+				$data['skip']
+			];
 		}
 
 		// Register modules
-		$out .= ResourceLoader::makeLoaderRegisterScript( $registrations );
+		$out .= "\n" . ResourceLoader::makeLoaderRegisterScript( $registrations );
 
-		wfProfileOut( __METHOD__ );
+		if ( $states ) {
+			$out .= "\n" . ResourceLoader::makeLoaderStateScript( $states );
+		}
+
 		return $out;
 	}
-
-	/* Methods */
 
 	/**
 	 * @return bool
@@ -227,71 +332,115 @@ class ResourceLoaderStartUpModule extends ResourceLoaderModule {
 	}
 
 	/**
-	 * Get the load URL of the startup modules.
+	 * Internal modules used by ResourceLoader that cannot be depended on.
 	 *
-	 * This is a helper for getScript(), but can also be called standalone, such
-	 * as when generating an AppCache manifest.
+	 * These module(s) should have isRaw() return true, and are not
+	 * legal dependencies (enforced by structure/ResourcesTest).
 	 *
-	 * @param ResourceLoaderContext $context
-	 * @return string
+	 * @deprecated since 1.32 No longer used.
+	 * @return array
 	 */
-	public static function getStartupModulesUrl( ResourceLoaderContext $context ) {
-		// The core modules:
-		$moduleNames = array( 'jquery', 'mediawiki' );
-		wfRunHooks( 'ResourceLoaderGetStartupModules', array( &$moduleNames ), '1.23' );
+	public static function getStartupModules() {
+		wfDeprecated( __METHOD__, '1.32' );
+		return [];
+	}
 
-		// Get the latest version
-		$loader = $context->getResourceLoader();
-		$version = 0;
-		foreach ( $moduleNames as $moduleName ) {
-			$version = max( $version,
-				$loader->getModule( $moduleName )->getModifiedTime( $context )
-			);
+	/**
+	 * @deprecated since 1.32 No longer used.
+	 * @return array
+	 */
+	public static function getLegacyModules() {
+		wfDeprecated( __METHOD__, '1.32' );
+		return [];
+	}
+
+	/**
+	 * @private For internal use by SpecialJavaScriptTest
+	 * @since 1.32
+	 * @return array
+	 */
+	public function getBaseModulesInternal() {
+		return $this->getBaseModules();
+	}
+
+	/**
+	 * Base modules implicitly available to all modules.
+	 *
+	 * @return array
+	 */
+	private function getBaseModules() {
+		global $wgIncludeLegacyJavaScript;
+
+		$baseModules = [ 'jquery', 'mediawiki.base' ];
+		if ( $wgIncludeLegacyJavaScript ) {
+			$baseModules[] = 'mediawiki.legacy.wikibits';
 		}
 
-		$query = array(
-			'modules' => ResourceLoader::makePackedModulesString( $moduleNames ),
-			'only' => 'scripts',
-			'lang' => $context->getLanguage(),
-			'skin' => $context->getSkin(),
-			'debug' => $context->getDebug() ? 'true' : 'false',
-			'version' => wfTimestamp( TS_ISO_8601_BASIC, $version )
-		);
-		// Ensure uniform query order
-		ksort( $query );
-		return wfAppendQuery( wfScript( 'load' ), $query );
+		return $baseModules;
 	}
 
 	/**
 	 * @param ResourceLoaderContext $context
-	 * @return string
+	 * @return string JavaScript code
 	 */
 	public function getScript( ResourceLoaderContext $context ) {
-		global $IP, $wgLegacyJavaScriptGlobals;
+		global $IP;
+		$conf = $this->getConfig();
 
-		$out = file_get_contents( "$IP/resources/src/startup.js" );
-		if ( $context->getOnly() === 'scripts' ) {
-
-			// Startup function
-			$configuration = $this->getConfig( $context );
-			$registrations = self::getModuleRegistrations( $context );
-			// Fix indentation
-			$registrations = str_replace( "\n", "\n\t", trim( $registrations ) );
-			$out .= "var startUp = function () {\n" .
-				"\tmw.config = new " .
-				Xml::encodeJsCall( 'mw.Map', array( $wgLegacyJavaScriptGlobals ) ) . "\n" .
-				"\t$registrations\n" .
-				"\t" . Xml::encodeJsCall( 'mw.config.set', array( $configuration ) ) .
-				"};\n";
-
-			// Conditional script injection
-			$scriptTag = Html::linkedScript( self::getStartupModulesUrl( $context ) );
-			$out .= "if ( isCompatible() ) {\n" .
-				"\t" . Xml::encodeJsCall( 'document.write', array( $scriptTag ) ) .
-				"}";
+		if ( $context->getOnly() !== 'scripts' ) {
+			return '/* Requires only=script */';
 		}
 
-		return $out;
+		$startupCode = file_get_contents( "$IP/resources/src/startup/startup.js" );
+
+		// The files read here MUST be kept in sync with maintenance/jsduck/eg-iframe.html,
+		// and MUST be considered by 'fileHashes' in StartUpModule::getDefinitionSummary().
+		$mwLoaderCode = file_get_contents( "$IP/resources/src/startup/mediawiki.js" ) .
+			file_get_contents( "$IP/resources/src/startup/mediawiki.requestIdleCallback.js" );
+		if ( $context->getDebug() ) {
+			$mwLoaderCode .= file_get_contents( "$IP/resources/src/startup/mediawiki.log.js" );
+		}
+		if ( $conf->get( 'ResourceLoaderEnableJSProfiler' ) ) {
+			$mwLoaderCode .= file_get_contents( "$IP/resources/src/startup/profiler.js" );
+		}
+
+		// Perform replacements for mediawiki.js
+		$mwLoaderPairs = [
+			'$VARS.baseModules' => ResourceLoader::encodeJsonForScript( $this->getBaseModules() ),
+			'$VARS.maxQueryLength' => ResourceLoader::encodeJsonForScript(
+				$conf->get( 'ResourceLoaderMaxQueryLength' )
+			),
+		];
+		$profilerStubs = [
+			'$CODE.profileExecuteStart();' => 'mw.loader.profiler.onExecuteStart( module );',
+			'$CODE.profileExecuteEnd();' => 'mw.loader.profiler.onExecuteEnd( module );',
+			'$CODE.profileScriptStart();' => 'mw.loader.profiler.onScriptStart( module );',
+			'$CODE.profileScriptEnd();' => 'mw.loader.profiler.onScriptEnd( module );',
+		];
+		if ( $conf->get( 'ResourceLoaderEnableJSProfiler' ) ) {
+			// When profiling is enabled, insert the calls.
+			$mwLoaderPairs += $profilerStubs;
+		} else {
+			// When disabled (by default), insert nothing.
+			$mwLoaderPairs += array_fill_keys( array_keys( $profilerStubs ), '' );
+		}
+		$mwLoaderCode = strtr( $mwLoaderCode, $mwLoaderPairs );
+
+		// Perform string replacements for startup.js
+		$pairs = [
+			'$VARS.wgLegacyJavaScriptGlobals' => ResourceLoader::encodeJsonForScript(
+				$conf->get( 'LegacyJavaScriptGlobals' )
+			),
+			'$VARS.configuration' => ResourceLoader::encodeJsonForScript(
+				$this->getConfigSettings( $context )
+			),
+			// Raw JavaScript code (not JSON)
+			'$CODE.registrations();' => trim( $this->getModuleRegistrations( $context ) ),
+			'$CODE.defineLoader();' => $mwLoaderCode,
+		];
+		$startupCode = strtr( $startupCode, $pairs );
+
+		return $startupCode;
 	}
 
 	/**
@@ -302,61 +451,12 @@ class ResourceLoaderStartUpModule extends ResourceLoaderModule {
 	}
 
 	/**
-	 * @param ResourceLoaderContext $context
-	 * @return array|mixed
+	 * @return bool
 	 */
-	public function getModifiedTime( ResourceLoaderContext $context ) {
-		global $IP, $wgCacheEpoch;
-
-		$hash = $context->getHash();
-		if ( isset( $this->modifiedTime[$hash] ) ) {
-			return $this->modifiedTime[$hash];
-		}
-
-		// Call preloadModuleInfo() on ALL modules as we're about
-		// to call getModifiedTime() on all of them
-		$loader = $context->getResourceLoader();
-		$loader->preloadModuleInfo( $loader->getModuleNames(), $context );
-
-		$time = max(
-			wfTimestamp( TS_UNIX, $wgCacheEpoch ),
-			filemtime( "$IP/resources/src/startup.js" ),
-			$this->getHashMtime( $context )
-		);
-
-		// ATTENTION!: Because of the line below, this is not going to cause
-		// infinite recursion - think carefully before making changes to this
-		// code!
-		// Pre-populate modifiedTime with something because the the loop over
-		// all modules below includes the the startup module (this module).
-		$this->modifiedTime[$hash] = 1;
-
-		foreach ( $loader->getModuleNames() as $name ) {
-			$module = $loader->getModule( $name );
-			$time = max( $time, $module->getModifiedTime( $context ) );
-		}
-
-		$this->modifiedTime[$hash] = $time;
-		return $this->modifiedTime[$hash];
-	}
-
-	/**
-	 * Hash of all dynamic data embedded in getScript().
-	 *
-	 * Detect changes to mw.config settings embedded in #getScript (bug 28899).
-	 *
-	 * @param $context ResourceLoaderContext
-	 * @return string: Hash
-	 */
-	public function getModifiedHash( ResourceLoaderContext $context ) {
-		global $wgLegacyJavaScriptGlobals;
-
-		$data = array(
-			'vars' => $this->getConfig( $context ),
-			'wgLegacyJavaScriptGlobals' => $wgLegacyJavaScriptGlobals,
-		);
-
-		return md5( serialize( $data ) );
+	public function enableModuleContentVersion() {
+		// Enabling this means that ResourceLoader::getVersionHash will simply call getScript()
+		// and hash it to determine the version (as used by E-Tag HTTP response header).
+		return true;
 	}
 
 	/**

@@ -2,21 +2,14 @@
 
 namespace SMW\Tests;
 
-use SMW\Tests\Util\SemanticDataValidator;
-
 use SMW\DataValueFactory;
-use SMW\HashIdGenerator;
-use SMW\DIProperty;
-use SMW\DIWikiPage;
 use SMW\Subobject;
-
+use SMW\Tests\Utils\UtilityFactory;
 use SMWDIBlob;
 use Title;
 
 /**
  * @covers \SMW\Subobject
- *
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -27,6 +20,16 @@ use Title;
  * @author mwjames
  */
 class SubobjectTest extends \PHPUnit_Framework_TestCase {
+
+	use PHPUnitCompat;
+
+	private $semanticDataValidator;
+
+	protected function setUp() {
+		parent::setUp();
+
+		$this->semanticDataValidator = UtilityFactory::getInstance()->newValidatorFactory()->newSemanticDataValidator();
+	}
 
 	public function testCanConstruct() {
 
@@ -51,7 +54,7 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 	public function testSetEmptySemanticData() {
 
 		$instance = new Subobject( Title::newFromText( __METHOD__ ) );
-		$instance->setEmptySemanticDataForId( 'Foo' );
+		$instance->setEmptyContainerForId( 'Foo' );
 
 		$this->assertInstanceOf(
 			'\Title',
@@ -64,15 +67,15 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals(
-			$instance->getId(),
-			$instance->getSemanticData()->getSubject()->getSubobjectname()
+			$instance->getSubobjectId(),
+			$instance->getSemanticData()->getSubject()->getSubobjectName()
 		);
 	}
 
 	/**
 	 * @dataProvider getDataProvider
 	 */
-	public function testGetId( array $parameters, array $expected ) {
+	public function testgetSubobjectId( array $parameters, array $expected ) {
 
 		$instance = $this->acquireInstanceForId(
 			Title::newFromText( __METHOD__ ),
@@ -80,12 +83,12 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		if ( $expected['identifier'] !== '_'  ) {
-			return $this->assertEquals( $expected['identifier'], $instance->getId() );
+			return $this->assertEquals( $expected['identifier'], $instance->getSubobjectId() );
 		}
 
 		$this->assertEquals(
 			$expected['identifier'],
-			substr( $instance->getId(), 0, 1 )
+			substr( $instance->getSubobjectId(), 0, 1 )
 		);
 	}
 
@@ -117,7 +120,7 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 
 		foreach ( $parameters['properties'] as $property => $value ){
 
-			$dataValue = DataValueFactory::getInstance()->newPropertyValue(
+			$dataValue = DataValueFactory::getInstance()->newDataValueByText(
 				$property,
 				$value
 			);
@@ -130,9 +133,7 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 			$instance->getErrors()
 		);
 
-		$semanticDataValidator = new SemanticDataValidator();
-
-		$semanticDataValidator->assertThatPropertiesAreSet(
+		$this->semanticDataValidator->assertThatPropertiesAreSet(
 			$expected,
 			$instance->getSemanticData()
 		);
@@ -159,7 +160,7 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getLabel' )
 			->will( $this->returnValue( $parameters['property']['label'] ) );
 
-		$dataValue = DataValueFactory::getInstance()->newDataItemValue(
+		$dataValue = DataValueFactory::getInstance()->newDataValueByItem(
 			$parameters['dataItem'],
 			$property
 		);
@@ -173,9 +174,7 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertCount( $expected['errors'], $instance->getErrors() );
 
-		$semanticDataValidator = new SemanticDataValidator();
-
-		$semanticDataValidator->assertThatPropertiesAreSet(
+		$this->semanticDataValidator->assertThatPropertiesAreSet(
 			$expected,
 			$instance->getSemanticData()
 		);
@@ -183,41 +182,45 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 
 	public function testAddDataValueWithInvalidSemanticDataThrowsException() {
 
+		$dataValue = $this->getMockBuilder( '\SMWDataValue' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
 		$instance = new Subobject( Title::newFromText( __METHOD__ ) );
 
-		$this->setExpectedException( '\SMW\InvalidSemanticDataException' );
-
-		$instance->addDataValue(
-			DataValueFactory::getInstance()->newPropertyValue( 'Foo', 'Bar' )
-		);
+		$this->setExpectedException( '\SMW\Exception\SubSemanticDataException' );
+		$instance->addDataValue( $dataValue );
 	}
 
 	public function testGetSemanticDataInvalidSemanticDataThrowsException() {
 
 		$instance = new Subobject( Title::newFromText( __METHOD__ ) );
 
-		$this->setExpectedException( '\SMW\InvalidSemanticDataException' );
-
+		$this->setExpectedException( '\SMW\Exception\SubSemanticDataException' );
 		$instance->getSemanticData();
 	}
 
 	/**
-	 * @dataProvider getDataProvider
+	 * @dataProvider errorProvider
 	 */
-	public function testGenerateId( array $test, array $expected ) {
+	public function testErrorHandlingOnErrors( $errors, $expected ) {
 
 		$instance = new Subobject( Title::newFromText( __METHOD__ ) );
 
-		$actual = substr( $instance->generateId( new HashIdGenerator( $test['identifier'], '_' ) ), 0, 1 );
+		foreach ( $errors as $error ) {
+			$instance->addError( $error );
+		}
 
-		$this->assertEquals( '_', $actual );
+		$this->assertCount(
+			$expected,
+			$instance->getErrors()
+		);
 	}
 
 	/**
 	 * @dataProvider getDataProvider
 	 */
-	public function testGetContainer( array $parameters, array $expected ) {
-
+	public function testGetContainer( array $parameters ) {
 		$instance = $this->acquireInstanceForId(
 			Title::newFromText( __METHOD__ ),
 			$parameters['identifier']
@@ -229,119 +232,114 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	/**
-	 * @return array
-	 */
 	public function getDataProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		// #0 / asserting conditions for a named identifier
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => 'Bar',
-				'properties' => array( 'Foo' => 'bar' )
-			),
-			array(
+				'properties' => [ 'Foo' => 'bar' ]
+			],
+			[
 				'errors' => 0,
 				'identifier' => 'Bar',
 				'propertyCount'  => 1,
 				'propertyLabels' => 'Foo',
 				'propertyValues' => 'Bar',
-			)
-		);
+			]
+		];
 
 		// #1 / asserting conditions for an anon identifier
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => '',
-				'properties' => array( 'FooBar' => 'bar Foo' )
-			),
-			array(
+				'properties' => [ 'FooBar' => 'bar Foo' ]
+			],
+			[
 				'errors' => 0,
 				'identifier' => '_',
 				'propertyCount'  => 1,
 				'propertyLabels' => 'FooBar',
 				'propertyValues' => 'Bar Foo',
-			)
-		);
+			]
+		];
 
 		// #2 / asserting conditions
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => 'foo',
-				'properties' => array( 9001 => 1001 )
-			),
-			array(
+				'properties' => [ 9001 => 1001 ]
+			],
+			[
 				'errors' => 0,
 				'identifier' => 'foo',
 				'propertyCount'  => 1,
-				'propertyLabels' => array( 9001 ),
-				'propertyValues' => array( 1001 ),
-			)
-		);
+				'propertyLabels' => [ 9001 ],
+				'propertyValues' => [ 1001 ],
+			]
+		];
 
 		// #3
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => 'foo bar',
-				'properties' => array( 1001 => 9001, 'Foo' => 'Bar' )
-			),
-			array(
+				'properties' => [ 1001 => 9001, 'Foo' => 'Bar' ]
+			],
+			[
 				'errors' => 0,
 				'identifier' => 'foo bar',
 				'propertyCount'  => 2,
-				'propertyLabels' => array( 1001, 'Foo' ),
-				'propertyValues' => array( 9001, 'Bar' ),
-			)
-		);
+				'propertyLabels' => [ 1001, 'Foo' ],
+				'propertyValues' => [ 9001, 'Bar' ],
+			]
+		];
 
 		// #4 / asserting that a property with a leading underscore would produce an error
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => 'bar',
-				'properties' => array( '_FooBar' => 'bar Foo' )
-			),
-			array(
+				'properties' => [ '_FooBar' => 'bar Foo' ]
+			],
+			[
 				'errors' => 1,
 				'identifier' => 'bar',
-				'propertyCount'  => 0,
-				'propertyLabels' => '',
-				'propertyValues' => '',
-			)
-		);
+				'propertyCount'  => 1,
+				'strictPropertyValueMatch' => false,
+				'propertyKeys' => [ '_ERRC' ]
+			]
+		];
 
 		// #5 / asserting that an inverse property would produce an error
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => 'bar',
-				'properties' => array( '-FooBar' => 'bar Foo' )
-			),
-			array(
+				'properties' => [ '-FooBar' => 'bar Foo' ]
+			],
+			[
 				'errors' => 1,
 				'identifier' => 'bar',
-				'propertyCount'  => 0,
-				'propertyLabels' => '',
-				'propertyValues' => '',
-			)
-		);
+				'propertyCount'  => 1,
+				'strictPropertyValueMatch' => false,
+				'propertyKeys' => [ '_ERRC' ]
+			]
+		];
 
 		// #6 / asserting that an improper value for a _wpg property would add "Has improper value for"
-		$diPropertyError = new DIProperty( DIProperty::TYPE_ERROR );
-
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'identifier' => 'bar',
-				'properties' => array( 'Foo' => '' )
-			),
-			array(
+				'properties' => [ 'Foo' => '' ]
+			],
+			[
 				'identifier' => 'bar',
 				'errors' => 1,
+				'strictPropertyValueMatch' => false,
 				'propertyCount'  => 1,
-				'propertyLabels' => array( $diPropertyError->getLabel() ),
-				'propertyValues' => 'Foo',
-			)
-		);
+				'propertyKeys' => [ '_ERRC' ]
+			]
+		];
 
 		return $provider;
 	}
@@ -353,25 +351,25 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function newDataValueProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		// #0 Bug 49530
-		$provider[] = array(
-			array(
-				'property' => array(
+		$provider[] = [
+			[
+				'property' => [
 					'typeId' => '_txt',
 					'label'  => 'Blob.example',
 					'key'    => 'Blob.example'
-				),
+				],
 				'dataItem' => new SMWDIBlob( '<a href="http://username@example.org/path">Example</a>' )
-			),
-			array(
+			],
+			[
 				'errors' => 0,
 				'propertyCount'  => 1,
 				'propertyLabels' => 'Blob.example',
 				'propertyValues' => '<a href="http://username@example.org/path">Example</a>',
-			)
-		);
+			]
+		];
 
 		return $provider;
 	}
@@ -384,12 +382,55 @@ class SubobjectTest extends \PHPUnit_Framework_TestCase {
 		$instance = new Subobject( $title );
 
 		if ( $id === '' && $id !== null ) {
-			$id = $instance->generateId( new HashIdGenerator( rand( 10, 10000 ), '_' ) );
+			$id = '_abcdef';
 		}
 
-		$instance->setEmptySemanticDataForId( $id );
+		$instance->setEmptyContainerForId( $id );
 
 		return $instance;
+	}
+
+	public function errorProvider() {
+
+		$provider = [];
+
+		#0
+		$provider[] = [
+			[
+				'Foo',
+				'Foo'
+			],
+			1
+		];
+
+		#1
+		$provider[] = [
+			[
+				'Foo',
+				'Bar'
+			],
+			2
+		];
+
+		#2
+		$provider[] = [
+			[
+				[ 'Foo' => 'Bar' ],
+				[ 'Foo' => 'Bar' ],
+			],
+			1
+		];
+
+		#3
+		$provider[] = [
+			[
+				[ 'Foo' => 'Bar' ],
+				[ 'Bar' => 'Foo' ],
+			],
+			2
+		];
+
+		return $provider;
 	}
 
 }

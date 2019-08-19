@@ -1,7 +1,7 @@
 # DataValues
 
 DataValues is a small PHP library that aims to be a common foundation for representing "simple"
-values. Values such as numbers, geographical coordinates, strings and times.
+values. Values such as booleans and strings.
 
 It is part of the [DataValues set of libraries](https://github.com/DataValues).
 
@@ -15,7 +15,10 @@ On [Packagist](https://packagist.org/packages/data-values/data-values):
 
 ## Requirements
 
-* PHP 5.3 or later
+These PHP versions are supported:
+
+* PHP 5.5 or later, including PHP 7
+* HHVM 3.3 or later
 
 ## Installation
 
@@ -28,11 +31,11 @@ the git repository and take care of loading yourself.
 To add this package as a local, per-project dependency to your project, simply add a
 dependency on `data-values/data-values` to your project's `composer.json` file.
 Here is a minimal example of a `composer.json` file that just defines a dependency on
-DataValues 1.0:
+DataValues 2.0:
 
     {
         "require": {
-            "data-values/data-values": "1.0.*"
+            "data-values/data-values": "^2.0.0"
         }
     }
 
@@ -59,13 +62,40 @@ Contributions where also made by [several other awesome people]
 
 ## Release notes
 
+### 2.1.1 (2017-09-28)
+
+* Fixed `DataValueTest` not being installable via Composer
+
+### 2.1.0 (2017-08-09)
+
+* Removed MediaWiki integration
+
+### 2.0.0 (2017-08-02)
+
+* Dropped `Copyable` interface
+* Dropped deprecated constant `DataValues_VERSION`, use `DATAVALUES_VERSION` instead
+* Deprecated `newFromArray` in all `DataValue` implementations.
+* Fixed and updated documentation throughout the code
+* Removed broken constructor tests
+* Updated minimal required PHP version from 5.3 to 5.5.9
+
+### 1.0.0 (2014-09-26)
+
+* The CI now ensures compatibility with PHP 5.6 and HHVM
+* A lot of type hints where improved
+* Protected methods and fields where changed to private
+* The test bootstrap no longer executes `composer update`
+* The test bootstrap now sets PHP strict mode
+* The contract of the `Hashable::getHash` method was updated
+* The MediaWiki internationalization support has been migrated to the JSON based version
+
 ### 0.1.1 (2013-11-22)
 
 * Removed support for running the tests via the MediaWiki test runner.
 * The test bootstrapping file now automatically does a composer install.
 * Removed custom autoloader in favour of defining autoloading in composer.json.
 
-### 0.1 (2013-11-16)
+### 0.1.0 (2013-11-16)
 
 Initial release with these features:
 

@@ -2,7 +2,8 @@
 	"@metadata": {
 		"authors": [
 			"Crazymadlover",
-			"Omnipaedista"
+			"Omnipaedista",
+			"Gts-tg"
 		]
 	},
 	"smw_finallistconjunct": ", καὶ",
@@ -16,11 +17,13 @@
 	"smw_ask_defaultformat": "προκαθωρισμένη",
 	"smw_sbv_property": "Ἰδιότης:",
 	"smw_sbv_value": "Τιμή:",
+	"browse": "Νέμεσθαι βίκι",
 	"smw_browselink": "Ἲδιότηται πλοηγήσεως",
 	"smw_browse_go": "Ἱέναι",
 	"smw_inverse_label_default": "$1 τοῦ",
 	"smw_pp_type": "Ἰδιότης",
 	"smw_result_prev": "Προηγουμέναι",
 	"smw_result_next": "Ἑπόμεναι",
-	"smw_result_noresults": "Οὐδὲν ἀποτέλεσμα."
+	"smw_result_noresults": "Οὐδὲν ἀποτέλεσμα.",
+	"smw-livepreview-loading": "Φορτίζειν…"
 }

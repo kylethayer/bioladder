@@ -3,11 +3,11 @@
 namespace ValueFormatters\Test;
 
 use DataValues\StringValue;
+use ValueFormatters\FormatterOptions;
+use ValueFormatters\StringFormatter;
 
 /**
- * Unit tests for the ValueFormatters\StringFormatter class.
- *
- * @since 0.1
+ * @covers ValueFormatters\StringFormatter
  *
  * @group ValueFormatters
  * @group DataValueExtensions
@@ -18,11 +18,25 @@ use DataValues\StringValue;
 class StringFormatterTest extends ValueFormatterTestBase {
 
 	/**
+	 * @deprecated since 0.2, just use getInstance.
+	 */
+	protected function getFormatterClass() {
+		throw new \LogicException( 'Should not be called, use getInstance' );
+	}
+
+	/**
+	 * @see ValueFormatterTestBase::getInstance
+	 *
+	 * @param FormatterOptions|null $options
+	 *
+	 * @return StringFormatter
+	 */
+	protected function getInstance( FormatterOptions $options = null ) {
+		return new StringFormatter( $options );
+	}
+
+	/**
 	 * @see ValueFormatterTestBase::validProvider
-	 *
-	 * @since 0.1
-	 *
-	 * @return array
 	 */
 	public function validProvider() {
 		$strings = array(
@@ -40,17 +54,6 @@ class StringFormatterTest extends ValueFormatterTestBase {
 		}
 
 		return $argLists;
-	}
-
-	/**
-	 * @see ValueFormatterTestBase::getFormatterClass
-	 *
-	 * @since 0.1
-	 *
-	 * @return string
-	 */
-	protected function getFormatterClass() {
-		return 'ValueFormatters\StringFormatter';
 	}
 
 }

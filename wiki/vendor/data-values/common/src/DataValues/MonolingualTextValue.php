@@ -13,76 +13,60 @@ namespace DataValues;
 class MonolingualTextValue extends DataValueObject {
 
 	/**
-	 * String value.
-	 *
-	 * @since 0.1
-	 *
 	 * @var string
 	 */
-	protected $value;
+	private $text;
 
 	/**
-	 * Language code.
-	 *
-	 * @since 0.1
-	 *
 	 * @var string
 	 */
-	protected $language;
+	private $languageCode;
 
 	/**
 	 * @since 0.1
 	 *
 	 * @param string $languageCode
-	 * @param string $value
+	 * @param string $text
 	 *
 	 * @throws IllegalValueException
 	 */
-	public function __construct( $languageCode, $value ) {
+	public function __construct( $languageCode, $text ) {
 		if ( !is_string( $languageCode ) ) {
-			throw new IllegalValueException( 'Can only construct MonolingualTextValue with a string language code' );
+			throw new IllegalValueException( 'Can only construct MonolingualTextValue with a string language code.' );
 		}
 		elseif ( $languageCode === '' ) {
-			throw new IllegalValueException( 'Can only construct MonolingualTextValue with a language code of non-zero length' );
+			throw new IllegalValueException( 'Can not construct a MonolingualTextValue with an empty language code.' );
 		}
 
-		if ( !is_string( $value ) ) {
-			throw new IllegalValueException( 'Can only construct MonolingualTextValue with a string value' );
+		if ( !is_string( $text ) ) {
+			throw new IllegalValueException( 'Can only construct a MonolingualTextValue with a string value.' );
 		}
 
-		$this->value = $value;
-		$this->language = $languageCode;
+		$this->text = $text;
+		$this->languageCode = $languageCode;
 	}
 
 	/**
 	 * @see Serializable::serialize
 	 *
-	 * @since 0.1
-	 *
 	 * @return string
 	 */
 	public function serialize() {
-		return serialize( array( $this->language, $this->value ) );
+		return serialize( array( $this->languageCode, $this->text ) );
 	}
 
 	/**
 	 * @see Serializable::unserialize
 	 *
-	 * @since 0.1
-	 *
 	 * @param string $value
-	 *
-	 * @return MonolingualTextValue
 	 */
 	public function unserialize( $value ) {
-		list ( $languageCode, $value ) = unserialize( $value );
-		$this->__construct( $languageCode, $value );
+		list( $languageCode, $text ) = unserialize( $value );
+		$this->__construct( $languageCode, $text );
 	}
 
 	/**
 	 * @see DataValue::getType
-	 *
-	 * @since 0.1
 	 *
 	 * @return string
 	 */
@@ -93,19 +77,15 @@ class MonolingualTextValue extends DataValueObject {
 	/**
 	 * @see DataValue::getSortKey
 	 *
-	 * @since 0.1
-	 *
 	 * @return string
 	 */
 	public function getSortKey() {
 		// TODO: we might want to re-think this key. Perhaps the language should simply be omitted.
-		return $this->language . $this->value;
+		return $this->languageCode . $this->text;
 	}
 
 	/**
 	 * @see DataValue::getValue
-	 *
-	 * @since 0.1
 	 *
 	 * @return MonolingualTextValue
 	 */
@@ -121,7 +101,7 @@ class MonolingualTextValue extends DataValueObject {
 	 * @return string
 	 */
 	public function getText() {
-		return $this->value;
+		return $this->text;
 	}
 
 	/**
@@ -132,20 +112,18 @@ class MonolingualTextValue extends DataValueObject {
 	 * @return string
 	 */
 	public function getLanguageCode() {
-		return $this->language;
+		return $this->languageCode;
 	}
 
 	/**
 	 * @see DataValue::getArrayValue
 	 *
-	 * @since 0.1
-	 *
-	 * @return mixed
+	 * @return string[]
 	 */
 	public function getArrayValue() {
 		return array(
-			'text' => $this->value,
-			'language' => $this->language,
+			'text' => $this->text,
+			'language' => $this->languageCode,
 		);
 	}
 
@@ -155,7 +133,7 @@ class MonolingualTextValue extends DataValueObject {
 	 *
 	 * @since 0.1
 	 *
-	 * @param mixed $data
+	 * @param string[] $data
 	 *
 	 * @return MonolingualTextValue
 	 * @throws IllegalValueException

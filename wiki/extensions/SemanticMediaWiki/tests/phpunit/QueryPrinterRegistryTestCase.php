@@ -5,22 +5,13 @@ namespace SMW\Test;
 /**
  * Base class for SMW\ResultPrinter tests.
  *
- * @since 1.8
+ * @group SMW
+ * @group SMWExtension
  *
- * @file
+ * @codeCoverageIgnore
  *
  * @license GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
- */
-
-/**
- * Base class for SMW\ResultPrinter tests
- *
- * @ingroup QueryPrinterTest
- *
- * @group SMW
- * @group SMWExtension
- * @codeCoverageIgnore
  */
 abstract class QueryPrinterRegistryTestCase extends QueryPrinterTestCase {
 
@@ -40,11 +31,11 @@ abstract class QueryPrinterRegistryTestCase extends QueryPrinterTestCase {
 	 * @return array
 	 */
 	public function constructorProvider() {
-		$argumentLists = array();
+		$argumentLists = [];
 
 		foreach ( $this->getFormats() as $format ) {
-			$argumentLists[] = array( $format, true );
-			$argumentLists[] = array( $format, false );
+			$argumentLists[] = [ $format, true ];
+			$argumentLists[] = [ $format, false ];
 		}
 
 		return $argumentLists;
@@ -68,10 +59,9 @@ abstract class QueryPrinterRegistryTestCase extends QueryPrinterTestCase {
 	/**
 	 * @since 1.8
 	 * @return array
-	 *
 	 */
 	public function instanceProvider() {
-		$phpFails = array( $this, 'newInstance' );
+		$phpFails = [ $this, 'newInstance' ];
 
 		return array_map(
 			function( array $args ) use ( $phpFails ) {

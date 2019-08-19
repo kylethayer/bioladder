@@ -22,11 +22,11 @@ The recommended way to use this library is via [Composer](http://getcomposer.org
 To add this package as a local, per-project dependency to your project, simply add a
 dependency on `data-values/common` to your project's `composer.json` file.
 Here is a minimal example of a `composer.json` file that just defines a dependency on
-version 1.0 of this package:
+version 0.3 of this package:
 
     {
         "require": {
-            "data-values/common": "1.0.*"
+            "data-values/common": "0.3.*"
         }
     }
 
@@ -49,9 +49,48 @@ DataValues Common has been written by the Wikidata team, as [Wikimedia Germany]
 
 ## Release notes
 
+### 0.4.3 (2019-06-28)
+
+* Fixed typo in error message in `DispatchingValueParser`
+
+### 0.4.2 (2018-08-16)
+
+* The component can now be installed together with DataValues 2.x
+
+### 0.4.1 (2018-08-09)
+
+* Fixed version number not updated before.
+
+### 0.4.0 (2017-08-09)
+
+* Removed MediaWiki integration
+
+### 0.3.1 (2015-08-14)
+
+* The component can now be installed together with DataValues Interfaces 0.1.5
+
+### 0.3.0 (2015-08-11)
+
+* Added `DispatchingValueParser`
+* Added `StringNormalizer` interface
+* Added `NullStringNormalizer`
+* Added `StringParser`
+* Dropped deprecated constant `DataValuesCommon_VERSION`, use `DATAVALUES_COMMON_VERSION` instead
+* Dropped `ValueParserTestBase::getParserClass`
+* Dropped `ValueParserTestBase::newParserOptions`
+* Made `ValueParserTestBase::getInstance` abstract
+* Made `ValueParserTestBase::invalidInputProvider` abstract
+* Lowered visibility of all class fields to private
+
+### 0.2.3 (2014-10-09)
+
+* Introduced `FORMAT_NAME` class constants on ValueParsers in order to use them as expectedFormat
+* Changed ValueParsers to pass rawValue and expectedFormat arguments when constructing a `ParseException`
+* Installation together with DataValues 1.x is now supported
+
 ### 0.2.2 (2014-04-11)
 
-* Introduce DataValueMismatchException
+* Introduced `DataValueMismatchException`
 
 ### 0.2.1 (2014-03-12)
 

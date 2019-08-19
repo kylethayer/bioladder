@@ -2,10 +2,10 @@
 
 namespace SMW;
 
-use SMWTypesValue;
-use SMWDIError;
-
 use Html;
+use SMW\Exception\PropertyNotFoundException;
+use SMWDIError;
+use SMWTypesValue;
 
 /**
  * Query page that provides content to Special:UnusedProperties
@@ -26,8 +26,10 @@ class UnusedPropertiesQueryPage extends QueryPage {
 	/** @var Settings */
 	protected $settings;
 
-	/** @var Collector */
-	protected $collector;
+	/**
+	 * @var ListLookup
+	 */
+	private $listLookup;
 
 	/**
 	 * @since 1.9
@@ -66,10 +68,37 @@ class UnusedPropertiesQueryPage extends QueryPage {
 
 	/**
 	 * @codeCoverageIgnore
+	 * Returns available cache information (takes into account user preferences)
+	 *
+	 * @since 1.9
+	 *
+	 * @return string
+	 */
+	public function getCacheInfo() {
+
+		if ( $this->listLookup->isFromCache() ) {
+			return $this->msg( 'smw-sp-properties-cache-info', $this->getLanguage()->userTimeAndDate( $this->listLookup->getTimestamp(), $this->getUser() ) )->parse();
+		}
+
+		return '';
+	}
+
+	/**
+	 * @codeCoverageIgnore
 	 * @return string
 	 */
 	function getPageHeader() {
-		return Html::element( 'p', array(), $this->msg( 'smw_unusedproperties_docu' )->text() );
+
+		return Html::rawElement(
+			'p',
+			[ 'class' => 'smw-unusedproperties-docu' ],
+			$this->msg( 'smw-unusedproperties-docu' )->parse()
+		) . $this->getSearchForm( $this->getRequest()->getVal( 'property' ), $this->getCacheInfo() ) .
+		Html::element(
+			'h2',
+			[],
+			$this->msg( 'smw-sp-properties-header-label' )->text()
+		);
 	}
 
 	/**
@@ -90,11 +119,11 @@ class UnusedPropertiesQueryPage extends QueryPage {
 		} elseif ( $result instanceof SMWDIError ) {
 			return $this->getMessageFormatter()->clear()
 				->setType( 'warning' )
-				->addFromArray( array( $result->getErrors() ) )
+				->addFromArray( [ $result->getErrors() ] )
 				->getHtml();
-		} else {
-			throw new InvalidResultException( 'UnusedPropertiesQueryPage expects results that are properties or errors.' );
 		}
+
+		throw new PropertyNotFoundException( 'UnusedPropertiesQueryPage expects results that are properties or errors.' );
 	}
 
 	/**
@@ -115,15 +144,21 @@ class UnusedPropertiesQueryPage extends QueryPage {
 
 		if ( $property->isUserDefined() ) {
 
+			$title = $property->getDiWikiPage()->getTitle();
+
+			if ( !$title instanceof \Title ) {
+				return '';
+			}
+
 			$propertyLink = $this->getLinker()->link(
-				$property->getDiWikiPage()->getTitle(),
+				$title,
 				$property->getLabel()
 			);
 
 			$types = $this->store->getPropertyValues( $property->getDiWikiPage(), new DIProperty( '_TYPE' ) );
 
-			if ( count( $types ) >= 1 ) {
-				$typeDataValue = DataValueFactory::getInstance()->newDataItemValue( current( $types ), new DIProperty( '_TYPE' ) );
+			if ( is_array( $types ) && count( $types ) >= 1 ) {
+				$typeDataValue = DataValueFactory::getInstance()->newDataValueByItem( current( $types ), new DIProperty( '_TYPE' ) );
 			} else {
 				$typeDataValue = SMWTypesValue::newFromTypeId( '_wpg' );
 				$this->getMessageFormatter()->addFromKey( 'smw_propertylackstype', $typeDataValue->getLongHTMLText() );
@@ -131,10 +166,10 @@ class UnusedPropertiesQueryPage extends QueryPage {
 
 		} else {
 			$typeDataValue = SMWTypesValue::newFromTypeId( $property->findPropertyTypeID() );
-			$propertyLink  = DataValueFactory::getInstance()->newDataItemValue( $property, null )->getShortHtmlText( $this->getLinker() );
+			$propertyLink  = DataValueFactory::getInstance()->newDataValueByItem( $property, null )->getShortHtmlText( $this->getLinker() );
 		}
 
-		return $this->msg( 'smw_unusedproperty_template', $propertyLink, $typeDataValue->getLongHTMLText( $this->getLinker() )	)->text() . ' ' .
+		return $this->msg( 'smw-unusedproperty-template', $propertyLink, $typeDataValue->getLongHTMLText( $this->getLinker() )	)->text() . ' ' .
 			$this->getMessageFormatter()->getHtml();
 	}
 
@@ -145,7 +180,7 @@ class UnusedPropertiesQueryPage extends QueryPage {
 	 * @return array of SMWDIProperty|SMWDIError
 	 */
 	function getResults( $requestOptions ) {
-		$this->collector = $this->store->getUnusedPropertiesSpecial( $requestOptions );
-		return $this->collector->getResults();
+		$this->listLookup = $this->store->getUnusedPropertiesSpecial( $requestOptions );
+		return $this->listLookup->fetchList();
 	}
 }

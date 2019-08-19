@@ -1,8 +1,11 @@
 {
 	"@metadata": {
 		"authors": [
-			"Ebrahimi-amir"
+			"Ebrahimi-amir",
+			"Amir a57"
 		]
 	},
-	"smw_browselink": "اوزللیکلری گؤزدن کئچیر"
+	"browse": "ویکی یه باخیش",
+	"smw_browselink": "اوزللیکلری گؤزدن کئچیر",
+	"smw-livepreview-loading": "یوکلنیر..."
 }

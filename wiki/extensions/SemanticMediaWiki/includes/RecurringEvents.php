@@ -2,74 +2,72 @@
 
 namespace SMW;
 
-use Message;
-
 use SMWDITime;
-use SMWTimeValue;
 
 /**
- * Class returns recurring events
+ * TODO This class needs some real refactoring!
  *
- * @see http://semantic-mediawiki.org/wiki/Help:Recurring_events
+ * @private This class should not be instantiated directly.
  *
+ * This class determines recurring events based on invoked parameters
+ *
+ * @see https://www.semantic-mediawiki.org/wiki/Help:Recurring_events
+ *
+ * @license GNU GPL v2+
  * @since 1.9
- *
- * @file
- * @ingroup SMW
  *
  * @author Yaron Koren
  * @author Jeroen De Dauw
  * @author mwjames
  */
-
-/**
- * This class determines recurring events based on invoked parameters
- *
- * @ingroup SMW
- */
 class RecurringEvents {
 
 	/**
-	 * Represents Settings object
-	 * @var Settings
-	 */
-	protected $settings;
-
-	/**
 	 * Defines the property used
-	 * var $property
 	 */
-	protected $property = null;
+	private $property = null;
 
 	/**
 	 * Defines the dates
-	 * var $dates
 	 */
-	protected $dates = array();
+	private $dates = [];
 
 	/**
 	 * Defines remaining / unused parameters
-	 * var $parameters
 	 */
-	protected $parameters = array();
+	private $parameters = [];
 
 	/**
 	 * Defines errors
-	 * var $errors
 	 */
-	protected $errors = array();
+	private $errors = [];
 
 	/**
-	 * Constructor
-	 *
-	 * @since 1.9
-	 *
-	 * @param array $parameters
-	 * @param Settings $settings
+	 * @var integer
 	 */
-	public function __construct( array $parameters, Settings $settings ) {
-		$this->settings = $settings;
-		$this->parse( $parameters );
+	private $defaultNumRecurringEvents = 25;
+
+	/**
+	 * @var integer
+	 */
+	private $maxNumRecurringEvents = 25;
+
+	/**
+	 * @since 2.5
+	 *
+	 * @param integer $defaultNumRecurringEvents
+	 */
+	public function setDefaultNumRecurringEvents( $defaultNumRecurringEvents ) {
+		$this->defaultNumRecurringEvents = $defaultNumRecurringEvents;
+	}
+
+	/**
+	 * @since 2.5
+	 *
+	 * @param integer $maxNumRecurringEvents
+	 */
+	public function setMaxNumRecurringEvents( $maxNumRecurringEvents ) {
+		$this->maxNumRecurringEvents = $maxNumRecurringEvents;
 	}
 
 	/**
@@ -123,7 +121,7 @@ class RecurringEvents {
 	 *
 	 * @return mixed
 	 */
-	protected function setError( $error ) {
+	private function setError( $error ) {
 		$this->errors = array_merge( $error, $this->errors );
 	}
 
@@ -148,16 +146,15 @@ class RecurringEvents {
 	 *
 	 * @since 1.9
 	 *
-	 * @param $params
+	 * @param array $parameters
 	 */
-	protected function parse( $parameters ) {
+	public function parse( array $parameters ) {
 		// Initialize variables.
-		$all_date_strings = array();
-		$unused_params = array();
-		$property_name = $start_date = $end_date = $unit = $period = $week_num = null;
-		$included_dates = array();
-		$excluded_dates = array();
-		$excluded_dates_jd = array();
+		$all_date_strings = [];
+		$start_date = $end_date = $unit = $period = $week_num = null;
+		$included_dates = [];
+		$excluded_dates = [];
+		$excluded_dates_jd = [];
 
 		// Parse parameters and assign values
 		foreach ( $parameters as $name => $values ) {
@@ -175,7 +172,7 @@ class RecurringEvents {
 						break;
 					case 'limit':
 						// Override default limit with query specific limit
-						$this->settings->set( 'smwgDefaultNumRecurringEvents', (int)$value );
+						$this->defaultNumRecurringEvents = (int)$value;
 						break;
 					case 'unit':
 						$unit = $value;
@@ -213,16 +210,16 @@ class RecurringEvents {
 		}
 
 		if ( $start_date === null ) {
-			$this->errors[] = new Message( 'smw-events-start-date-missing' );
+			$this->errors[] = Message::get( 'smw-events-start-date-missing' );
 			return;
-		} else if ( !( $start_date->getDataItem() instanceof SMWDITime ) ) {
+		} elseif ( !( $start_date->getDataItem() instanceof SMWDITime ) ) {
 			$this->setError( $start_date->getErrors() );
 			return;
 		}
 
 		// Check property
 		if ( is_null( $this->property ) ) {
-			$this->errors[] = new Message( 'smw-events-property-missing' );
+			$this->errors[] = Message::get( 'smw-events-property-missing' );
 			return;
 		}
 
@@ -286,26 +283,32 @@ class RecurringEvents {
 					$display_month = ( $cur_month == 0 ) ? 12 : $cur_month;
 				}
 
-				// If the date is February 29, and this isn't
-				// a leap year, change it to February 28.
-				if ( $cur_month == 2 && $cur_day == 29 ) {
-					if ( !date( 'L', strtotime( "$cur_year-1-1" ) ) ) {
-						$cur_day = 28;
-					}
-				}
+				// If the date is greater than 28 for February, and it is not
+				// a leap year, change it to be a fixed 28 otherwise set it to
+				// 29 (for a leap year date)
+				if ( $cur_month == 2 && $cur_day > 28 ) {
+					$cur_day = !date( 'L', strtotime( "$cur_year-1-1" ) ) ? 28 : 29;
+				} elseif ( $cur_day > 30 ) {
+					// Check whether 31 is a valid day of a month
+					$cur_day = ( $display_month - 1 ) % 7 % 2 ? 30 : 31;
+ 				}
 
 				$date_str = "$cur_year-$display_month-$cur_day $cur_time";
 				$cur_date = DataValueFactory::getInstance()->newTypeIDValue( '_dat', $date_str );
 				$all_date_strings = array_merge( $all_date_strings, $included_dates);
-				$cur_date_jd = $cur_date->getDataItem()->getJD();
+				if ( $cur_date->isValid() ) {
+					$cur_date_jd = $cur_date->getDataItem()->getJD();
+				}
 			} elseif ( $unit == 'dayofweekinmonth' ) {
 				// e.g., "3rd Monday of every month"
 				$prev_month = $cur_date->getMonth();
 				$prev_year = $cur_date->getYear();
 
 				$new_month = ( $prev_month + $period ) % 12;
-				if ( $new_month == 0 ) $new_month = 12;
-
+				if ( $new_month == 0 ) {
+					$new_month = 12;
+				}
+				
 				$new_year = $prev_year + floor( ( $prev_month + $period - 1 ) / 12 );
 				$cur_date_jd += ( 28 * $period ) - 7;
 
@@ -346,9 +349,9 @@ class RecurringEvents {
 
 			// should we stop?
 			if ( is_null( $end_date ) ) {
-				$reached_end_date = $i > $this->settings->get( 'smwgDefaultNumRecurringEvents' );
+				$reached_end_date = $i > $this->defaultNumRecurringEvents;
 			} else {
-				$reached_end_date = ( $cur_date_jd > $end_date_jd ) || ( $i > $this->settings->get( 'smwgMaxNumRecurringEvents' ) );
+				$reached_end_date = ( $cur_date_jd > $end_date_jd ) || ( $i > $this->maxNumRecurringEvents );
 			}
 		} while ( !$reached_end_date );
 
@@ -356,17 +359,16 @@ class RecurringEvents {
 		$all_date_strings = array_filter( array_merge( $all_date_strings, $included_dates ) );
 
 		// Set dates
-		$this->dates = $all_date_strings;
+		$this->dates = str_replace( ' 00:00:00', '', $all_date_strings );
 	}
 
 	/**
 	 * Helper function - creates an object of type SMWTimeValue based
 	 * on a "Julian day" integer
 	 */
-	protected function getJulianDayTimeValue( $jd ) {
+	private function getJulianDayTimeValue( $jd ) {
 		$timeDataItem = SMWDITime::newFromJD( $jd, SMWDITime::CM_GREGORIAN, SMWDITime::PREC_YMDT );
-		$timeValue = new SMWTimeValue( '_dat' );
-		$timeValue->setDataItem( $timeDataItem );
-		return $timeValue;
+		return DataValueFactory::getInstance()->newDataValueByItem( $timeDataItem );
 	}
+
 }

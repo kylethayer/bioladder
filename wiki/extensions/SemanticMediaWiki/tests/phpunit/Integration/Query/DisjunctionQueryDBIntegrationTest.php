@@ -2,28 +2,18 @@
 
 namespace SMW\Tests\Integration\Query;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\SemanticDataFactory;
-use SMW\Tests\Util\QueryResultValidator;
-
-use SMW\DIWikiPage;
+use SMW\ApplicationFactory;
 use SMW\DIProperty;
-use SMW\SemanticData;
-
-use SMWQueryParser as QueryParser;
-use SMWDIBlob as DIBlob;
-use SMWDINumber as DINumber;
+use SMW\DIWikiPage;
+use SMW\Query\Language\ClassDescription;
+use SMW\Query\Language\Disjunction;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ValueDescription;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\UtilityFactory;
 use SMWQuery as Query;
-use SMWSomeProperty as SomeProperty;
-use SMWPropertyValue as PropertyValue;
-use SMWThingDescription as ThingDescription;
-use SMWValueDescription as ValueDescription;
-use SMWConjunction as Conjunction;
-use SMWDisjunction as Disjunction;
-use SMWClassDescription as ClassDescription;
 
 /**
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -39,12 +29,7 @@ use SMWClassDescription as ClassDescription;
  */
 class DisjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	/**
-	 * Issues with postgres + disjunction, for details see #454
-	 */
-	protected $databaseToBeExcluded = array( 'sqlite', 'postgres' );
-
-	private $subjectsToBeCleared = array();
+	private $subjectsToBeCleared = [];
 	private $semanticDataFactory;
 	private $queryResultValidator;
 	private $queryParser;
@@ -52,9 +37,9 @@ class DisjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 	protected function setUp() {
 		parent::setUp();
 
-		$this->semanticDataFactory = new SemanticDataFactory();
-		$this->queryResultValidator = new QueryResultValidator();
-		$this->queryParser = new QueryParser();
+		$this->queryResultValidator = UtilityFactory::getInstance()->newValidatorFactory()->newQueryResultValidator();
+		$this->semanticDataFactory = UtilityFactory::getInstance()->newSemanticDataFactory();
+		$this->queryParser = ApplicationFactory::getInstance()->getQueryFactory()->newQueryParser();
 
 	//	$this->getStore()->getSparqlDatabase()->deleteAll();
 	}
@@ -160,10 +145,10 @@ class DisjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$queryResult = $this->getStore()->getQueryResult( $query );
 
-		$expectedSubjects = array(
+		$expectedSubjects = [
 			$semanticDataOfDreamland->getSubject(),
 			$semanticDataOfDangerland->getSubject()
-		);
+		];
 
 		$this->assertEquals(
 			2,
@@ -214,10 +199,10 @@ class DisjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		/**
 		 * Query with [[HasSomeProperty::Foo||Bar]]
 		 */
-		$disjunction = new Disjunction( array(
+		$disjunction = new Disjunction( [
 			new ValueDescription( new DIWikiPage( 'Foo', NS_MAIN ), $property ),
 			new ValueDescription( new DIWikiPage( 'Bar', NS_MAIN ), $property )
-		) );
+		] );
 
 		$description = new SomeProperty(
 			$property,

@@ -2,54 +2,66 @@
 
 namespace SMW\Test;
 
-use SMW\SpecialConcepts;
 use SMW\DIWikiPage;
-use SMWDataItem;
-
+use SMW\SpecialConcepts;
+use SMW\Tests\Utils\UtilityFactory;
 use Title;
+use SMW\Tests\TestEnvironment;
 
 /**
- * @covers SMW\SpecialConcepts
+ * @group semantic-mediawiki
  *
- * @ingroup Test
- *
- * @group SMW
- * @group SMWExtension
- * @group SpecialPage
- * @group medium
- *
- * @licence GNU GPL v2+
+ * @license GNU GPL v2+
  * @since 1.9
  *
  * @author mwjames
  */
-class SpecialConceptsTest extends SpecialPageTestCase {
+class SpecialConceptsTest extends \PHPUnit_Framework_TestCase {
 
-	public function getClass() {
-		return '\SMW\SpecialConcepts';
-	}
+	private $stringValidator;
+	private $testEnvironment;
 
-	/**
-	 * @return SpecialConcepts
-	 */
-	protected function getInstance() {
-		return new SpecialConcepts();
+	protected function setUp() {
+		parent::setUp();
+
+		$this->testEnvironment = new TestEnvironment();
+		$this->stringValidator = $this->testEnvironment->newValidatorFactory()->newStringValidator();
 	}
 
 	public function testCanConstruct() {
-		$this->assertInstanceOf( $this->getClass(), $this->getInstance() );
+
+		$this->assertInstanceOf(
+			SpecialConcepts::class,
+			new SpecialConcepts()
+		);
 	}
 
 	public function testExecute() {
 
-		$this->execute();
+		$expected = 'p class="smw-special-concept-docu plainlinks"';
 
-		$matches = array(
-			'tag' => 'span',
-			'attributes' => array( 'class' => 'smw-sp-concept-docu' )
+		$outputPage = $this->getMockBuilder( '\OutputPage' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$outputPage->expects( $this->atLeastOnce() )
+			->method( 'addHtml' )
+			 ->with( $this->stringContains( $expected ) );
+
+		$query = '';
+		$instance = new SpecialConcepts();
+
+		$instance->getContext()->setTitle(
+			Title::newFromText( 'SemanticMadiaWiki' )
 		);
 
-		$this->assertTag( $matches, $this->getText() );
+		$oldOutput = $instance->getOutput();
+
+		$instance->getContext()->setOutput( $outputPage );
+		$instance->execute( $query );
+
+		// Context is static avoid any succeeding tests to fail
+		$instance->getContext()->setOutput( $oldOutput );
 	}
 
 	/**
@@ -57,18 +69,12 @@ class SpecialConceptsTest extends SpecialPageTestCase {
 	 */
 	public function testGetHtmlForAnEmptySubject() {
 
-		$instance = $this->getInstance();
+		$instance = new SpecialConcepts();
 
-		$matches = array(
-			'tag' => 'span',
-			'attributes' => array( 'class' => 'smw-sp-concept-empty' )
+		$this->stringValidator->assertThatStringContains(
+			'div class="smw-special-concept-empty"',
+			$instance->getHtml( [], 0, 0 )
 		);
-
-		$this->assertTag(
-			$matches,
-			$instance->getHtml( array(), 0, 0, 0 )
-		);
-
 	}
 
 	/**
@@ -76,19 +82,13 @@ class SpecialConceptsTest extends SpecialPageTestCase {
 	 */
 	public function testGetHtmlForSingleSubject() {
 
-		$subject  = DIWikiPage::newFromTitle( Title::newFromText( __METHOD__ ) );
-		$instance = $this->getInstance();
+		$subject  = DIWikiPage::newFromText( __METHOD__ );
+		$instance = new SpecialConcepts();
 
-		$matches = array(
-			'tag' => 'span',
-			'attributes' => array( 'class' => 'smw-sp-concept-count' )
+		$this->stringValidator->assertThatStringContains(
+			'div class="smw-special-concept-count"',
+			$instance->getHtml( [ $subject ], 1, 0 )
 		);
-
-		$this->assertTag(
-			$matches,
-			$instance->getHtml( array( $subject ), 1, 1, 1 )
-		);
-
 	}
 
 }

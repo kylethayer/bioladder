@@ -4,42 +4,39 @@ namespace ParamProcessor;
 
 use Exception;
 use OutOfBoundsException;
+use ParamProcessor\PackagePrivate\ParamType;
+use ValueValidators\NullValidator;
 
 /**
- * Factory for IParamDefinition implementing objects.
+ * Factory for ParamDefinition implementing objects.
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class ParamDefinitionFactory {
 
-	/**
-	 * Maps parameter type to handling IParameterDefinition implementing class.
-	 *
-	 * @since 1.0
-	 *
-	 * @var array
-	 */
-	protected $typeToClass = array();
+	private $types;
 
 	/**
-	 * Maps parameter type to its associated components.
-	 *
-	 * @since 1.0
-	 *
-	 * @var array
+	 * @since 1.8
 	 */
-	protected $typeToComponent = array();
+	public function __construct( ParameterTypes $types = null ) {
+		$this->types = $types ?? new ParameterTypes();
+	}
 
 	/**
-	 * Singleton.
+	 * Returns a ParamDefinitionFactory that already has the core parameter types (@see ParameterTypes) registered.
 	 *
-	 * @since 1.0
+	 * @since 1.6
+	 */
+	public static function newDefault(): self {
+		return new self( ParameterTypes::newCoreTypes() );
+	}
+
+	/**
 	 * @deprecated since 1.0
-	 *
-	 * @return ParamDefinitionFactory
 	 */
-	public static function singleton() {
+	public static function singleton(): self {
 		static $instance = false;
 
 		if ( $instance === false ) {
@@ -52,16 +49,17 @@ class ParamDefinitionFactory {
 
 	/**
 	 * Registers the parameter types specified in the global $wgParamDefinitions.
-	 *
-	 * @since 1.0
+	 * @deprecated since 1.6
 	 */
 	public function registerGlobals() {
-		foreach ( $GLOBALS['wgParamDefinitions'] as $type => $data ) {
-			if ( is_string( $data ) ) {
-				$data = array( 'definition' => $data );
-			}
+		if ( array_key_exists( 'wgParamDefinitions', $GLOBALS ) ) {
+			foreach ( $GLOBALS['wgParamDefinitions'] as $type => $data ) {
+				if ( is_string( $data ) ) {
+					$data = [ 'definition' => $data ];
+				}
 
-			$this->registerType( $type, $data );
+				$this->registerType( $type, $data );
+			}
 		}
 	}
 
@@ -73,7 +71,7 @@ class ParamDefinitionFactory {
 	 *
 	 * - string-parser:       the parser to use to transform string values
 	 *                        This class needs to implement ValueParser. Default: NullParser
-	 * - typed-parser:        the parser to use to transform typed PHP values
+	 * - typed-parser:        DEPRECATED since 1.6 - the parser to use to transform typed PHP values
 	 *                        This class needs to implement ValueParser. Default: NullParser
 	 * - validator:           the validation object to use
 	 *                        This class needs to implement ValueValidator. Default: NullValidator
@@ -85,72 +83,56 @@ class ParamDefinitionFactory {
 	 * @param string $type
 	 * @param array $data
 	 *
-	 * @return boolean Indicates if the type was registered
+	 * @return boolean DEPRECATED since 1.6 - Indicates if the type was registered
 	 */
 	public function registerType( $type, array $data ) {
-		if ( array_key_exists( $type, $this->typeToClass ) ) {
-			wfWarn( "A handler for the parameter type '$type' has already been registered, the new assignment is ignored." );
+		if ( $this->types->hasType( $type ) ) {
 			return false;
 		}
 
-		$class = array_key_exists( 'definition', $data ) ? $data['definition'] : 'ParamProcessor\ParamDefinition';
-		$this->typeToClass[$type] = $class;
-
-		$defaults = array(
-			'string-parser' => 'ValueParsers\NullParser',
-			'typed-parser' => 'ValueParsers\NullParser',
-			'validator' => 'ValueValidators\NullValidator',
-			'validation-callback' => null,
-		);
-
-		$this->typeToComponent[$type] = array();
-
-		foreach ( $defaults as $component => $default ) {
-			$this->typeToComponent[$type][$component] = array_key_exists( $component, $data ) ? $data[$component] : $default;
-		}
+		$this->types->addType( $type, $data );
 
 		return true;
 	}
 
 	/**
-	 * Creates a new instance of a IParamDefinition based on the provided type.
+	 * Creates a new instance of a ParamDefinition based on the provided type.
 	 *
-	 * @since 1.0
-	 *
-	 * @param string $type
+	 * @param string $typeName
 	 * @param string $name
 	 * @param mixed $default
 	 * @param string $message
 	 * @param boolean $isList
 	 *
-	 * @return IParamDefinition
+	 * @return ParamDefinition
 	 * @throws OutOfBoundsException
 	 */
-	public function newDefinition( $type, $name, $default, $message, $isList = false ) {
-		if ( !array_key_exists( $type, $this->typeToClass ) ) {
-			throw new OutOfBoundsException( 'Unknown parameter type "' . $type . '".' );
+	public function newDefinition( string $typeName, string $name, $default, string $message, bool $isList = false ): ParamDefinition {
+		if ( !$this->types->hasType( $typeName ) ) {
+			throw new OutOfBoundsException( 'Unknown parameter type "' . $typeName . '".' );
 		}
 
-		$class = $this->typeToClass[$type];
+		$type = $this->types->getType( $typeName );
+		$class = $type->getClassName();
 
 		/**
-		 * @var IParamDefinition $definition
+		 * @var ParamDefinition $definition
 		 */
 		$definition = new $class(
-			$type,
+			$typeName,
 			$name,
 			$default,
 			$message,
 			$isList
 		);
 
-		$validator = $this->typeToComponent[$type]['validator'];
+		$validator = $type->getValidatorClass();
 
-		if ( $validator !== '\ValueValidators\NullValidator' ) {
+		if ( $validator !== NullValidator::class ) {
 			$definition->setValueValidator( new $validator() );
 		}
 
-		$validationCallback = $this->typeToComponent[$type]['validation-callback'];
+		$validationCallback = $type->getValidationCallback();
 
 		if ( $validationCallback !== null ) {
 			$definition->setValidationCallback( $validationCallback );
@@ -160,43 +142,22 @@ class ParamDefinitionFactory {
 	}
 
 	/**
-	 * Returns the specified component for the provided parameter type.
-	 * This method is likely to change in the future in a compat breaking way.
-	 *
-	 * @since 1.0
-	 *
-	 * @param string $paramType
-	 * @param string $componentType
-	 *
-	 * @throws Exception
-	 * @return mixed
+	 * Package private
 	 */
-	public function getComponentForType( $paramType, $componentType ) {
-		if ( !array_key_exists( $paramType, $this->typeToComponent ) ) {
-			throw new Exception( 'Unknown parameter type "' . $paramType . '".' );
-		}
-
-		if ( !array_key_exists( $componentType, $this->typeToComponent[$paramType] ) ) {
-			throw new Exception( 'Unknown parameter component type "' . $paramType . '".' );
-		}
-
-		return $this->typeToComponent[$paramType][$componentType];
+	public function getType( string $typeName ): ParamType {
+		return $this->types->getType( $typeName );
 	}
 
 	/**
-	 * Construct a new ParamDefinition from an array.
+	 * @param array $definitionArray
+	 * @param bool $getMad DEPRECATED since 1.6
 	 *
-	 * @since 1.0
-	 *
-	 * @param array $param
-	 * @param bool $getMad
-	 *
-	 * @return IParamDefinition|false
+	 * @return ParamDefinition|false
 	 * @throws Exception
 	 */
-	public function newDefinitionFromArray( array $param, $getMad = true ) {
-		foreach ( array( 'name', 'message' ) as $requiredElement ) {
-			if ( !array_key_exists( $requiredElement, $param ) ) {
+	public function newDefinitionFromArray( array $definitionArray, $getMad = true ) {
+		foreach ( [ 'name', 'message' ] as $requiredElement ) {
+			if ( !array_key_exists( $requiredElement, $definitionArray ) ) {
 				if ( $getMad ) {
 					throw new Exception( 'Could not construct a ParamDefinition from an array without ' . $requiredElement . ' element' );
 				}
@@ -205,17 +166,50 @@ class ParamDefinitionFactory {
 			}
 		}
 
-		$parameter = $this->newDefinition(
-			array_key_exists( 'type', $param ) ? $param['type'] : 'string',
-			$param['name'],
-			array_key_exists( 'default', $param ) ? $param['default'] : null,
-			$param['message'],
-			array_key_exists( 'islist', $param ) ? $param['islist'] : false
+		$definition = $this->newDefinition(
+			array_key_exists( 'type', $definitionArray ) ? $definitionArray['type'] : 'string',
+			$definitionArray['name'],
+			array_key_exists( 'default', $definitionArray ) ? $definitionArray['default'] : null,
+			$definitionArray['message'],
+			array_key_exists( 'islist', $definitionArray ) ? $definitionArray['islist'] : false
 		);
 
-		$parameter->setArrayValues( $param );
+		$definition->setArrayValues( $definitionArray );
 
-		return $parameter;
+		return $definition;
+	}
+
+	/**
+	 * @since 1.9
+	 *
+	 * @param array $definitionArrays Each element must either be
+	 * - A definition array with "name" key
+	 * - A name key pointing to a definition array
+	 * - A ParamDefinition instance (discouraged)
+	 *
+	 * @return ParamDefinition[]
+	 * @throws Exception
+	 */
+	public function newDefinitionsFromArrays( array $definitionArrays ): array {
+		$cleanList = [];
+
+		foreach ( $definitionArrays as $key => $definitionArray ) {
+			if ( is_array( $definitionArray ) ) {
+				if ( !array_key_exists( 'name', $definitionArray ) && is_string( $key ) ) {
+					$definitionArray['name'] = $key;
+				}
+
+				$definitionArray = $this->newDefinitionFromArray( $definitionArray );
+			}
+
+			if ( !( $definitionArray instanceof IParamDefinition ) ) {
+				throw new Exception( 'Parameter definition not an instance of IParamDefinition' );
+			}
+
+			$cleanList[$definitionArray->getName()] = $definitionArray;
+		}
+
+		return $cleanList;
 	}
 
 }

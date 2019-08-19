@@ -8,8 +8,7 @@
  *
  * require __DIR__ . '/../../SemanticMediaWiki/tests/autoloader.php'
  */
-
-if ( php_sapi_name() !== 'cli' ) {
+if ( PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg' ) {
 	die( 'Not an entry point' );
 }
 
@@ -17,32 +16,59 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 	die( 'MediaWiki is not available.' );
 }
 
-if ( !defined( 'SMW_VERSION' ) ) {
-	die( 'SemanticMediaWiki is not available.' );
+if ( !class_exists( 'SemanticMediaWiki' ) || SemanticMediaWiki::getVersion() === null ) {
+	die( "\nSemantic MediaWiki is not available, please check your LocalSettings or Composer settings.\n" );
 }
 
 if ( is_readable( $path = __DIR__ . '/../vendor/autoload.php' ) ) {
-	print( "\nUsing the local vendor autoloader ...\n\n" );
+	$autoloadType = "Extension vendor autoloader";
 } elseif ( is_readable( $path = __DIR__ . '/../../../vendor/autoload.php' ) ) {
-	print( "\nUsing the MediaWiki vendor autoloader ...\n\n" );
+	$autoloadType = "MediaWiki vendor autoloader";
 } else {
-	die( 'To run tests it is required that packages are installed using Composer.' );
+	die( 'To run the test suite it is required that packages are installed using Composer.' );
 }
 
-$autoloader = require $path;
+require __DIR__ . '/phpUnitEnvironment.php';
+$phpUnitEnvironment = new PHPUnitEnvironment();
+
+if ( $phpUnitEnvironment->hasDebugRequest( $GLOBALS['argv'] ) === false ) {
+	$phpUnitEnvironment->emptyDebugVars();
+}
+
+$phpUnitEnvironment->writeNewLn( "Semantic MediaWiki:", $phpUnitEnvironment->getVersion( 'smw' ) );
+$phpUnitEnvironment->writeLn( "MediaWiki:", $phpUnitEnvironment->getVersion( 'mw', [ 'type' => $autoloadType ] ) );
+$phpUnitEnvironment->writeLn( "Site language:", $phpUnitEnvironment->getSiteLanguageCode() );
+$phpUnitEnvironment->writeNewLn( "Execution time:", $phpUnitEnvironment->executionTime() );
+$phpUnitEnvironment->writeLn( "Debug logs:", ( $phpUnitEnvironment->enabledDebugLogs() ? 'Enabled' : 'Disabled' ) );
+$phpUnitEnvironment->writeLn( "Xdebug:", ( ( $version = $phpUnitEnvironment->getXdebugInfo() ) ? $version : 'Disabled (or not installed)' ) );
+$phpUnitEnvironment->writeNewLn();
+
+unset( $phpUnitEnvironment );
 
 /**
- * Available to third-party extensions therefore any change should be made with
+ * Available to aid third-party extensions therefore any change should be made with
  * care
  *
  * @since  2.0
  */
-$autoloader->addPsr4( 'SMW\\Tests\\Util\\', __DIR__ . '/phpunit/Util' );
+$autoloader = require $path;
 
-$autoloader->addClassMap( array(
-	'SMW\Tests\MwDBaseUnitTestCase'         => __DIR__ . '/phpunit/MwDBaseUnitTestCase.php',
+$autoloader->addPsr4( 'SMW\\Tests\\Utils\\', __DIR__ . '/phpunit/Utils' );
+
+$autoloader->addClassMap( [
+	'SMW\Tests\TestEnvironment'             => __DIR__ . '/phpunit/TestEnvironment.php',
+	'SMW\Tests\TestConfig'                  => __DIR__ . '/phpunit/TestConfig.php',
+	'SMW\Tests\PHPUnitCompat'               => __DIR__ . '/phpunit/PHPUnitCompat.php',
+	'SMW\Tests\DatabaseTestCase'            => __DIR__ . '/phpunit/DatabaseTestCase.php',
+	'SMW\Tests\JsonTestCaseScriptRunner'    => __DIR__ . '/phpunit/JsonTestCaseScriptRunner.php',
+	'SMW\Tests\JsonTestCaseFileHandler'     => __DIR__ . '/phpunit/JsonTestCaseFileHandler.php',
+	'SMW\Tests\JsonTestCaseContentHandler'  => __DIR__ . '/phpunit/JsonTestCaseContentHandler.php',
 	'SMW\Test\QueryPrinterTestCase'         => __DIR__ . '/phpunit/QueryPrinterTestCase.php',
 	'SMW\Test\QueryPrinterRegistryTestCase' => __DIR__ . '/phpunit/QueryPrinterRegistryTestCase.php',
-) );
+	'SMW\Tests\SPARQLStore\RepositoryConnectors\ElementaryRepositoryConnectorTest' => __DIR__ . '/phpunit/Unit/SPARQLStore/RepositoryConnectors/ElementaryRepositoryConnectorTest.php',
+] );
+
+// 3.0
+class_alias( '\SMW\Tests\DatabaseTestCase', '\SMW\Tests\MwDBaseUnitTestCase' );
 
 return $autoloader;

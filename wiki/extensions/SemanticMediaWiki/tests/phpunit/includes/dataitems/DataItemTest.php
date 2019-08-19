@@ -2,18 +2,10 @@
 
 namespace SMW\Tests;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-
 use SMWDataItem;
 
 /**
  * Base class for SMW\DataItem tests.
- *
- * @file
- * @since 1.8
- *
- * @ingroup SMW
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -41,32 +33,6 @@ abstract class DataItemTest extends MwDBaseUnitTestCase {
 	public abstract function constructorProvider();
 
 	/**
-	 * @since 1.9
-	 *
-	 * @return array
-	 */
-	public function invalidConstructorArgsProvider() {
-		return array();
-	}
-
-	public function testConstructWithInvalidArgsThrowsException() {
-		$this->assertTrue( true );
-
-		foreach ( $this->invalidConstructorArgsProvider() as $argList ) {
-			$this->assertConstructWithInvalidArgsThrowsException( $argList );
-		}
-	}
-
-	protected function assertConstructWithInvalidArgsThrowsException( array $argList ) {
-		$this->setExpectedException( 'Exception' );
-
-		call_user_func_array(
-			array( $this, 'newInstance' ),
-			$argList
-		);
-	}
-
-	/**
 	 * Creates and returns a new instance of the data item.
 	 *
 	 * @since 1.8
@@ -86,11 +52,11 @@ abstract class DataItemTest extends MwDBaseUnitTestCase {
 	 * @return array
 	 */
 	public function instanceProvider() {
-		$phpFails = array( $this, 'newInstance' );
+		$phpFails = [ $this, 'newInstance' ];
 
 		return array_map(
 			function( array $args ) use ( $phpFails ) {
-				return array( call_user_func_array( $phpFails, $args ) );
+				return [ call_user_func_array( $phpFails, $args ) ];
 			},
 			$this->constructorProvider()
 		);
@@ -103,7 +69,7 @@ abstract class DataItemTest extends MwDBaseUnitTestCase {
 	 */
 	public function testConstructor() {
 		$dataItem = call_user_func_array(
-			array( $this, 'newInstance' ),
+			[ $this, 'newInstance' ],
 			func_get_args()
 		);
 

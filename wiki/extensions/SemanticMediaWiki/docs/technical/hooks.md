@@ -1,85 +1,405 @@
-This document contains details about event handlers (also known as [Hooks][hooks]) provided by Semantic MediaWiki to enable users to extent and integrate custom specific solutions. Implementing a hook should be made in consideration of the expected performance impact for a front-end (additional DB read/write etc.) and/or back-end (prolonged job backlog etc.) process.
+This document contains details about event handlers (also known as [Hooks][hooks]) provided by Semantic MediaWiki to enable users to extent and integrate custom specific solutions.
 
-### SMW::Factbox::showContent
-<code>SMW::Factbox::showContent</code>(since SMW 1.9 resides in <code>\SMW\Factbox</code>) enables to replace or amend text elements shown in the Factbox. Information can be added or redacted but only existing data for an entity (page) is provided which means this hook can not be used to alter the SemanticData container itself.
+Implementing a hook should be made in consideration of the expected performance impact for the front-end (additional DB read/write transactions etc.) and/or the back-end (prolonged job backlog etc.) process.
 
-In cases where the Factbox content is cached (<code>$smwgFactboxUseCache</code> is set true and only after a revision change, is being re-build and successively re-cached) it is suggested to disable the <code>$smwgFactboxUseCache</code> in order for custom code to be executed on each request.
+# List of available hooks
 
-```php
-$GLOBALS['wgHooks']['SMW::Factbox::showContent'][] = function ( &$text, \SMW\SemanticData $semanticData ) {
+## 1.9
 
-	// Access to the Page language can be achieved by using
-	$language = $semanticData->getSubject()->getTitle()->getPageLanguage()
+- `SMW::Factbox::BeforeContentGeneration` to replace or amend text elements shown in a Factbox. See also `$smwgFactboxUseCache` settings.<sup>Use of `smwShowFactbox` was deprecated with 1.9</sup>
+- `SMW::Job::updatePropertyJobs` to add additional update jobs for a property and related subjects.<sup>Use of `smwUpdatePropertySubjects` was deprecated with 1.9</sup>
+- `SMW::DataType::initTypes` to add additional DataType support.<sup>Use of `smwInitDatatypes` was deprecated with 1.9</sup>
+- `SMW::SQLStore::updatePropertyTableDefinitions` to add additional table definitions during initialization.
 
-	// Amend information, formatted as string
-	$text = ...;
+## 2.1
 
-	// If returned false, only custom information will be displayed
+### SMW::Store::BeforeQueryResultLookupComplete
+
+* Version: 2.1
+* Description: Hook to return a `QueryResult` object before the standard selection process is started and allows to suppress the standard selection process completely by returning `false`.
+* Reference class: `SMW_SQLStore3.php`
+
+<pre>
+\Hooks::register( 'SMW::Store::AfterQueryResultLookupComplete', function( $store, $query, &$queryResult, $queryEngine ) {
+
+	// Allow default processing
+	return true;
+
+	// Stop further processing
 	return false;
+} );
+</pre>
 
-	// If returned true, amended information will appear before the standard Factbox
-	return true;
-};
-```
-The use of <code>smwShowFactbox</code> was deprecated with SMW 1.9.
+### SMW::Store::AfterQueryResultLookupComplete
 
-### SMW::Dispatcher::updateJobs (SMW 1.9)
-<code>SMW::Dispatcher::updateJobs</code> (<code>\SMW\UpdateDispatcherJob</code>) enables to add additional update jobs for a property and its related subjects.
+* Version: 2.1
+* Description: Hook to manipulate a `QueryResult` after the selection process.
+* Reference class: `SMW_SQLStore3.php`
 
-```php
-$GLOBALS['wgHooks']['SMW::Dispatcher::updateJobs'][] = function ( \SMW\DIProperty $property, &$jobs ) {
-
-	$jobs[] = new UpdateJob( ... );
+<pre>
+\Hooks::register( 'SMW::Store::AfterQueryResultLookupComplete', function( $store, &$queryResult ) {
 
 	return true;
-};
-```
-Before 1.9 it was called smwUpdatePropertySubjects with a different interface.
+} );
+</pre>
 
-### SMW::DataType::initTypes (SMW 1.9)
-Adds support for additional DataTypes.
+### SMW::Property::initProperties
 
-```php
-$GLOBALS['wgHooks']['SMW::DataType::initTypes'][] = function () {
+* Version: 2.1
+* Description: Hook to add additional predefined properties (`smwInitProperties` was deprecated with 2.1)
+* Reference class: `SMW\PropertyRegistry`
 
-	DataTypeRegistry::getInstance()->registerDataType( '_foo', '\SMW\FooValue', \SMW\DataItem::TYPE_GEO );
-
-	return true;
-};
-```
-Before 1.9 it was called smwInitDatatypes.
-
-## SQLStore
-### SMW::SQLStore::updatePropertyTableDefinitions (SMW 1.9)
-<code>SMW::SQLStore::updatePropertyTableDefinitions</code>(<code>\SMW\SQLStore\PropertyTableDefinitionBuilder</code>) is called during initialization of available property table definitions
-
-```php
-$GLOBALS['wgHooks']['SMW::SQLStore::updatePropertyTableDefinitions'][] = function ( \SMW\SQLStore\TableDefinition &$tableDefinitions ) {
-
-	// Amend information
-	$tableDefinitions[] = new TableDefinition( ... );
+<pre>
+\Hooks::register( 'SMW::Property::initProperties', function( $propertyRegistry ) {
 
 	return true;
-};
-```
+} );
+</pre>
 
-## List of available hooks
+### SMW::SQLStore::BeforeDeleteSubjectComplete
+
+* Version: 2.1
+* Description: Hook is called before the deletion of a subject is completed
+* Reference class: `SMW_SQLStore3_Writers.php`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::BeforeDeleteSubjectComplete', function( $store, $title ) {
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::AfterDeleteSubjectComplete
+
+* Version: 2.1
+* Description: Hook is called after the deletion of a subject is completed
+* Reference class: `SMW_SQLStore3_Writers.php`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::AfterDeleteSubjectComplete', function( $store, $title ) {
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::BeforeChangeTitleComplete
+
+* Version: 2.1
+* Description: Hook is called before change to a subject is completed
+* Reference class: `SMW_SQLStore3_Writers.php`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::BeforeChangeTitleComplete', function( $store, $oldTitle, $newTitle, $pageId, $redirectId ) {
+
+	return true;
+} );
+</pre>
+
+## 2.2
+
+### SMW::Parser::BeforeMagicWordsFinder
+
+* Version: 2.2
+* Description: Hook allowing to extend the magic words list that the `InTextAnnotationParser` should search for the wikitext.
+* Reference class: `\SMW\InTextAnnotationParser`
+
+<pre>
+\Hooks::register( 'SMW::Parser::BeforeMagicWordsFinder', function( array &$magicWords ) {
+
+	return true;
+} );
+</pre>
+
+## 2.3
+
+### SMW::SQLStore::BeforeDataRebuildJobInserts
+
+* Version: 2.3
+* Description: Hook to add update jobs while running the rebuild process.<sup>Use of `smwRefreshDataJobs` was deprecated with 2.3</sup>
+* Reference class: `\SMW\SQLStore\EntityRebuildDispatcher`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::BeforeDataRebuildJobInsert', function( $store, array &$jobs ) {
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::AddCustomFixedPropertyTables
+
+* Version: 2.3
+* Description: Hook to add fixed property table definitions
+* Reference class: `\SMW\MediaWiki\Specials\Browse\ContentsBuilder`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::AddCustomFixedPropertyTables', function( array &$customFixedProperties, &$propertyTablePrefix ) {
+	$customFixedProperties['Foo'] = '_Bar';
+
+	return true;
+} );
+</pre>
+
+### SMW::Browse::AfterIncomingPropertiesLookupComplete
+
+* Version: 2.3
+* Description: Hook to extend the incoming properties display for `Special:Browse`
+* Reference class: `\SMW\MediaWiki\Specials\Browse\ContentsBuilder`
+
+<pre>
+\Hooks::register( 'SMW::Browse::AfterIncomingPropertiesLookupComplete', function( $store, $semanticData, $requestOptions ) {
+
+	return true;
+} );
+</pre>
+
+### SMW::Browse::BeforeIncomingPropertyValuesFurtherLinkCreate
+
+* Version: 2.3
+* Description: Hook to replace the standard `SearchByProperty` with a custom link to an extended list of results (return `false` to replace the link)
+* Reference class: `\SMW\MediaWiki\Specials\Browse\ContentsBuilder`
+
+<pre>
+\Hooks::register( 'SMW::Browse::BeforeIncomingPropertyValuesFurtherLinkCreate', function( $property, $subject, &$propertyValue ) {
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::AfterDataUpdateComplete
+
+* Version: 2.3
+* Description: Hook to add processing after the update has been completed and provides `ChangeOp` to identify entities that have been added/removed during the update. (`SMWSQLStore3::updateDataAfter` was deprecated with 2.3)
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::AfterDataUpdateComplete', function( $store, $semanticData, $changeOp ) {
+
+	return true;
+} );
+</pre>
+
+## 2.4
+
+### SMW::FileUpload::BeforeUpdate
+
+* Version: 2.4
+* Description: Hook to add extra annotations before the `Store` update is triggered
+
+<pre>
+\Hooks::register( 'SMW::FileUpload::BeforeUpdate', function( $filePage, $semanticData  ) {
+
+	return true;
+} );
+</pre>
+
+## 2.5
+
+### SMW::Job::AfterUpdateDispatcherJobComplete
+
+* Version: 2.5
+* Description: Hook allows to add extra jobs after `UpdateDispatcherJob` has been processed.
+* Reference class: `\SMW\MediaWiki\Jobs\UpdateDispatcherJob`
+
+<pre>
+\Hooks::register( 'SMW::Job::AfterUpdateDispatcherJobComplete', function( $job ) {
+
+	// Find related dependencies
+	$title = $job->getTitle();
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::Installer::AfterCreateTablesComplete
+
+* Version: 2.5
+* Description: Hook allows to add extra tables after the creation process as been finalized.
+* Reference class: `\SMW\SQLStore\Installer`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::Installer::AfterCreateTablesComplete', function( $tableBuilder, $messageReporter ) {
+
+	// Output details on the activity
+	$messageReporter->reportMessage( '...' );
+
+	// See documentation in the available TableBuilder interface
+	$tableBuilder->create( ... );
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::Installer::AfterDropTablesComplete
+
+* Version: 2.5
+* Description: Hook allows to remove extra tables after the drop process as been finalized.
+* Reference class: `\SMW\SQLStore\Installer`
+
+<pre>
+\Hooks::register( 'SMW::SQLStore::Installer::AfterDropTablesComplete', function( $tableBuilder, $messageReporter ) {
+
+	// Output details on the activity
+	$messageReporter->reportMessage( '...' );
+
+	// See documentation in the available TableBuilder interface
+	$tableBuilder->drop( ... );
+
+	return true;
+} );
+</pre>
+
+## 3.0
+
+### SMW::GetPreferences
+
+* Version: 3.0
+* Description: Hook allows to add extra preferences that are ordered on the Semantic MediaWiki user preference tab
+* Reference class: `\SMW\MediaWiki\Hooks\GetPreferences`
+
+<pre>
+\Hooks::register( 'SMW::GetPreferences', function( $user, &$preferences ) {
+
+
+	return true;
+} );
+</pre>
+
+### SMW::Setup::AfterInitializationComplete
+
+* Version: 3.0
+* Description: Hook allows to modify global configuration after initialization of Semantic MediaWiki is completed
+* Reference class: `\SMW\Setup`
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::Setup::AfterInitializationComplete', function( &$vars ) {
+
+	// #2565
+	unset( $GLOBALS['wgGroupPermissions']['smwcurator'] );
+
+	return true;
+} );
+</pre>
+
+### SMW::Exporter::Controller::AddExpData
+
+* Version: 3.0
+* Description: Hook allows to add additional RDF data for a selected page (was `smwAddToRDFExport`)
+* Reference class: `SMWExportController`
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::Exporter::Controller::AddExpData', function( DIWikiPage $subject, &$expDataList, $hasRecursionDepth, $withBacklinks ) {
+
+	// $expData = new ExpData( ... );
+	// $expDataList[] = $expData;
+
+	return true;
+} );
+</pre>
+
+### SMW::SQLStore::EntityReferenceCleanUpComplete
+
+* Version: 3.0
+* Description: Hook allows to get information about which entities have been removed
+* Reference class: `PropertyTableIdReferenceDisposer`
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::SQLStore::EntityReferenceCleanUpComplete', function( $store, $id, $subject, $isRedirect ) {
+
+	return true;
+} );
+</pre>
+
+### SMW::LinksUpdate::ApprovedUpdate
+
+* Version: 3.0
+* Description: Hook allows to suppress an update where for example the `latestRevID` is not the revision that is approved an should not be used for the `SemanticData` representation.
+* Reference class: `SMW\MediaWiki\Hooks\LinksUpdateConstructed`
+
+If you do suppress a revision, please log the event and make it visible to a user (or administrator) that an update was refused.
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::LinksUpdate::ApprovedUpdate', function( $title, $latestRevID ) {
+
+	// If you need to decline an update
+	// return false;
+
+	return true;
+} );
+</pre>
+
+### SMW::Parser::ChangeRevision
+
+* Version: 3.0
+* Description: Hook allows to forcibly change a revision used during content parsing as in case of the `UpdateJob` execution or when running `rebuildData.php`.
+* Reference class: `SMW\ContentParser`
+
+If you do alter a revision, please log the event and make it visible to a user (or administrator) that it was changed.
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::Parser::ChangeRevision', function( $title, &$revision ) {
+
+	// Set a revision
+	// $revision = \Revision::newFromId( $id );
+
+	return true;
+} );
+</pre>
+
+### SMW::Admin::TaskHandlerFactory
+
+* Version: 3.0
+* Description: Hook allows to extend available `TaskHandler` in `Special:SemanticMediaWiki`
+* Reference class: `SMW\MediaWiki\Specials\Admin\TaskHandlerFactory`
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::Admin::TaskHandlerFactory', function( &$taskHandlers, $store, $outputFormatter, $user ) {
+
+	// Instance of TaskHandler
+	// $taskHandlers[] = new FooTaskHandler();
+
+	return true;
+} );
+</pre>
+
+### SMW::DataUpdater::ContentProcessor
+
+* Version: 3.0
+* Description: Hook allows to extend the `SemanticData` with information from the `Content` object
+* Reference class: `SMW\DataUpdater`
+
+<pre>
+use Hooks;
+
+Hooks::register( 'SMW::DataUpdater::ContentProcessor', function( $semanticData, $content ) {
+
+	if ( $content->getModel() === ' ... ' ) {
+		// $data = $content->getNativeData();
+		// ...
+		// $semanticData->addPropertyObjectValue( ... );
+	}
+
+	return true;
+} );
+</pre>
+
+## Other available hooks
+
 Subsequent hooks should be renamed to follow a common naming practice that help distinguish them from other hook providers. In any case this list needs details and examples.
 
-* <code>\SMW\DIProperty</code>, smwInitProperties (SMW::DataItem::initProperties)
-* <code>\SMW\DataValueFactory</code>, smwInitDatatypes (SMW::DataValue::initDataTypes)
-* <code>SMWExportController</code>, smwAddToRDFExport
-* <code>SMWParamFormat</code>, SMWResultFormat
-* <code>\SMW\Store</code>, SMWStore::updateDataBefore (SMW::Store::updateDataBefore)
-* <code>\SMW\Store</code>, SMWStore::updateDataAfter (SMW::Store::updateDataAfter)
-* <code>\SMW\Store</code>, smwInitializeTables (SMW::Store::initTables)
-* <code>SMWSQLStore3SetupHandlers</code>, SMWCustomSQLStoreFieldType
-* <code>SMWSQLStore3SetupHandlers</code>, smwRefreshDataJobs (SMW::SQLStore::updateJobs)
-* <code>SMWSQLStore3Writers</code>, SMWSQLStore3::deleteSubjectBefore (SMW::SQLStore::deleteSubjectBefore)
-* <code>SMWSQLStore3Writers</code>, SMWSQLStore3::deleteSubjectAfter (SMW::SQLStore::deleteSubjectAfter)
-* <code>SMWSQLStore3Writers</code>, SMWSQLStore3::updateDataBefore (SMW::SQLStore::updateDataBefore)
-* <code>SMWSQLStore3Writers</code>, SMWSQLStore3::updateDataAfter (SMW::SQLStore::updateDataAfter)
-* <code>SMWSetupScript</code>, smwDropTables (SMW::Setup::dropTables)
-* <code>SMW_refreshData</code>, smwDropTables (SMW::Setup::dropTables)
+* `SMWParamFormat`, SMWResultFormat
+* `\SMW\Store`, SMWStore::updateDataBefore (SMW::Store::BeforeDataUpdateComplete)
+* `\SMW\Store`, SMWStore::updateDataAfter (SMW::Store::AfterDataUpdateComplete)
+* `SMWSQLStore3Writers`, SMWSQLStore3::updateDataBefore (SMW::SQLStore::BeforeDataUpdateComplete)
 
 [hooks]: https://www.mediawiki.org/wiki/Hooks "Manual:Hooks"

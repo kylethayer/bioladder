@@ -10,27 +10,9 @@
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 
-if ( defined( 'DataValuesCommon_VERSION' ) ) {
+if ( defined( 'DATAVALUES_COMMON_VERSION' ) ) {
 	// Do not initialize more than once.
 	return 1;
 }
 
-define( 'DATAVALUES_COMMON_VERSION', '0.2.2' );
-
-/**
- * @deprecated
- */
-define( 'DataValuesCommon_VERSION', DATAVALUES_COMMON_VERSION );
-
-if ( defined( 'MEDIAWIKI' ) ) {
-	$GLOBALS['wgExtensionCredits']['datavalues'][] = array(
-		'path' => __DIR__,
-		'name' => 'DataValuesCommon',
-		'version' => DATAVALUES_COMMON_VERSION,
-		'author' => array(
-			'[https://www.mediawiki.org/wiki/User:Jeroen_De_Dauw Jeroen De Dauw]'
-		),
-		'url' => 'https://github.com/DataValues/Common',
-		'description' => 'Contains common implementations of the interfaces defined by DataValuesInterfaces',
-	);
-}
+define( 'DATAVALUES_COMMON_VERSION', '0.4.3' );

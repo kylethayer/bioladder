@@ -3,11 +3,10 @@
 namespace ValueParsers\Test;
 
 use DataValues\NumberValue;
+use ValueParsers\IntParser;
 
 /**
- * Unit test IntParser class.
- *
- * @since 0.1
+ * @covers ValueParsers\IntParser
  *
  * @group ValueParsers
  * @group DataValueExtensions
@@ -18,11 +17,16 @@ use DataValues\NumberValue;
 class IntParserTest extends StringValueParserTest {
 
 	/**
+	 * @see ValueParserTestBase::getInstance
+	 *
+	 * @return IntParser
+	 */
+	protected function getInstance() {
+		return new IntParser();
+	}
+
+	/**
 	 * @see ValueParserTestBase::validInputProvider
-	 *
-	 * @since 0.1
-	 *
-	 * @return array
 	 */
 	public function validInputProvider() {
 		$argLists = array();
@@ -74,15 +78,6 @@ class IntParserTest extends StringValueParserTest {
 		}
 
 		return $argLists;
-	}
-
-	/**
-	 * @see ValueParserTestBase::getParserClass
-	 * @since 0.1
-	 * @return string
-	 */
-	protected function getParserClass() {
-		return 'ValueParsers\IntParser';
 	}
 
 }

@@ -1,6 +1,8 @@
 <?php
+
+use Onoi\Tesa\Normalizer;
+
 /**
- * @file
  * @ingroup SMWDataItems
  */
 
@@ -21,7 +23,7 @@ class SMWDIBlob extends SMWDataItem {
 	protected $m_string;
 
 	public function __construct( $string ) {
-		$this->m_string = $string;
+		$this->m_string = trim( $string );
 	}
 
 	public function getDIType() {
@@ -30,6 +32,14 @@ class SMWDIBlob extends SMWDataItem {
 
 	public function getString() {
 		return $this->m_string;
+	}
+
+	public static function normalize( $text ) {
+		return Normalizer::convertDoubleWidth(
+			Normalizer::applyTransliteration(
+				Normalizer::toLowercase( $text )
+			)
+		);
 	}
 
 	public function getSortKey() {

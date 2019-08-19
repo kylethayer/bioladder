@@ -5,5 +5,7 @@
 		]
 	},
 	"validator-type-class-SMWParamSource": "tekst",
-	"smw-ui-tooltip-title-legend": "Forklaring"
+	"browse": "Gennemse wiki",
+	"smw-ui-tooltip-title-legend": "Forklaring",
+	"smw-livepreview-loading": "Indlæser …"
 }

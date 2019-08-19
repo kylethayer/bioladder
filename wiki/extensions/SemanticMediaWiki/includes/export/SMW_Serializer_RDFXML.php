@@ -4,7 +4,6 @@
  * File holding the SMWRDFXMLSerializer class that provides basic functions for
  * serialising OWL data in RDF/XML syntax.
  *
- * @file SMW_Serializer.php
  * @ingroup SMW
  *
  * @author Markus Krötzsch
@@ -16,7 +15,7 @@
  *
  * @ingroup SMW
  */
-class SMWRDFXMLSerializer extends SMWSerializer{
+class SMWRDFXMLSerializer extends SMWSerializer {
 	/**
 	 * True if the $pre_ns_buffer contains the beginning of a namespace
 	 * declaration block to which further declarations for the current
@@ -45,15 +44,16 @@ class SMWRDFXMLSerializer extends SMWSerializer{
 		$this->pre_ns_buffer =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" .
 			"<!DOCTYPE rdf:RDF[\n" .
-			"\t<!ENTITY rdf " . $this->makeValueEntityString( SMWExporter::expandURI( '&rdf;' ) ) . ">\n" .
-			"\t<!ENTITY rdfs " . $this->makeValueEntityString( SMWExporter::expandURI( '&rdfs;' ) ) . ">\n" .
-			"\t<!ENTITY owl " . $this->makeValueEntityString( SMWExporter::expandURI( '&owl;' ) ) . ">\n" .
-			"\t<!ENTITY swivt " . $this->makeValueEntityString( SMWExporter::expandURI( '&swivt;' ) ) . ">\n" .
+			"\t<!ENTITY rdf " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&rdf;' ) ) . ">\n" .
+			"\t<!ENTITY rdfs " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&rdfs;' ) ) . ">\n" .
+			"\t<!ENTITY owl " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&owl;' ) ) . ">\n" .
+			"\t<!ENTITY swivt " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&swivt;' ) ) . ">\n" .
 			// A note on "wiki": this namespace is crucial as a fallback when it would be illegal to start e.g. with a number.
 			// In this case, one can always use wiki:... followed by "_" and possibly some namespace, since _ is legal as a first character.
-			"\t<!ENTITY wiki "  . $this->makeValueEntityString( SMWExporter::expandURI( '&wiki;' ) ) . ">\n" .
-			"\t<!ENTITY property " . $this->makeValueEntityString( SMWExporter::expandURI( '&property;' ) ) . ">\n" .
-			"\t<!ENTITY wikiurl " . $this->makeValueEntityString( SMWExporter::expandURI( '&wikiurl;' ) ) . ">\n" .
+			"\t<!ENTITY wiki "  . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&wiki;' ) ) . ">\n" .
+			"\t<!ENTITY category " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&category;' ) ) . ">\n" .
+			"\t<!ENTITY property " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&property;' ) ) . ">\n" .
+			"\t<!ENTITY wikiurl " . $this->makeValueEntityString( SMWExporter::getInstance()->expandURI( '&wikiurl;' ) ) . ">\n" .
 			"]>\n\n" .
 			"<rdf:RDF\n" .
 			"\txmlns:rdf=\"&rdf;\"\n" .
@@ -61,13 +61,14 @@ class SMWRDFXMLSerializer extends SMWSerializer{
 			"\txmlns:owl =\"&owl;\"\n" .
 			"\txmlns:swivt=\"&swivt;\"\n" .
 			"\txmlns:wiki=\"&wiki;\"\n" .
+			"\txmlns:category=\"&category;\"\n" .
 			"\txmlns:property=\"&property;\"";
-		$this->global_namespaces = array( 'rdf' => true, 'rdfs' => true, 'owl' => true, 'swivt' => true, 'wiki' => true, 'property' => true );
+		$this->global_namespaces = [ 'rdf' => true, 'rdfs' => true, 'owl' => true, 'swivt' => true, 'wiki' => true, 'property' => true, 'category' => true ];
 		$this->post_ns_buffer .= ">\n\n";
 	}
 
 	protected function serializeFooter() {
-		$this->post_ns_buffer .= "\t<!-- Created by Semantic MediaWiki, http://semantic-mediawiki.org/ -->\n";
+		$this->post_ns_buffer .= "\t<!-- Created by Semantic MediaWiki, https://www.semantic-mediawiki.org/ -->\n";
 		$this->post_ns_buffer .= '</rdf:RDF>';
 	}
 
@@ -154,7 +155,7 @@ class SMWRDFXMLSerializer extends SMWSerializer{
 							$this->serializeNestedExpData( $valueElement, "\t\t$indent" );
 							$this->post_ns_buffer .= "\t\t$indent</" . $property->getQName() . ">\n";
 						} else { // resource without data
-							$this->serializeExpResource( $property,  $valueElement->getSubject(), "\t\t$indent", $isClassTypeProp );
+							$this->serializeExpResource( $property, $valueElement->getSubject(), "\t\t$indent", $isClassTypeProp );
 						}
 					} // else: no other types of export elements
 
@@ -179,11 +180,20 @@ class SMWRDFXMLSerializer extends SMWSerializer{
 	 */
 	protected function serializeExpLiteral( SMWExpNsResource $expResourceProperty, SMWExpLiteral $expLiteral, $indent ) {
 		$this->post_ns_buffer .= $indent . '<' . $expResourceProperty->getQName();
-		if ( $expLiteral->getDatatype() !== '' ) {
+
+		// https://www.w3.org/TR/rdf-syntax-grammar/#section-Syntax-languages
+		// "... to indicate that the included content is in the given language.
+		// Typed literals which includes XML literals are not affected by this
+		// attribute. The most specific in-scope language present (if any) is
+		// applied to property element string literal ..."
+		if ( $expLiteral->getDatatype() !== '' && $expLiteral->getLang() !== '' ) {
+			$this->post_ns_buffer .= ' xml:lang="' . $expLiteral->getLang() . '"';
+		} elseif ( $expLiteral->getDatatype() !== '' ) {
 			$this->post_ns_buffer .= ' rdf:datatype="' . $expLiteral->getDatatype() . '"';
 		}
-		$this->post_ns_buffer .= '>' . $this->makeAttributeValueString( $expLiteral->getLexicalForm() ) .
-			'</' . $expResourceProperty->getQName() . ">\n";
+
+		$this->post_ns_buffer .= '>' . $this->makeAttributeValueString( $expLiteral->getLexicalForm() );
+		$this->post_ns_buffer .= '</' . $expResourceProperty->getQName() . ">\n";
 	}
 
 	/**
@@ -251,7 +261,7 @@ class SMWRDFXMLSerializer extends SMWSerializer{
 	 * @return string
 	 */
 	protected function makeValueEntityString( $string ) {
-		return "'" . str_replace( '%','&#37;',$string ) . "'";
+		return "'" . str_replace( '%', '&#37;', $string ) . "'";
 	}
 
 	/**
@@ -261,7 +271,7 @@ class SMWRDFXMLSerializer extends SMWSerializer{
 	 * @return string
 	 */
 	protected function makeAttributeValueString( $string ) {
-		return str_replace( array( '&', '>', '<' ), array( '&amp;', '&gt;', '&lt;' ), $string );
+		return str_replace( [ '&', '>', '<' ], [ '&amp;', '&gt;', '&lt;' ], $string );
 	}
 
 }

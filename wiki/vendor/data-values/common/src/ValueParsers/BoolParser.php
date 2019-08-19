@@ -14,7 +14,9 @@ use DataValues\BooleanValue;
  */
 class BoolParser extends StringValueParser {
 
-	protected $values = array(
+	const FORMAT_NAME = 'bool';
+
+	private static $values = array(
 		'yes' => true,
 		'on' => true,
 		'1' => true,
@@ -28,21 +30,21 @@ class BoolParser extends StringValueParser {
 	/**
 	 * @see StringValueParser::stringParse
 	 *
-	 * @since 0.1
-	 *
 	 * @param string $value
 	 *
 	 * @return BooleanValue
 	 * @throws ParseException
 	 */
 	protected function stringParse( $value ) {
+		$rawValue = $value;
+
 		$value = strtolower( $value );
 
-		if ( array_key_exists( $value, $this->values ) ) {
-			return new BooleanValue( $this->values[$value] );
+		if ( array_key_exists( $value, self::$values ) ) {
+			return new BooleanValue( self::$values[$value] );
 		}
 
-		throw new ParseException( 'Not a boolean' );
+		throw new ParseException( 'Not a boolean', $rawValue, self::FORMAT_NAME );
 	}
 
 }

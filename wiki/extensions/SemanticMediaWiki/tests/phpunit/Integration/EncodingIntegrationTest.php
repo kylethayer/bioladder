@@ -2,20 +2,17 @@
 
 namespace SMW\Tests\Integration;
 
+use SMW\ApplicationFactory;
 use SMW\MediaWiki\Hooks\BaseTemplateToolbox;
-use SMW\Application;
-use SMW\Settings;
-
 use Title;
 
 /**
  * @covers \SMW\MediaWiki\Hooks\BaseTemplateToolbox
  * @covers \SMWInfolink
  *
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
+ *
  * @group semantic-mediawiki-integration
  * @group mediawiki-databaseless
  *
@@ -31,42 +28,54 @@ class EncodingIntegrationTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testBaseTemplateToolboxURLEncoding( $setup, $expected ) {
 
-		$toolbox  = '';
+		$toolbox  = [];
 
-		Application::getInstance()->registerObject(
-			'Settings',
-			Settings::newFromArray( $setup['settings'] )
+		foreach ( $setup['settings'] as $key => $value) {
+			ApplicationFactory::getInstance()->getSettings()->set( $key, $value );
+		}
+
+		$instance = new BaseTemplateToolbox(
+			ApplicationFactory::getInstance()->getNamespaceExaminer()
 		);
 
-		$instance = new BaseTemplateToolbox( $setup['skinTemplate'], $toolbox );
+		$instance->setOptions(
+			[
+				'smwgBrowseFeatures' => $setup['settings']['smwgBrowseFeatures']
+			]
+		);
 
-		$instance->process();
+		$instance->process( $setup['skinTemplate'], $toolbox );
 
 		$this->assertContains(
 			$expected,
 			$toolbox['smw-browse']['href']
 		);
 
-		Application::clear();
+		ApplicationFactory::clear();
 	}
 
 	public function baseTemplateToolboxDataProvider() {
 
-		$provider = array();
+		$specialName = str_replace( '%3A', ':',
+			\SMW\Encoder::encode( \SpecialPage::getTitleFor( 'Browse' )->getPrefixedText() )
+		);
 
-		$provider[] = array( $this->newBaseTemplateToolboxSetup( '2013/11/05' ), 'Special:Browse/2013-2F11-2F05' );
-		$provider[] = array( $this->newBaseTemplateToolboxSetup( '2013-06-30' ), 'Special:Browse/2013-2D06-2D30' );
-		$provider[] = array( $this->newBaseTemplateToolboxSetup( '2013$06&30' ), 'Special:Browse/2013-2406-2630' );
+		$provider = [];
+
+		$provider[] = [ $this->newBaseTemplateToolboxSetup( '2013/11/05' ), "$specialName/:2013-2F11-2F05" ];
+		$provider[] = [ $this->newBaseTemplateToolboxSetup( '2013-06-30' ), "$specialName/:2013-2D06-2D30" ];
+		$provider[] = [ $this->newBaseTemplateToolboxSetup( '2013$06&30' ), "$specialName/:2013-2406-2630" ];
+		$provider[] = [ $this->newBaseTemplateToolboxSetup( '2013\Foo' ),   "$specialName/:2013-5CFoo" ];
 
 		return $provider;
 	}
 
 	private function newBaseTemplateToolboxSetup( $text ) {
 
-		$settings = array(
-			'smwgNamespacesWithSemanticLinks' => array( NS_MAIN => true ),
-			'smwgToolboxBrowseLink'           => true
-		);
+		$settings = [
+			'smwgNamespacesWithSemanticLinks' => [ NS_MAIN => true ],
+			'smwgBrowseFeatures'           => SMW_BROWSE_TLINK
+		];
 
 		$message = $this->getMockBuilder( '\Message' )
 			->disableOriginalConstructor()
@@ -94,7 +103,7 @@ class EncodingIntegrationTest extends \PHPUnit_Framework_TestCase {
 
 		$skinTemplate->data['isarticle'] = true;
 
-		return array( 'settings' => $settings, 'skinTemplate' => $skinTemplate );
+		return [ 'settings' => $settings, 'skinTemplate' => $skinTemplate ];
 	}
 
 }

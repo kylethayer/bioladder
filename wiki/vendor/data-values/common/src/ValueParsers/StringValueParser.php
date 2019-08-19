@@ -2,6 +2,7 @@
 
 namespace ValueParsers;
 
+use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -27,19 +28,13 @@ abstract class StringValueParser implements ValueParser {
 	 * @param ParserOptions|null $options
 	 */
 	public function __construct( ParserOptions $options = null ) {
-		if ( $options === null ) {
-			$options = new ParserOptions();
-		}
-
-		$this->options = $options;
+		$this->options = $options ?: new ParserOptions();
 
 		$this->defaultOption( ValueParser::OPT_LANG, 'en' );
 	}
 
 	/**
 	 * @see ValueParser::parse
-	 *
-	 * @since 0.1
 	 *
 	 * @param mixed $value
 	 *
@@ -66,8 +61,6 @@ abstract class StringValueParser implements ValueParser {
 	protected abstract function stringParse( $value );
 
 	/**
-	 * @see ValueParser::setOptions
-	 *
 	 * @since 0.1
 	 *
 	 * @param ParserOptions $options
@@ -77,8 +70,6 @@ abstract class StringValueParser implements ValueParser {
 	}
 
 	/**
-	 * @see ValueParser::getOptions
-	 *
 	 * @since 0.1
 	 *
 	 * @return ParserOptions
@@ -93,6 +84,9 @@ abstract class StringValueParser implements ValueParser {
 	 * @since 0.1
 	 *
 	 * @param string $option
+	 *
+	 * @throws InvalidArgumentException
+	 * @return mixed
 	 */
 	protected final function getOption( $option ) {
 		return $this->options->getOption( $option );
@@ -100,6 +94,8 @@ abstract class StringValueParser implements ValueParser {
 
 	/**
 	 * Shortcut to $this->options->requireOption.
+	 *
+	 * @since 0.1
 	 *
 	 * @param string $option
 	 *

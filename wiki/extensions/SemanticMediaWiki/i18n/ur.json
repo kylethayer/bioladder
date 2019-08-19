@@ -1,7 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"පසිඳු කාවින්ද"
+			"පසිඳු කාවින්ද",
+			"عرفان ارشد",
+			"محبوب عالم"
 		]
 	},
 	"smw_printername_list": "فہرست",
@@ -9,7 +11,7 @@
 	"smw_printername_category": "زمرہ",
 	"smw_exportrdf_submit": "برآمد",
 	"properties": "کی خصوصیات",
-	"smw_purge": "کی تازہ کاری کریں",
+	"smw_purge": "تازہ کرو",
 	"types": "اقسام",
 	"smw_ask_queryhead": "استفہام",
 	"smw_ask_defaultformat": "پہلے سے طے شدہ",
@@ -18,6 +20,7 @@
 	"smw_sbv_property": "جائداد:",
 	"smw_sbv_value": "قیمت:",
 	"smw_sbv_submit": "نتائج تلاش کریں",
+	"browse": "ویکی میں براؤز کریں",
 	"smw_browselink": "کی خصوصیات کو براؤز کریں",
 	"smw_browse_go": "جانا",
 	"smw_pp_from": "صفحہ سے",

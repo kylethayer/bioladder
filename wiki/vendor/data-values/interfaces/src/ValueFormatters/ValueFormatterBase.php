@@ -7,7 +7,7 @@ namespace ValueFormatters;
  *
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 abstract class ValueFormatterBase implements ValueFormatter {
@@ -22,10 +22,10 @@ abstract class ValueFormatterBase implements ValueFormatter {
 	/**
 	 * @since 0.1
 	 *
-	 * @param FormatterOptions $options
+	 * @param FormatterOptions|null $options
 	 */
-	public function __construct( FormatterOptions $options ) {
-		$this->options = $options;
+	public function __construct( FormatterOptions $options = null ) {
+		$this->options = $options ?: new FormatterOptions();
 
 		$this->options->defaultOption( ValueFormatter::OPT_LANG, 'en' );
 	}
@@ -36,8 +36,10 @@ abstract class ValueFormatterBase implements ValueFormatter {
 	 * @since 0.1
 	 *
 	 * @param string $option
+	 *
+	 * @return mixed
 	 */
-	protected final function getOption( $option ) {
+	final protected function getOption( $option ) {
 		return $this->options->getOption( $option );
 	}
 
@@ -46,7 +48,7 @@ abstract class ValueFormatterBase implements ValueFormatter {
 	 *
 	 * @param string $option
 	 */
-	protected final function requireOption( $option ) {
+	final protected function requireOption( $option ) {
 		$this->options->requireOption( $option );
 	}
 
@@ -58,7 +60,7 @@ abstract class ValueFormatterBase implements ValueFormatter {
 	 * @param string $option
 	 * @param mixed $default
 	 */
-	protected final function defaultOption( $option, $default ) {
+	final protected function defaultOption( $option, $default ) {
 		$this->options->defaultOption( $option, $default );
 	}
 

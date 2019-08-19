@@ -2,28 +2,23 @@
 
 namespace SMW\Tests\Integration\Query;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\SemanticDataFactory;
-use SMW\Tests\Util\QueryResultValidator;
-
-use SMW\DIWikiPage;
-use SMW\DIProperty;
 use SMW\DataValueFactory;
-
-use SMWQuery as Query;
-use SMWQueryResult as QueryResult;
-use SMWSomeProperty as SomeProperty;
-use SMWPrintRequest as PrintRequest;
+use SMW\DIProperty;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ThingDescription;
+use SMW\Query\PrintRequest as PrintRequest;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\UtilityFactory;
 use SMWPropertyValue as PropertyValue;
-use SMWThingDescription as ThingDescription;
+use SMWQuery as Query;
 
 /**
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
+ *
  * @group semantic-mediawiki-integration
  * @group semantic-mediawiki-query
+ *
  * @group mediawiki-database
  * @group medium
  *
@@ -34,10 +29,9 @@ use SMWThingDescription as ThingDescription;
  */
 class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	protected $databaseToBeExcluded = array( 'sqlite' );
-
-	private $subjectsToBeCleared = array();
+	private $subjectsToBeCleared = [];
 	private $subject;
+
 	private $dataValueFactory;
 	private $queryResultValidator;
 
@@ -45,8 +39,10 @@ class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		parent::setUp();
 
 		$this->dataValueFactory = DataValueFactory::getInstance();
-		$this->queryResultValidator = new QueryResultValidator();
-		$this->semanticDataFactory = new SemanticDataFactory();
+		$this->queryResultValidator = UtilityFactory::getInstance()->newValidatorFactory()->newQueryResultValidator();
+		$this->semanticDataFactory = UtilityFactory::getInstance()->newSemanticDataFactory();
+
+		$this->testEnvironment->addConfiguration( 'smwgQueryResultCacheType', false );
 	}
 
 	protected function tearDown() {
@@ -70,7 +66,7 @@ class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		$semanticData = $this->semanticDataFactory->newEmptySemanticData( __METHOD__ );
 
 		$semanticData->addDataValue(
-			$this->dataValueFactory->newDataItemValue( $semanticData->getSubject(), $property )
+			$this->dataValueFactory->newDataValueByItem( $semanticData->getSubject(), $property )
 		);
 
 		$this->getStore()->updateData( $semanticData );
@@ -90,9 +86,9 @@ class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 			$this->searchForResultsThatCompareEqualToOnlySingularPropertyOf( $property )->getResults()
 		);
 
-		$this->subjectsToBeCleared = array(
+		$this->subjectsToBeCleared = [
 			$semanticData->getSubject()
-		);
+		];
 	}
 
 	public function testUserDefinedPropertyUsedForInvalidValueAssignment() {
@@ -100,7 +96,7 @@ class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		$property = new DIProperty( 'SomePropertyWithInvalidValueAssignment' );
 		$property->setPropertyTypeId( '_tem' );
 
-		$dataValue = $this->dataValueFactory->newPropertyObjectValue( $property, '1 Jan 1970' );
+		$dataValue = $this->dataValueFactory->newDataValueByProperty( $property, '1 Jan 1970' );
 
 		$semanticData = $this->semanticDataFactory->newEmptySemanticData( __METHOD__ );
 		$semanticData->addDataValue( $dataValue );
@@ -112,9 +108,9 @@ class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 			$this->searchForResultsThatCompareEqualToOnlySingularPropertyOf( $property )->getCount()
 		);
 
-		$this->subjectsToBeCleared = array(
+		$this->subjectsToBeCleared = [
 			$semanticData->getSubject()
-		);
+		];
 	}
 
 	private function searchForResultsThatCompareEqualToOnlySingularPropertyOf( DIProperty $property ) {
@@ -132,9 +128,7 @@ class GeneralQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		);
 
 		$query = new Query(
-			$description,
-			false,
-			false
+			$description
 		);
 
 		$query->querymode = Query::MODE_INSTANCES;

@@ -15,4 +15,12 @@ tools:
     php_analyzer: true
     sensiolabs_security_checker: true
     external_code_coverage:
-        timeout: '900'
+        timeout: 1800 # Timeout in seconds
+
+checks:
+    php:
+        code_rating: true
+        duplication: true
+        sql_injection_vulnerabilities: true
+        security_vulnerabilities: true
+        no_eval: true

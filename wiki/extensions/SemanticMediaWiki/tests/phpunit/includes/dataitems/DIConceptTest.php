@@ -33,22 +33,9 @@ class DIConceptTest extends DataItemTest {
 	 * @return array
 	 */
 	public function constructorProvider() {
-		return array(
-			array( 'Foo', '', '', '', '' ),
-		);
-	}
-
-	/**
-	 * @see DataItemTest::invalidConstructorArgsProvider
-	 *
-	 * @since 1.9
-	 *
-	 * @return array
-	 */
-	public function invalidConstructorArgsProvider() {
-		return array(
-			array( 'Bar' ),
-		);
+		return [
+			[ 'Foo', '', '', '', '' ],
+		];
 	}
 
 	/**
@@ -66,10 +53,10 @@ class DIConceptTest extends DataItemTest {
 	public function testConceptCacheSetterGetter( $status, $date, $count ) {
 
 		$reflector = new \ReflectionClass( $this->getClass() );
-		$instance  = $reflector->newInstanceArgs( array ( 'Foo', '', '', '', '' ) );
+		$instance  = $reflector->newInstanceArgs(  [ 'Foo', '', '', '', '' ] );
 
 		$instance->setCacheStatus( $status );
-		$instance->setCacheDate( $date ) ;
+		$instance->setCacheDate( $date );
 		$instance->setCacheCount( $count );
 
 		$this->assertEquals( $status, $instance->getCacheStatus() );
@@ -86,10 +73,10 @@ class DIConceptTest extends DataItemTest {
 	 * @return array
 	 */
 	public function conceptCacheDataProvider() {
-		return array(
-			array( 'empty', '', '' ),
-			array( 'full', '1358515326', '1000' ),
-		);
+		return [
+			[ 'empty', '', '' ],
+			[ 'full', '1358515326', '1000' ],
+		];
 	}
 
 }

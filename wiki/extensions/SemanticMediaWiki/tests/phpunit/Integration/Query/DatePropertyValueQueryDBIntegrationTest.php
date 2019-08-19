@@ -2,31 +2,25 @@
 
 namespace SMW\Tests\Integration\Query;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\SemanticDataFactory;
-use SMW\Tests\Util\QueryResultValidator;
-
-use SMW\DIWikiPage;
-use SMW\DIProperty;
 use SMW\DataValueFactory;
-
-use SMWDIBlob as DIBlob;
-use SMWQuery as Query;
-use SMWQueryResult as QueryResult;
-use SMWDataValue as DataValue;
-use SMWDataItem as DataItem;
-use SMWSomeProperty as SomeProperty;
-use SMWPrintRequest as PrintRequest;
+use SMW\DIProperty;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ThingDescription;
+use SMW\Query\Language\ValueDescription;
+use SMW\Query\PrintRequest as PrintRequest;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\UtilityFactory;
+use SMWExporter as Exporter;
 use SMWPropertyValue as PropertyValue;
-use SMWThingDescription as ThingDescription;
+use SMWQuery as Query;
 
 /**
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
+ *
  * @group semantic-mediawiki-integration
  * @group semantic-mediawiki-query
+ *
  * @group mediawiki-database
  * @group medium
  *
@@ -37,9 +31,7 @@ use SMWThingDescription as ThingDescription;
  */
 class DatePropertyValueQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	protected $databaseToBeExcluded = array( 'sqlite' );
-
-	private $subjectsToBeCleared = array();
+	private $subjectsToBeCleared = [];
 	private $semanticDataFactory;
 	private $dataValueFactory;
 	private $queryResultValidator;
@@ -48,15 +40,21 @@ class DatePropertyValueQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		parent::setUp();
 
 		$this->dataValueFactory = DataValueFactory::getInstance();
-		$this->semanticDataFactory = new SemanticDataFactory();
-		$this->queryResultValidator = new QueryResultValidator();
+
+		$this->semanticDataFactory = UtilityFactory::getInstance()->newSemanticDataFactory();
+		$this->queryResultValidator = UtilityFactory::getInstance()->newValidatorFactory()->newQueryResultValidator();
+
+		$this->fixturesProvider = UtilityFactory::getInstance()->newFixturesFactory()->newFixturesProvider();
+		$this->fixturesProvider->setupDependencies( $this->getStore() );
 	}
 
 	protected function tearDown() {
 
-		foreach ( $this->subjectsToBeCleared as $subject ) {
-			$this->getStore()->deleteSubject( $subject->getTitle() );
-		}
+		$fixturesCleaner = UtilityFactory::getInstance()->newFixturesFactory()->newFixturesCleaner();
+
+		$fixturesCleaner
+			->purgeAllKnownFacts()
+			->purgeSubjects( $this->subjectsToBeCleared );
 
 		parent::tearDown();
 	}
@@ -66,7 +64,7 @@ class DatePropertyValueQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		$property = new DIProperty( 'SomeDateProperty' );
 		$property->setPropertyTypeId( '_dat' );
 
-		$dataValue = $this->dataValueFactory->newPropertyObjectValue(
+		$dataValue = $this->dataValueFactory->newDataValueByProperty(
 			$property,
 			'1 January 1970'
 		);
@@ -76,6 +74,8 @@ class DatePropertyValueQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 		$semanticData->addDataValue( $dataValue );
 
 		$this->getStore()->updateData( $semanticData );
+
+		Exporter::getInstance()->clear();
 
 		$this->assertArrayHasKey(
 			$property->getKey(),
@@ -106,6 +106,66 @@ class DatePropertyValueQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$this->queryResultValidator->assertThatQueryResultContains(
 			$dataValue,
+			$queryResult
+		);
+
+		$this->subjectsToBeCleared[] = $semanticData->getSubject();
+	}
+
+	/**
+	 * #576
+	 */
+	public function testSortableDateQuery() {
+
+		$this->getStore()->updateData(
+			$this->fixturesProvider->getFactsheet( 'Berlin' )->asEntity()
+		);
+
+		// #576 introduced resource caching, therefore make sure that the
+		// instance is cleared after data have been created before further
+		// tests are carried out
+		Exporter::getInstance()->clear();
+
+		/**
+		 * @query {{#ask: [[Founded::SomeDistinctValue]] }}
+		 */
+		$foundedValue = $this->fixturesProvider->getFactsheet( 'Berlin' )->getFoundedValue();
+
+		$description = new SomeProperty(
+			$foundedValue->getProperty(),
+			new ValueDescription( $foundedValue->getDataItem(), null, SMW_CMP_EQ )
+		);
+
+		$propertyValue = new PropertyValue( '__pro' );
+		$propertyValue->setDataItem( $foundedValue->getProperty() );
+
+		$query = new Query(
+			$description,
+			false,
+			false
+		);
+
+		$query->querymode = Query::MODE_INSTANCES;
+
+		$query->sortkeys = [
+			$foundedValue->getProperty()->getLabel() => 'ASC'
+		];
+
+		// Be aware of
+		// Virtuoso 22023 Error SR353: Sorted TOP clause specifies more then
+		// 10001 rows to sort. Only 10000 are allowed. Either decrease the
+		// offset and/or row count or use a scrollable cursor
+		$query->setLimit( 100 );
+
+		$query->setExtraPrintouts( [
+			new PrintRequest( PrintRequest::PRINT_THIS, '' ),
+			new PrintRequest( PrintRequest::PRINT_PROP, null, $propertyValue )
+		] );
+
+		$queryResult = $this->getStore()->getQueryResult( $query );
+
+		$this->queryResultValidator->assertThatQueryResultHasSubjects(
+			$this->fixturesProvider->getFactsheet( 'Berlin' )->asSubject(),
 			$queryResult
 		);
 	}

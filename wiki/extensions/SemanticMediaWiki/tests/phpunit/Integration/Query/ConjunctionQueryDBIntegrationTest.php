@@ -2,32 +2,24 @@
 
 namespace SMW\Tests\Integration\Query;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\SemanticDataFactory;
-use SMW\Tests\Util\QueryResultValidator;
-
-use SMW\DIWikiPage;
+use SMW\ApplicationFactory;
 use SMW\DIProperty;
-use SMW\SemanticData;
-
-use SMWQueryParser as QueryParser;
-use SMWDIBlob as DIBlob;
-use SMWDINumber as DINumber;
+use SMW\DIWikiPage;
+use SMW\Query\Language\ClassDescription;
+use SMW\Query\Language\Conjunction;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ValueDescription;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\UtilityFactory;
 use SMWQuery as Query;
-use SMWSomeProperty as SomeProperty;
-use SMWThingDescription as ThingDescription;
-use SMWValueDescription as ValueDescription;
-use SMWConjunction as Conjunction;
-use SMWDisjunction as Disjunction;
-use SMWClassDescription as ClassDescription;
 
 /**
- * @ingroup Test
- *
  * @group SMW
  * @group SMWExtension
+ *
  * @group semantic-mediawiki-integration
  * @group semantic-mediawiki-query
+ *
  * @group mediawiki-database
  * @group medium
  *
@@ -38,9 +30,7 @@ use SMWClassDescription as ClassDescription;
  */
 class ConjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	protected $databaseToBeExcluded = array( 'sqlite' );
-
-	private $subjectsToBeCleared = array();
+	private $subjectsToBeCleared = [];
 	private $semanticDataFactory;
 	private $queryResultValidator;
 	private $queryParser;
@@ -48,18 +38,23 @@ class ConjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 	protected function setUp() {
 		parent::setUp();
 
-		$this->semanticDataFactory = new SemanticDataFactory();
-		$this->queryResultValidator = new QueryResultValidator();
-		$this->queryParser = new QueryParser();
+		$utilityFactory = UtilityFactory::getInstance();
 
-	//	$this->getStore()->getSparqlDatabase()->deleteAll();
+		$this->semanticDataFactory  = $utilityFactory->newSemanticDataFactory();
+		$this->queryResultValidator = $utilityFactory->newValidatorFactory()->newQueryResultValidator();
+
+		$this->fixturesProvider = $utilityFactory->newFixturesFactory()->newFixturesProvider();
+		$this->fixturesProvider->setupDependencies( $this->getStore() );
+
+		$this->queryParser = ApplicationFactory::getInstance()->getQueryFactory()->newQueryParser();
 	}
 
 	protected function tearDown() {
 
-		foreach ( $this->subjectsToBeCleared as $subject ) {
-			$this->getStore()->deleteSubject( $subject->getTitle() );
-		}
+		$fixturesCleaner = UtilityFactory::getInstance()->newFixturesFactory()->newFixturesCleaner();
+		$fixturesCleaner
+			->purgeSubjects( $this->subjectsToBeCleared )
+			->purgeAllKnownFacts();
 
 		parent::tearDown();
 	}
@@ -155,9 +150,9 @@ class ConjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$queryResult = $this->getStore()->getQueryResult( $query );
 
-		$expectedSubjects = array(
+		$expectedSubjects = [
 			$semanticDataOfDreamland->getSubject()
-		);
+		];
 
 		$this->assertEquals(
 			1,
@@ -169,26 +164,26 @@ class ConjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 			$queryResult
 		);
 
-		$this->subjectsToBeCleared = array(
+		$this->subjectsToBeCleared = [
 			$semanticDataOfWonderland->getSubject(),
 			$semanticDataOfDreamland->getSubject(),
 			$semanticDataOfNeverland->getSubject()
-		);
+		];
 	}
 
 	public function testNestedPropertyConjunction() {
 
+		/**
+		 * Page annotated with [[Born in::Paris]]
+		 */
 		$property = DIProperty::newFromUserLabel( 'Born in' );
 		$property->setPropertyTypeId( '_wpg' );
 
-		/**
-		 * Page annotated with [[Born in::Nomansland]]
-		 */
 		$semanticData = $this->semanticDataFactory->newEmptySemanticData( __METHOD__ . 'PageOughtToBeSelected' );
 
 		$semanticData->addPropertyObjectValue(
 			$property,
-			new DIWikiPage( 'Nomansland', NS_MAIN )
+			new DIWikiPage( 'Paris', NS_MAIN )
 		);
 
 		$expectedSubjects = $semanticData->getSubject();
@@ -196,36 +191,25 @@ class ConjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$this->getStore()->updateData( $semanticData );
 
-		/**
-		 * Page annotated with [[Category:City]] [[Located in::Outback]]
-		 */
-		$semanticData = $this->semanticDataFactory->newEmptySemanticData( 'Nomansland' );
-
-		$semanticData->addPropertyObjectValue(
-			DIProperty::newFromUserLabel( 'Located in' )->setPropertyTypeId( '_wpg' ),
-			new DIWikiPage( 'Outback', NS_MAIN )
+		$this->getStore()->updateData(
+			$this->fixturesProvider->getFactsheet( 'Paris' )->asEntity()
 		);
 
-		$semanticData->addPropertyObjectValue(
-			new DIProperty( '_INST' ),
-			new DIWikiPage( 'City', NS_CATEGORY )
-		);
-
-		$this->subjectsToBeCleared[] = $semanticData->getSubject();
-		$this->getStore()->updateData( $semanticData );
-
 		/**
-		 * Query with [[Born in::<q>[[Category:City]] [[Located in::Outback]]</q>]]
+		 * @query [[Born in::<q>[[Category:City]] [[Located in::France]]</q>]]
 		 */
-		$conjunction = new Conjunction( array(
-			new ClassDescription( new DIWikiPage( 'City', NS_CATEGORY ) ),
+		$cityCategory = $this->fixturesProvider->getCategory( 'city' )->asSubject();
+		$locatedInProperty = $this->fixturesProvider->getProperty( 'locatedin' );
+
+		$conjunction = new Conjunction( [
+			new ClassDescription( $cityCategory ),
 			new SomeProperty(
-				DIProperty::newFromUserLabel( 'Located in' )->setPropertyTypeId( '_wpg' ),
+				$locatedInProperty,
 				new ValueDescription(
-					new DIWikiPage( 'Outback', NS_MAIN ),
-					DIProperty::newFromUserLabel( 'Located in' )->setPropertyTypeId( '_wpg' ) )
+					$this->fixturesProvider->getFactsheet( 'France' )->asSubject(),
+					$locatedInProperty )
 				)
-			)
+			]
 		);
 
 		$description = new SomeProperty(
@@ -235,7 +219,7 @@ class ConjunctionQueryDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$this->assertEquals(
 			$description,
-			$this->queryParser->getQueryDescription( '[[Born in::<q>[[Category:City]] [[Located in::Outback]]</q>]]' )
+			$this->queryParser->getQueryDescription( '[[Born in::<q>[[Category:City]] [[Located in::France]]</q>]]' )
 		);
 
 		$query = new Query(

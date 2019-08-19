@@ -4,20 +4,14 @@ namespace DataValues\Tests;
 
 use DataValues\DataValue;
 use DataValues\UnDeserializableValue;
-use DataValues\UnknownValue;
 
 /**
  * @covers DataValues\UnDeserializableValue
  *
- * @file
- * @since 0.1
- *
- * @ingroup DataValue
- *
  * @group DataValue
  * @group DataValueExtensions
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Daniel Kinzler
  */
 class UnDeserializableValueTest extends DataValueTest {
@@ -25,44 +19,38 @@ class UnDeserializableValueTest extends DataValueTest {
 	/**
 	 * @see DataValueTest::getClass
 	 *
-	 * @since 0.1
-	 *
 	 * @return string
 	 */
 	public function getClass() {
-		return 'DataValues\UnDeserializableValue';
+		return UnDeserializableValue::class;
 	}
 
 	public function validConstructorArgumentsProvider() {
-		$argLists = array();
+		$argLists = [];
 
-		$argLists[] = array( null, null, 'No type and no data' );
-		$argLists[] = array( null, 'string', 'A type but no data' );
-		$argLists[] = array( array( 'stuff' ), 'string', 'A type and bad data' );
+		$argLists[] = [ null, null, 'No type and no data' ];
+		$argLists[] = [ null, 'string', 'A type but no data' ];
+		$argLists[] = [ [ 'stuff' ], 'string', 'A type and bad data' ];
 
 		return $argLists;
 	}
 
 	public function invalidConstructorArgumentsProvider() {
-		$argLists = array();
+		$argLists = [];
 
-		$argLists[] = array( new \stdClass(), null, 'No type and no data' );
-		$argLists[] = array( null, 42, 'No type and no data' );
-		$argLists[] = array( null, false, 'No type and no data' );
-		$argLists[] = array( null, array(), 'No type and no data' );
-		$argLists[] = array( null, null, null );
-		$argLists[] = array( null, null, true );
-		$argLists[] = array( null, null, array() );
+		$argLists[] = [ new \stdClass(), null, 'No type and no data' ];
+		$argLists[] = [ null, 42, 'No type and no data' ];
+		$argLists[] = [ null, false, 'No type and no data' ];
+		$argLists[] = [ null, [], 'No type and no data' ];
+		$argLists[] = [ null, null, null ];
+		$argLists[] = [ null, null, true ];
+		$argLists[] = [ null, null, [] ];
 
 		return $argLists;
 	}
 
-
 	/**
 	 * @dataProvider instanceProvider
-	 *
-	 * @param UnDeserializableValue $value
-	 * @param array $arguments
 	 */
 	public function testGetValue( UnDeserializableValue $value, array $arguments ) {
 		$this->assertEquals( $arguments[0], $value->getValue() );
@@ -70,9 +58,6 @@ class UnDeserializableValueTest extends DataValueTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 *
-	 * @param UnDeserializableValue $value
-	 * @param array $arguments
 	 */
 	public function testGetArrayValue( UnDeserializableValue $value, array $arguments ) {
 		$this->assertEquals( $arguments[0], $value->getArrayValue() );
@@ -80,9 +65,6 @@ class UnDeserializableValueTest extends DataValueTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 *
-	 * @param UnDeserializableValue $value
-	 * @param array $arguments
 	 */
 	public function testGetTargetType( UnDeserializableValue $value, array $arguments ) {
 		$this->assertEquals( $arguments[1], $value->getTargetType() );
@@ -90,8 +72,6 @@ class UnDeserializableValueTest extends DataValueTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 * @param DataValue $value
-	 * @param array $arguments
 	 */
 	public function testToArray( DataValue $value, array $arguments ) {
 		$array = $value->toArray();
@@ -105,23 +85,7 @@ class UnDeserializableValueTest extends DataValueTest {
 		$this->assertEquals( $value->getValue(), $array['value'] );
 	}
 
-	/**
-	 * Dummy implementation, there's nothing to test here.
-	 *
-	 * @return array
-	 */
-	public static function dummyProvider() {
-		return array(
-			array( new UnknownValue( 'dummy' ), array() )
-		);
-	}
-
-	/**
-	 * @dataProvider dummyProvider
-	 * @param DataValue $value
-	 * @param array $arguments
-	 */
-	public function testNewFromArray( DataValue $value, array $arguments ) {
+	public function testNewFromArray() {
 		$this->assertFalse( method_exists( $this->getClass(), 'newFromArray' ) );
 	}
 

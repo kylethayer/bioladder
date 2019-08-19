@@ -2,9 +2,9 @@
 
 namespace SMW;
 
+use Parser;
 use ParserOptions;
 use Revision;
-use Parser;
 use Title;
 use User;
 
@@ -35,12 +35,17 @@ class ContentParser {
 	protected $revision = null;
 
 	/** @var array */
-	protected $errors = array();
+	protected $errors = [];
 
 	/**
 	 * @var boolean
 	 */
 	private $enabledToUseContentHandler = true;
+
+	/**
+	 * @var boolean
+	 */
+	private $skipInTextAnnotationParser = false;
 
 	/**
 	 * @note Injecting new Parser() alone will not yield an expected result and
@@ -59,6 +64,15 @@ class ContentParser {
 		if ( $this->parser === null ) {
 			$this->parser = $GLOBALS['wgParser'];
 		}
+	}
+
+	/**
+	 * @since 2.3
+	 *
+	 * @return Parser $parser
+	 */
+	public function setParser( Parser $parser ) {
+		$this->parser = $parser;
 	}
 
 	/**
@@ -107,6 +121,10 @@ class ContentParser {
 		return $this->errors;
 	}
 
+	public function skipInTextAnnotationParser() {
+		return $this->skipInTextAnnotationParser = true;
+	}
+
 	/**
 	 * Generates or fetches the ParserOutput object from an appropriate source
 	 *
@@ -130,7 +148,6 @@ class ContentParser {
 	}
 
 	protected function parseText( $text ) {
-		Profiler::In( __METHOD__ );
 
 		$this->parserOutput = $this->parser->parse(
 			$text,
@@ -138,7 +155,6 @@ class ContentParser {
 			$this->makeParserOptions()
 		);
 
-		Profiler::Out( __METHOD__ );
 		return $this;
 	}
 
@@ -149,7 +165,6 @@ class ContentParser {
 	 * @note If no content is available create an empty object
 	 */
 	protected function fetchFromContent() {
-		Profiler::In( __METHOD__ );
 
 		if ( $this->getRevision() === null ) {
 			return $this->msgForNullRevision();
@@ -168,12 +183,10 @@ class ContentParser {
 			true
 		);
 
-		Profiler::Out( __METHOD__ );
 		return $this;
 	}
 
 	protected function fetchFromParser() {
-		Profiler::In( __METHOD__ );
 
 		if ( $this->getRevision() === null ) {
 			return $this->msgForNullRevision();
@@ -188,12 +201,11 @@ class ContentParser {
 			$this->getRevision()->getID()
 		);
 
-		Profiler::Out( __METHOD__ );
 		return $this;
 	}
 
 	protected function msgForNullRevision( $fname = __METHOD__ ) {
-		$this->errors = array( $fname . " No revision available for {$this->getTitle()->getPrefixedDBkey()}" );
+		$this->errors = [ $fname . " No revision available for {$this->getTitle()->getPrefixedDBkey()}" ];
 		return $this;
 	}
 
@@ -205,12 +217,18 @@ class ContentParser {
 			$user = User::newFromId( $this->getRevision()->getUser() );
 		}
 
-		return new ParserOptions( $user );
+		$parserOptions = new ParserOptions( $user );
+
+		// Use the InterfaceMessage marker to skip InTextAnnotationParser
+		// processing
+		$parserOptions->setInterfaceMessage( $this->skipInTextAnnotationParser );
+
+		return $parserOptions;
 	}
 
 	protected function getRevision() {
 
-		if ( $this->revision instanceOf Revision ) {
+		if ( $this->revision instanceof Revision ) {
 			return $this->revision;
 		}
 
@@ -220,6 +238,8 @@ class ContentParser {
 		} else {
 			$this->revision = Revision::newFromTitle( $this->getTitle() );
 		}
+
+		\Hooks::run( 'SMW::Parser::ChangeRevision', [ $this->getTitle(), &$this->revision ] );
 
 		return $this->revision;
 	}

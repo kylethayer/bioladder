@@ -1,418 +1,221 @@
 <?php
 
-namespace SMW\Test;
+namespace SMW\Tests;
 
+use SMW\ApplicationFactory;
 use SMW\Setup;
-use SMW\ExtensionContext;
 
 /**
  * @covers \SMW\Setup
  *
  * @group SMW
  * @group SMWExtension
+ *
  * @group medium
  *
- * @licence GNU GPL v2+
+ * @license GNU GPL v2+
  * @since 1.9
  *
  * @author mwjames
  */
-class SetupTest extends SemanticMediaWikiTestCase {
+class SetupTest extends \PHPUnit_Framework_TestCase {
 
-	/**
-	 * @return string|false
-	 */
-	public function getClass() {
-		return '\SMW\Setup';
-	}
+	private $applicationFactory;
+	private $defaultConfig;
 
-	/**
-	 * @since 1.9
-	 */
-	private function newExtensionContext( $store = null ) {
+	protected function setUp() {
+		parent::setUp();
 
-		$context = new ExtensionContext();
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
 
-		$settings = $context->getSettings();
-		$settings->set( 'smwgCacheType', CACHE_NONE );
-		$settings->set( 'smwgEnableUpdateJobs', false );
+		$store->expects( $this->any() )
+			->method( 'getProperties' )
+			->will( $this->returnValue( [] ) );
 
-		$context->getDependencyBuilder()
-			->getContainer()
-			->registerObject( 'Store', $this->newMockBuilder()->newObject( 'Store' ) );
+		$store->expects( $this->any() )
+			->method( 'getInProperties' )
+			->will( $this->returnValue( [] ) );
 
-		return $context;
-	}
+		$language = $this->getMockBuilder( '\Language' )
+			->disableOriginalConstructor()
+			->getMock();
 
-	/**
-	 * @since 1.9
-	 *
-	 * @return Setup
-	 */
-	private function newInstance( &$config = array(), $basePath = 'Foo', $context = null ) {
+		$this->applicationFactory = ApplicationFactory::getInstance();
+		$this->applicationFactory->registerObject( 'Store', $store );
 
-		$language = $this->newMockBuilder()->newObject( 'Language' );
-
-		$default  = array(
-			'smwgNamespacesWithSemanticLinks' => array(),
+		$this->defaultConfig = [
+			'smwgMainCacheType' => CACHE_NONE,
+			'smwgNamespacesWithSemanticLinks' => [],
 			'smwgEnableUpdateJobs' => false,
-			'wgNamespacesWithSubpages' => array(),
+			'wgNamespacesWithSubpages' => [],
 			'wgExtensionAssetsPath'    => false,
-			'wgResourceModules' => array(),
+			'smwgResourceLoaderDefFiles' => [],
+			'wgResourceModules' => [],
 			'wgScriptPath'      => '/Foo',
 			'wgServer'          => 'http://example.org',
 			'wgVersion'         => '1.21',
 			'wgLanguageCode'    => 'en',
 			'wgLang'            => $language,
-			'IP'                => 'Foo'
-		);
+			'IP'                => 'Foo',
+			'smwgSemanticsEnabled' => true,
+			'smwgConfigFileDir' => ''
+		];
 
-		$config  = array_merge( $default, $config );
-
-		if( $context === null ) {
-			$context = $this->newExtensionContext();
+		foreach ( $this->defaultConfig as $key => $value ) {
+			$this->applicationFactory->getSettings()->set( $key, $value );
 		}
-
-		return new Setup( $config, $basePath, $context );
 	}
 
-	/**
-	 * @since 1.9
-	 */
-	public function testConstructor() {
-		$this->assertInstanceOf( $this->getClass(), $this->newInstance() );
+	protected function tearDown() {
+		$this->applicationFactory->clear();
+
+		parent::tearDown();
 	}
 
-	/**
-	 * @since 1.9
-	 */
+	public function testCanConstruct() {
+
+		$applicationFactory = $this->getMockBuilder( '\SMW\ApplicationFactory' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->assertInstanceOf(
+			Setup::class,
+			new Setup( $applicationFactory )
+		);
+	}
+
 	public function testResourceModules() {
 
-		$config   = array();
-		$context  = $this->newExtensionContext();
-		$basepath = $context->getSettings()->get( 'smwgIP' );
+		$config = $this->defaultConfig;
+		$config['smwgResourceLoaderDefFiles'] = $GLOBALS['smwgResourceLoaderDefFiles'];
 
-		$this->newInstance( $config, $basepath, $context )->run();
-		$this->assertNotEmpty( $config['wgResourceModules'] );
+		$instance = new Setup( $this->applicationFactory );
+		$instance->init( $config, '' );
 
-	}
-
-	/**
-	 * @dataProvider functionHooksProvider
-	 *
-	 * @since 1.9
-	 */
-	public function testRegisterFunctionHooksWithoutInitialization( $hook, $setup ) {
-		$this->assertArrayHookEntry( $hook, $setup, 1 );
-	}
-
-	/**
-	 * @dataProvider functionHookForInitializationProvider
-	 *
-	 * @since 1.9
-	 */
-	public function testRegisterFunctionHookWithInitialization( $hook, $setup ) {
-
-		$this->assertArrayHookEntry( $hook, $setup, 1 );
-
-		// Verify that registered closures are executable
-		$result = $this->executeHookOnMock( $hook, $setup['wgHooks'][$hook][0] );
-
-		if ( $result !== null ) {
-			$this->assertTrue( $result );
-		} else {
-			$this->markTestIncomplete( "Test is incomplete because of a missing {$hook} closure verification" );
-		}
-
-	}
-
-	/**
-	 * @dataProvider parserHooksForInitializationProvider
-	 *
-	 * @since 1.9
-	 */
-	public function testParserHooksWithInitialization( $hook, $setup ) {
-
-		// 4 because of having hooks registered without using a callback, after
-		// all parser hooks being registered using a callback this can be
-		// reduced to 1
-		$this->assertArrayHookEntry( $hook, $setup, 3 );
-
-		// Verify that registered closures are executable
-		$result = $this->executeHookOnMock( $hook, $setup['wgHooks'][$hook][0] );
-
-		if ( $result !== null ) {
-			$this->assertTrue( $result );
-		} else {
-			$this->markTestIncomplete( "Test is incomplete because of a missing {$hook} closure verification" );
-		}
-
-	}
-
-	/**
-	 * Verifies that a registered closure can be executed
-	 *
-	 * @since  1.9
-	 */
-	private function executeHookOnMock( $hook, $object ) {
-
-		$empty = '';
-		$emptyArray = array();
-
-		$editInfo = (object)array();
-		$editInfo->output = null;
-
-		// Evade execution by setting the title object as isSpecialPage
-		// the hook class should always ensure that isSpecialPage is checked
-		$title =  $this->newMockBuilder()->newObject( 'Title', array(
-			'isSpecialPage' => true
-		) );
-
-		$user = $this->getMockBuilder( '\User' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$user->expects( $this->any() )
-			->method( 'isAllowed' )
-			->will( $this->returnValue( false ) );
-
-		$parserOutput = $this->newMockBuilder()->newObject( 'ParserOutput' );
-
-		$outputPage = $this->newMockBuilder()->newObject( 'OutputPage', array(
-			'getTitle' => $title
-		) );
-
-		$parser = $this->newMockBuilder()->newObject( 'Parser', array(
-			'getTitle' => $title
-		) );
-
-		$linksUpdate = $this->newMockBuilder()->newObject( 'LinksUpdate', array(
-			'getTitle'        => $title,
-			'getParserOutput' => $parserOutput
-		) );
-
-		$skin = $this->newMockBuilder()->newObject( 'Skin', array(
-			'getTitle'  => $title,
-			'getOutput' => $outputPage
-		) );
-
-		$skinTemplate = $this->getMockBuilder( '\SkinTemplate' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$skinTemplate->expects( $this->any() )
-			->method( 'getSkin' )
-			->will( $this->returnValue( $skin ) );
-
-		$skinTemplate->expects( $this->any() )
-			->method( 'getUser' )
-			->will( $this->returnValue( $user ) );
-
-		$parserOptions = $this->newMockBuilder()->newObject( 'ParserOptions' );
-
-		$file = $this->newMockBuilder()->newObject( 'File', array(
-			'getTitle' => null
-		) );
-
-		$wikiPage = $this->newMockBuilder()->newObject( 'WikiPage', array(
-			'prepareContentForEdit' => $editInfo,
-			'prepareTextForEdit'    => $editInfo,
-			'getTitle' => $title,
-		) );
-
-		$revision = $this->newMockBuilder()->newObject( 'Revision', array(
-			'getTitle'   => $title,
-			'getRawText' => 'Foo',
-			'getContent' => $this->newMockContent()
-		) );
-
-		$databaseUpdater = $this->getMockBuilder( '\DatabaseUpdater' )
-			->disableOriginalConstructor()
-			->getMockForAbstractClass();
-
-		$resourceLoader = $this->getMockBuilder( '\ResourceLoader' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		switch ( $hook ) {
-			case 'SkinAfterContent':
-				$result = $this->callObject( $object, array( &$empty, $skin ) );
-				break;
-			case 'OutputPageParserOutput':
-				$result = $this->callObject( $object, array( &$outputPage, $parserOutput ) );
-				break;
-			case 'BeforePageDisplay':
-				$result = $this->callObject( $object, array( &$outputPage, &$skin ) );
-				break;
-			case 'InternalParseBeforeLinks':
-				$result = $this->callObject( $object, array( &$parser, &$empty ) );
-				break;
-			case 'ParserAfterTidy':
-				$result = $this->callObject( $object, array( &$parser, &$empty ) );
-				break;
-			case 'LinksUpdateConstructed':
-				$result = $this->callObject( $object, array( $linksUpdate ) );
-				break;
-			case 'BaseTemplateToolbox':
-				$result = $this->callObject( $object, array( $skinTemplate, &$empty ) );
-				break;
-			case 'NewRevisionFromEditComplete':
-				$result = $this->callObject( $object, array( $wikiPage, $revision, $empty, $user ) );
-				break;
-			case 'TitleMoveComplete':
-				$result = $this->callObject( $object, array( &$title, &$title, &$user, $empty, $empty ) );
-				break;
-			case 'CanonicalNamespaces':
-				$result = $this->callObject( $object, array( &$emptyArray ) );
-				break;
-			case 'ArticlePurge':
-				$result = $this->callObject( $object, array( &$wikiPage ) );
-				break;
-			case 'ArticleDelete':
-				$result = $this->callObject( $object, array( &$wikiPage, &$user, &$empty, &$empty ) );
-				break;
-			case 'SpecialStatsAddExtra':
-				$result = $this->callObject( $object, array( &$emptyArray ) );
-				break;
-			case 'FileUpload':
-				$result = $this->callObject( $object, array( $file, $empty ) );
-				break;
-			case 'ResourceLoaderGetConfigVars':
-				$result = $this->callObject( $object, array( &$emptyArray ) );
-				break;
-			case 'GetPreferences':
-				$result = $this->callObject( $object, array( $user, &$emptyArray ) );
-				break;
-			case 'SkinTemplateNavigation':
-				$result = $this->callObject( $object, array( &$skinTemplate, &$emptyArray ) );
-				break;
-			case 'LoadExtensionSchemaUpdates':
-				$result = $this->callObject( $object, array( $databaseUpdater ) );
-				break;
-			case 'ResourceLoaderTestModules':
-				$result = $this->callObject( $object, array( &$emptyArray, &$resourceLoader ) );
-				break;
-			case 'ExtensionTypes':
-				$result = $this->callObject( $object, array( &$emptyArray ) );
-				break;
-			case 'TitleIsAlwaysKnown':
-				$result = $this->callObject( $object, array( $title, &$empty ) );
-				break;
-			case 'BeforeDisplayNoArticleText':
-				$result = $this->callObject( $object, array( $wikiPage ) );
-				break;
-			case 'ArticleFromTitle':
-				$result = $this->callObject( $object, array( &$title, &$wikiPage ) );
-				break;
-			case 'ParserFirstCallInit':
-
-				// ParserFirstCallInit itself contains closures for
-				// registered parser functions that are not checked here
-				// @see ParserFunctionIntegrationTest
-
-				$result = $this->callObject( $object, array( &$parser ) );
-				break;
-			default:
-				$result = null;
-		}
-
-		return $result;
-	}
-
-	/**
-	 * @since  1.9
-	 *
-	 * @return boolean
-	 */
-	private function callObject( $object, array $arguments ) {
-		return is_callable( $object ) ? call_user_func_array( $object, $arguments ) : false;
+		$this->assertNotEmpty(
+			$config['wgResourceModules']
+		);
 	}
 
 	/**
 	 * @dataProvider apiModulesDataProvider
-	 *
-	 * @since 1.9
 	 */
-	public function testRegisterApiModules( $moduleEntry, $setup ) {
-		$this->assertArrayEntryExists( 'wgAPIModules', $moduleEntry, $setup );
+	public function testGetAPIModules( $name ) {
+
+		$vars = Setup::getAPIModules();
+
+		$this->assertArrayHasKey(
+			$name,
+			$vars
+		);
 	}
 
 	/**
 	 * @dataProvider jobClassesDataProvider
-	 *
-	 * @since 1.9
 	 */
 	public function testRegisterJobClasses( $jobEntry, $setup ) {
 		$this->assertArrayEntryExists( 'wgJobClasses', $jobEntry, $setup );
 	}
 
 	/**
-	 * @dataProvider messagesFilesDataProvider
-	 *
-	 * @since 1.9
-	 */
-	public function testRegisterMessageFiles( $moduleEntry, $setup ) {
-		$this->assertArrayEntryExists( 'wgExtensionMessagesFiles', $moduleEntry, $setup, 'file' );
-	}
-
-	/**
 	 * @dataProvider specialPageDataProvider
-	 *
-	 * @since 1.9
 	 */
-	public function testRegisterSpecialPages( $specialEntry, $setup ) {
-		$this->assertArrayEntryExists( 'wgSpecialPages', $specialEntry, $setup );
+	public function testInitSpecialPageList( $name ) {
+
+		$vars = [];
+
+		Setup::initSpecialPageList( $vars );
+
+		$this->assertArrayHasKey(
+			$name,
+			$vars
+		);
 	}
 
-	/**
-	 * @since 1.9
-	 */
-	public function testRegisterRights() {
+	public function testRegisterDefaultRightsUserGroupPermissions() {
 
-		$setup['wgAvailableRights'][] = '';
-		$setup['wgGroupPermissions']['sysop']['smw-admin'] = '';
-		$setup['wgGroupPermissions']['smwadministrator']['smw-admin'] = '';
+		$config = $this->defaultConfig;
 
-		foreach ( $setup['wgAvailableRights'] as $value ) {
-			$this->assertEmpty( $value );
-		}
+		$instance = new Setup( $this->applicationFactory );
+		$instance->init( $config, 'Foo' );
 
-		$this->assertEmpty( $setup['wgGroupPermissions']['sysop']['smw-admin'] );
-		$this->assertEmpty( $setup['wgGroupPermissions']['smwadministrator']['smw-admin'] );
+		$this->assertNotEmpty(
+			$config['wgAvailableRights']
+		);
 
-		$this->newInstance( $setup )->run();
+		$this->assertTrue(
+			$config['wgGroupPermissions']['sysop']['smw-admin']
+		);
 
-		$this->assertNotEmpty( $setup['wgAvailableRights'] );
-		$this->assertNotEmpty( $setup['wgGroupPermissions']['sysop']['smw-admin'] );
-		$this->assertNotEmpty( $setup['wgGroupPermissions']['smwadministrator']['smw-admin'] );
+		$this->assertTrue(
+			$config['wgGroupPermissions']['smwcurator']['smw-patternedit']
+		);
+
+		$this->assertTrue(
+			$config['wgGroupPermissions']['smwcurator']['smw-pageedit']
+		);
+
+		$this->assertTrue(
+			$config['wgGroupPermissions']['smwadministrator']['smw-admin']
+		);
+	}
+
+	public function testNoResetOfAlreadyRegisteredGroupPermissions() {
+
+		// Avoid re-setting permissions, refs #1137
+		$localConfig['wgGroupPermissions']['sysop']['smw-admin'] = false;
+		$localConfig['wgGroupPermissions']['smwadministrator']['smw-admin'] = false;
+
+		$localConfig = array_merge(
+			$this->defaultConfig,
+			$localConfig
+		);
+
+		$instance = new Setup( $this->applicationFactory );
+		$instance->init( $localConfig, 'Foo' );
+
+		$this->assertFalse(
+			$localConfig['wgGroupPermissions']['sysop']['smw-admin']
+		);
+
+		$this->assertFalse(
+			$localConfig['wgGroupPermissions']['smwadministrator']['smw-admin']
+		);
 
 	}
 
-	/**
-	 * @since 1.9
-	 */
 	public function testRegisterParamDefinitions() {
 
-		$setup['wgParamDefinitions']['smwformat'] = '';
+		$config = $this->defaultConfig;
 
-		$this->assertEmpty( $setup['wgParamDefinitions']['smwformat'] );
+		$config['wgParamDefinitions']['smwformat'] = '';
 
-		$this->newInstance( $setup )->run();
+		$this->assertEmpty(
+			$config['wgParamDefinitions']['smwformat']
+		);
 
-		$this->assertNotEmpty( $setup['wgParamDefinitions']['smwformat'] );
+		$instance = new Setup( $this->applicationFactory );
+		$instance->init( $config, 'Foo' );
 
+		$this->assertNotEmpty(
+			$config['wgParamDefinitions']['smwformat']
+		);
 	}
 
-	/**
-	 * @since 1.9
-	 */
 	public function testRegisterFooterIcon() {
 
-		$setup['wgFooterIcons']['poweredby']['semanticmediawiki'] = '';
+		$config = $this->defaultConfig;
 
-		$this->newInstance( $setup )->run();
-		$this->assertNotEmpty( $setup['wgFooterIcons']['poweredby']['semanticmediawiki'] );
+		$config['wgFooterIcons']['poweredby'] = [];
 
+		$instance = new Setup( $this->applicationFactory );
+		$instance->init( $config, 'Foo' );
+
+		$this->assertNotEmpty(
+			$config['wgFooterIcons']['poweredby']['semanticmediawiki']
+		);
 	}
 
 	/**
@@ -420,13 +223,12 @@ class SetupTest extends SemanticMediaWikiTestCase {
 	 */
 	public function specialPageDataProvider() {
 
-		$specials = array(
+		$specials = [
 			'Ask',
 			'Browse',
 			'PageProperty',
 			'SearchByProperty',
 			'SMWAdmin',
-			'SemanticStatistics',
 			'Concepts',
 			'ExportRDF',
 			'Types',
@@ -434,7 +236,10 @@ class SetupTest extends SemanticMediaWikiTestCase {
 			'Properties',
 			'UnusedProperties',
 			'WantedProperties',
-		);
+			'DeferredRequestDispatcher',
+			'ProcessingErrorList',
+			'PropertyLabelSimilarity'
+		];
 
 		return $this->buildDataProvider( 'wgSpecialPages', $specials, '' );
 	}
@@ -444,16 +249,37 @@ class SetupTest extends SemanticMediaWikiTestCase {
 	 */
 	public function jobClassesDataProvider() {
 
-		$jobs = array(
+		$jobs = [
+
+			'smw.update',
+			'smw.refresh',
+			'smw.updateDispatcher',
+			'smw.parserCachePurge',
+			'smw.fulltextSearchTableUpdate',
+			'smw.entityIdDisposer',
+			'smw.propertyStatisticsRebuild',
+			'smw.fulltextSearchTableRebuild',
+			'smw.changePropagationDispatch',
+			'smw.changePropagationUpdate',
+			'smw.changePropagationClassUpdate',
+			'smw.elasticIndexerRecovery',
+			'smw.elasticFileIngest',
+
+			// Legacy
 			'SMW\UpdateJob',
 			'SMW\RefreshJob',
 			'SMW\UpdateDispatcherJob',
-			'SMW\DeleteSubjectJob',
-
-			// Legacy
+			'SMW\ParserCachePurgeJob',
+			'SMW\FulltextSearchTableUpdateJob',
+			'SMW\EntityIdDisposerJob',
+			'SMW\PropertyStatisticsRebuildJob',
+			'SMW\FulltextSearchTableRebuildJob',
+			'SMW\ChangePropagationDispatchJob',
+			'SMW\ChangePropagationUpdateJob',
+			'SMW\ChangePropagationClassUpdateJob',
 			'SMWUpdateJob',
 			'SMWRefreshJob',
-		);
+		];
 
 		return $this->buildDataProvider( 'wgJobClasses', $jobs, '' );
 	}
@@ -463,135 +289,39 @@ class SetupTest extends SemanticMediaWikiTestCase {
 	 */
 	public function apiModulesDataProvider() {
 
-		$modules = array(
+		$modules = [
 			'ask',
 			'smwinfo',
 			'askargs',
 			'browsebysubject',
-		);
+			'browsebyproperty'
+		];
 
 		return $this->buildDataProvider( 'wgAPIModules', $modules, '' );
 	}
 
+	private function assertArrayEntryExists( $target, $entry, $config, $type = 'class' ) {
 
-	/**
-	 * @return array
-	 */
-	public function messagesFilesDataProvider() {
-
-		$modules = array(
-			'SemanticMediaWiki',
-			'SemanticMediaWikiAlias',
-			'SemanticMediaWikiMagic',
-			'SemanticMediaWikiNamespaces'
-		);
-
-		return $this->buildDataProvider( 'wgExtensionMessagesFiles', $modules, '' );
-	}
-
-	/**
-	 * @return array
-	 */
-	public function functionHooksProvider() {
-
-		$hooks = array(
-			'AdminLinks',
-			'PageSchemasRegisterHandlers',
-		);
-
-		return $this->buildDataProvider( 'wgHooks', $hooks, array() );
-	}
-
-	/**
-	 * @return array
-	 */
-	public function functionHookForInitializationProvider() {
-
-		$hooks = array(
-			'SkinAfterContent',
-			'OutputPageParserOutput',
-			'BeforePageDisplay',
-			'InternalParseBeforeLinks',
-			'TitleMoveComplete',
-			'NewRevisionFromEditComplete',
-			'ArticlePurge',
-			'ArticleDelete',
-			'ParserAfterTidy',
-			'LinksUpdateConstructed',
-			'SpecialStatsAddExtra',
-			'BaseTemplateToolbox',
-			'CanonicalNamespaces',
-			'FileUpload',
-			'ResourceLoaderGetConfigVars',
-			'GetPreferences',
-			'SkinTemplateNavigation',
-			'LoadExtensionSchemaUpdates',
-			'ResourceLoaderTestModules',
-			'ExtensionTypes',
-			'TitleIsAlwaysKnown',
-			'BeforeDisplayNoArticleText',
-			'ArticleFromTitle',
-		);
-
-		return $this->buildDataProvider( 'wgHooks', $hooks, array() );
-	}
-
-	/**
-	 * @return array
-	 */
-	public function parserHooksForInitializationProvider() {
-
-		$hooks = array(
-			'ParserFirstCallInit'
-		);
-
-		return $this->buildDataProvider( 'wgHooks', $hooks, array() );
-	}
-
-	/**
-	 * @since  1.9
-	 */
-	private function assertArrayHookEntry( $hook, &$setup, $expectedCount ) {
-
-		$this->assertCount(
-			0,
-			$setup['wgHooks'][$hook],
-			'Asserts that before run() the entry counts 0'
-		);
-
-		$this->newInstance( $setup )->run();
-
-		$this->assertCount(
-			$expectedCount,
-			$setup['wgHooks'][$hook],
-			"Asserts that after run() the entry counts {$expectedCount}"
-		);
-
-	}
-
-	/**
-	 * @since 1.9
-	 */
-	private function assertArrayEntryExists( $target, $entry, $setup, $type = 'class' ) {
+		$config = $config + $this->defaultConfig;
 
 		$this->assertEmpty(
-			$setup[$target][$entry],
+			$config[$target][$entry],
 			"Asserts that {$entry} is empty"
 		);
 
-		$this->newInstance( $setup )->run();
+		$instance = new Setup( $this->applicationFactory );
+		$instance->init( $config, 'Foo' );
 
-		$this->assertNotEmpty( $setup[$target][$entry] );
+		$this->assertNotEmpty( $config[$target][$entry] );
 
 		switch ( $type ) {
 			case 'class':
-				$this->assertTrue( class_exists( $setup[$target][$entry] ) );
+				$this->assertTrue( class_exists( $config[$target][$entry] ) );
 				break;
 			case 'file':
-				$this->assertTrue( file_exists( $setup[$target][$entry] ) );
+				$this->assertTrue( file_exists( $config[$target][$entry] ) );
 				break;
 		}
-
 	}
 
 	/**
@@ -599,37 +329,16 @@ class SetupTest extends SemanticMediaWikiTestCase {
 	 */
 	private function buildDataProvider( $id, $definitions, $default ) {
 
-		$provider = array();
+		$provider = [];
 
 		foreach ( $definitions as $definition ) {
-			$provider[] = array(
+			$provider[] = [
 				$definition,
-				array( $id => array( $definition => $default ) ),
-			);
+				[ $id => [ $definition => $default ] ],
+			];
 		}
 
 		return $provider;
-	}
-
-	/**
-	 * @return Content|null
-	 */
-	public function newMockContent() {
-
-		$content = null;
-
-		if ( class_exists( 'ContentHandler' ) ) {
-
-			$contentHandler = $this->newMockBuilder()->newObject( 'ContentHandler', array(
-				'getDefaultFormat' => 'Foo'
-			) );
-
-			$content = $this->newMockBuilder()->newObject( 'Content', array(
-				'getContentHandler' => $contentHandler,
-			) );
-		}
-
-		return $content;
 	}
 
 }

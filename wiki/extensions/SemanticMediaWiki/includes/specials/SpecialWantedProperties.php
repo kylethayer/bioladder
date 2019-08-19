@@ -8,7 +8,6 @@ use SMWOutputs;
  * Special page (Special:WantedProperties) for MediaWiki shows all
  * wanted properties
  *
- * @file
  *
  * @license GNU GPL v2+
  * @since   1.9
@@ -38,14 +37,19 @@ class SpecialWantedProperties extends SpecialPage {
 	 * @see SpecialPage::execute
 	 */
 	public function execute( $param ) {
-		Profiler::In( __METHOD__ );
+		$this->setHeaders();
 
 		$out = $this->getOutput();
+
+		$out->addModuleStyles( [
+			'ext.smw.special.style'
+		] );
 
 		$out->setPageTitle( $this->msg( 'wantedproperties' )->text() );
 
 		$page = new WantedPropertiesQueryPage( $this->getStore(), $this->getSettings() );
 		$page->setContext( $this->getContext() );
+		$page->setTitle( $this->getPageTitle() );
 
 		list( $limit, $offset ) = $this->getLimitOffset();
 		$page->doQuery( $offset, $limit );
@@ -53,20 +57,13 @@ class SpecialWantedProperties extends SpecialPage {
 		// Ensure locally collected output data is pushed to the output!
 		// ?? still needed !!
 		SMWOutputs::commitToOutputPage( $out );
-
-		Profiler::Out( __METHOD__ );
 	}
 
-	/**
-	 * FIXME MW 1.24 wfCheckLimits was deprecated in MediaWiki 1.24
-	 */
 	private function getLimitOffset() {
-
-		if ( method_exists( $this->getRequest(), 'getLimitOffset' ) ) {
-			return $this->getRequest()->getLimitOffset();
-		}
-
-		return wfCheckLimits();
+		return $this->getRequest()->getLimitOffset();
 	}
 
+	protected function getGroupName() {
+		return 'maintenance';
+	}
 }

@@ -19,6 +19,7 @@
  *
  * @file
  */
+use MediaWiki\Linker\LinkRenderer;
 
 class RCCacheEntryFactory {
 
@@ -29,17 +30,26 @@ class RCCacheEntryFactory {
 	private $messages;
 
 	/**
+	 * @var LinkRenderer
+	 */
+	private $linkRenderer;
+
+	/**
 	 * @param IContextSource $context
 	 * @param string[] $messages
+	 * @param LinkRenderer $linkRenderer
 	 */
-	public function __construct( IContextSource $context, $messages ) {
+	public function __construct(
+		IContextSource $context, $messages, LinkRenderer $linkRenderer
+	) {
 		$this->context = $context;
 		$this->messages = $messages;
+		$this->linkRenderer = $linkRenderer;
 	}
 
 	/**
 	 * @param RecentChange $baseRC
-	 * @param boolean $watched
+	 * @param bool $watched
 	 *
 	 * @return RCCacheEntry
 	 */
@@ -72,7 +82,15 @@ class RCCacheEntryFactory {
 		if ( !ChangesList::isDeleted( $cacheEntry, Revision::DELETED_USER ) ) {
 			$cacheEntry->usertalklink = Linker::userToolLinks(
 				$cacheEntry->mAttribs['rc_user'],
-				$cacheEntry->mAttribs['rc_user_text']
+				$cacheEntry->mAttribs['rc_user_text'],
+				// Should the contributions link be red if the user has no edits (using default)
+				false,
+				// Customisation flags (using default 0)
+				0,
+				// User edit count (using default )
+				null,
+				// do not wrap the message in parentheses
+				false
 			);
 		}
 
@@ -83,7 +101,7 @@ class RCCacheEntryFactory {
 	 * @param RecentChange $cacheEntry
 	 * @param User $user
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	private function showDiffLinks( RecentChange $cacheEntry, User $user ) {
 		return ChangesList::userCan( $cacheEntry, Revision::DELETED_TEXT, $user );
@@ -97,12 +115,9 @@ class RCCacheEntryFactory {
 	private function buildCLink( RecentChange $cacheEntry ) {
 		$type = $cacheEntry->mAttribs['rc_type'];
 
-		// Page moves, very old style, not supported anymore
-		if ( $type == RC_MOVE || $type == RC_MOVE_OVER_REDIRECT ) {
-			$clink = '';
 		// New unpatrolled pages
-		} elseif ( $cacheEntry->unpatrolled && $type == RC_NEW ) {
-			$clink = Linker::linkKnown( $cacheEntry->getTitle() );
+		if ( $cacheEntry->unpatrolled && $type == RC_NEW ) {
+			$clink = $this->linkRenderer->makeKnownLink( $cacheEntry->getTitle() );
 		// Log entries
 		} elseif ( $type == RC_LOG ) {
 			$logType = $cacheEntry->mAttribs['rc_log_type'];
@@ -111,7 +126,7 @@ class RCCacheEntryFactory {
 				$clink = $this->getLogLink( $logType );
 			} else {
 				wfDebugLog( 'recentchanges', 'Unexpected log entry with no log type in recent changes' );
-				$clink = Linker::link( $cacheEntry->getTitle() );
+				$clink = $this->linkRenderer->makeLink( $cacheEntry->getTitle() );
 			}
 		// Log entries (old format) and special pages
 		} elseif ( $cacheEntry->mAttribs['rc_namespace'] == NS_SPECIAL ) {
@@ -119,7 +134,7 @@ class RCCacheEntryFactory {
 			$clink = '';
 		// Edits
 		} else {
-			$clink = Linker::linkKnown( $cacheEntry->getTitle() );
+			$clink = $this->linkRenderer->makeKnownLink( $cacheEntry->getTitle() );
 		}
 
 		return $clink;
@@ -128,10 +143,12 @@ class RCCacheEntryFactory {
 	private function getLogLink( $logType ) {
 		$logtitle = SpecialPage::getTitleFor( 'Log', $logType );
 		$logpage = new LogPage( $logType );
-		$logname = $logpage->getName()->escaped();
+		$logname = $logpage->getName()->text();
 
 		$logLink = $this->context->msg( 'parentheses' )
-			->rawParams( Linker::linkKnown( $logtitle, $logname ) )->escaped();
+			->rawParams(
+				$this->linkRenderer->makeKnownLink( $logtitle, $logname )
+			)->escaped();
 
 		return $logLink;
 	}
@@ -154,16 +171,16 @@ class RCCacheEntryFactory {
 	 * @return array
 	 */
 	private function buildCurQueryParams( RecentChange $recentChange ) {
-		return array(
+		return [
 			'curid' => $recentChange->mAttribs['rc_cur_id'],
 			'diff' => 0,
 			'oldid' => $recentChange->mAttribs['rc_this_oldid']
-		);
+		];
 	}
 
 	/**
 	 * @param RecentChange $cacheEntry
-	 * @param boolean $showDiffLinks
+	 * @param bool $showDiffLinks
 	 * @param int $counter
 	 *
 	 * @return string
@@ -171,13 +188,13 @@ class RCCacheEntryFactory {
 	private function buildCurLink( RecentChange $cacheEntry, $showDiffLinks, $counter ) {
 		$queryParams = $this->buildCurQueryParams( $cacheEntry );
 		$curMessage = $this->getMessage( 'cur' );
-		$logTypes = array( RC_LOG, RC_MOVE, RC_MOVE_OVER_REDIRECT );
+		$logTypes = [ RC_LOG ];
 
 		if ( !$showDiffLinks || in_array( $cacheEntry->mAttribs['rc_type'], $logTypes ) ) {
 			$curLink = $curMessage;
 		} else {
 			$curUrl = htmlspecialchars( $cacheEntry->getTitle()->getLinkURL( $queryParams ) );
-			$curLink = "<a href=\"$curUrl\" tabindex=\"$counter\">$curMessage</a>";
+			$curLink = "<a class=\"mw-changeslist-diff-cur\" href=\"$curUrl\">$curMessage</a>";
 		}
 
 		return $curLink;
@@ -189,16 +206,16 @@ class RCCacheEntryFactory {
 	 * @return array
 	 */
 	private function buildDiffQueryParams( RecentChange $recentChange ) {
-		return array(
+		return [
 			'curid' => $recentChange->mAttribs['rc_cur_id'],
 			'diff' => $recentChange->mAttribs['rc_this_oldid'],
 			'oldid' => $recentChange->mAttribs['rc_last_oldid']
-		);
+		];
 	}
 
 	/**
 	 * @param RecentChange $cacheEntry
-	 * @param boolean $showDiffLinks
+	 * @param bool $showDiffLinks
 	 * @param int $counter
 	 *
 	 * @return string
@@ -206,23 +223,34 @@ class RCCacheEntryFactory {
 	private function buildDiffLink( RecentChange $cacheEntry, $showDiffLinks, $counter ) {
 		$queryParams = $this->buildDiffQueryParams( $cacheEntry );
 		$diffMessage = $this->getMessage( 'diff' );
-		$logTypes = array( RC_NEW, RC_LOG, RC_MOVE, RC_MOVE_OVER_REDIRECT );
+		$logTypes = [ RC_NEW, RC_LOG ];
 
 		if ( !$showDiffLinks ) {
 			$diffLink = $diffMessage;
 		} elseif ( in_array( $cacheEntry->mAttribs['rc_type'], $logTypes ) ) {
 			$diffLink = $diffMessage;
+		} elseif ( $cacheEntry->getAttribute( 'rc_type' ) == RC_CATEGORIZE ) {
+			$rcCurId = $cacheEntry->getAttribute( 'rc_cur_id' );
+			$pageTitle = Title::newFromID( $rcCurId );
+			if ( $pageTitle === null ) {
+				wfDebugLog( 'RCCacheEntryFactory', 'Could not get Title for rc_cur_id: ' . $rcCurId );
+				return $diffMessage;
+			}
+			$diffUrl = htmlspecialchars( $pageTitle->getLinkURL( $queryParams ) );
+			$diffLink = "<a class=\"mw-changeslist-diff\" href=\"$diffUrl\">$diffMessage</a>";
 		} else {
 			$diffUrl = htmlspecialchars( $cacheEntry->getTitle()->getLinkURL( $queryParams ) );
-			$diffLink = "<a href=\"$diffUrl\" tabindex=\"$counter\">$diffMessage</a>";
+			$diffLink = "<a class=\"mw-changeslist-diff\" href=\"$diffUrl\">$diffMessage</a>";
 		}
 
 		return $diffLink;
 	}
 
 	/**
+	 * Builds the link to the previous version
+	 *
 	 * @param RecentChange $cacheEntry
-	 * @param boolean $showDiffLinks
+	 * @param bool $showDiffLinks
 	 *
 	 * @return string
 	 */
@@ -230,16 +258,16 @@ class RCCacheEntryFactory {
 		$lastOldid = $cacheEntry->mAttribs['rc_last_oldid'];
 		$lastMessage = $this->getMessage( 'last' );
 		$type = $cacheEntry->mAttribs['rc_type'];
-		$logTypes = array( RC_LOG, RC_MOVE, RC_MOVE_OVER_REDIRECT );
+		$logTypes = [ RC_LOG ];
 
 		// Make "last" link
 		if ( !$showDiffLinks || !$lastOldid || in_array( $type, $logTypes ) ) {
 			$lastLink = $lastMessage;
 		} else {
-			$lastLink = Linker::linkKnown(
+			$lastLink = $this->linkRenderer->makeKnownLink(
 				$cacheEntry->getTitle(),
-				$lastMessage,
-				array(),
+				new HtmlArmor( $lastMessage ),
+				[ 'class' => 'mw-changeslist-diff' ],
 				$this->buildDiffQueryParams( $cacheEntry )
 			);
 		}
@@ -259,7 +287,8 @@ class RCCacheEntryFactory {
 		} else {
 			$userLink = Linker::userLink(
 				$cacheEntry->mAttribs['rc_user'],
-				$cacheEntry->mAttribs['rc_user_text']
+				$cacheEntry->mAttribs['rc_user_text'],
+				ExternalUserNames::getLocal( $cacheEntry->mAttribs['rc_user_text'] )
 			);
 		}
 

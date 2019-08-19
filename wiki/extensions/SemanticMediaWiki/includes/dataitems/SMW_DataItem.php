@@ -1,12 +1,6 @@
 <?php
-/**
- * File holding abstract class SMWDataItem, the base for all dataitems in SMW.
- *
- * @author Markus Krötzsch
- *
- * @file
- * @ingroup SMWDataItems
- */
+
+use SMW\Options;
 
 /**
  * This group contains all parts of SMW that relate to the processing of dataitems
@@ -39,11 +33,6 @@ abstract class SMWDataItem {
 	const TYPE_NOTYPE    = 0;
 	/// Data item ID for SMWDINumber
 	const TYPE_NUMBER    = 1;
-	/**
-	 * Data item ID for SMWDIString.
-	 * @deprecated Will vanish after SMW 1.9; use TYPE_BLOB instead.
-	 */
-	const TYPE_STRING    = 2;
 	/// Data item ID for SMWDIBlob
 	const TYPE_BLOB      = 2;
 	///  Data item ID for SMWDIBoolean
@@ -64,6 +53,11 @@ abstract class SMWDataItem {
 	const TYPE_PROPERTY  = 11;
 	///  Data item ID for SMWDIError
 	const TYPE_ERROR     = 12;
+
+	/**
+	 * @var Options
+	 */
+	private $options = null;
 
 	/**
 	 * Convenience method that returns a constant that defines the concrete
@@ -90,7 +84,7 @@ abstract class SMWDataItem {
 	 * sortkey that is assigned to them as a property value. When pages are
 	 * sorted, this data should be used if possible.
 	 *
-	 * @return float or string
+	 * @return float|string
 	 */
 	abstract public function getSortKey();
 
@@ -114,12 +108,13 @@ abstract class SMWDataItem {
 	 * @return SMWDataItem
 	 */
 	public function getSortKeyDataItem() {
-		$sortkey = $this->getSortKey();
-		if ( is_numeric( $sortkey ) ) {
-			return new SMWDINumber( $sortkey );
-		} else {
-			return new SMWDIBlob( $sortkey );
+		$sortKey = $this->getSortKey();
+
+		if ( is_numeric( $sortKey ) ) {
+			return new SMWDINumber( $sortKey );
 		}
+
+		return new SMWDIBlob( $sortKey );
 	}
 
 	/**
@@ -142,18 +137,26 @@ abstract class SMWDataItem {
 	}
 
 	/**
+	 * @since 2.1
+	 *
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->getSerialization();
+	}
+
+	/**
 	 * Create a data item of the given dataitem ID based on the the
 	 * provided serialization string and (optional) typeid.
 	 *
-	 * @param $diType integer dataitem ID
-	 * @param $serialization string
-	 * @param $typeid string SMW type ID (optional)
+	 * @param integer $diType dataitem ID
+	 * @param string $serialization
 	 *
 	 * @return SMWDataItem
 	 */
 	public static function newFromSerialization( $diType, $serialization ) {
 		$diClass = self::getDataItemClassNameForId( $diType );
-		return call_user_func( array( $diClass, 'doUnserialize' ), $serialization );
+		return call_user_func( [ $diClass, 'doUnserialize' ], $serialization );
 	}
 
 	/**
@@ -167,20 +170,67 @@ abstract class SMWDataItem {
 	 */
 	public static function getDataItemClassNameForId( $diType ) {
 		switch ( $diType ) {
-			case self::TYPE_NUMBER:    return 'SMWDINumber';
-			case self::TYPE_BLOB:      return 'SMWDIBlob';
-			case self::TYPE_BOOLEAN:   return 'SMWDIBoolean';
-			case self::TYPE_URI:       return 'SMWDIUri';
-			case self::TYPE_TIME:      return 'SMWDITime';
-			case self::TYPE_GEO:       return 'SMWDIGeoCoord';
-			case self::TYPE_CONTAINER: return 'SMWDIContainer';
-			case self::TYPE_WIKIPAGE:  return 'SMWDIWikiPage';
-			case self::TYPE_CONCEPT:   return 'SMWDIConcept';
-			case self::TYPE_PROPERTY:  return 'SMWDIProperty';
-			case self::TYPE_ERROR:     return 'SMWDIError';
+			case self::TYPE_NUMBER:
+				return SMWDINumber::class;
+			case self::TYPE_BLOB:
+				return SMWDIBlob::class;
+			case self::TYPE_BOOLEAN:
+				return SMWDIBoolean::class;
+			case self::TYPE_URI:
+				return SMWDIUri::class;
+			case self::TYPE_TIME:
+				return SMWDITime::class;
+			case self::TYPE_GEO:
+				return SMWDIGeoCoord::class;
+			case self::TYPE_CONTAINER:
+				return SMWDIContainer::class;
+			case self::TYPE_WIKIPAGE:
+				return SMWDIWikiPage::class;
+			case self::TYPE_CONCEPT:
+				return SMWDIConcept::class;
+			case self::TYPE_PROPERTY:
+				return SMWDIProperty::class;
+			case self::TYPE_ERROR:
+				return SMWDIError::class;
 			case self::TYPE_NOTYPE: default:
 				throw new InvalidArgumentException( "The value \"$diType\" is not a valid dataitem ID." );
 		}
+	}
+
+	/**
+	 * @since 2.5
+	 *
+	 * @param string $key
+	 * @param string $value
+	 */
+	public function setOption( $key, $value ) {
+
+		if ( !$this->options instanceof Options ) {
+			$this->options = new Options();
+		}
+
+		$this->options->set( $key, $value );
+	}
+
+	/**
+	 * @since 2.5
+	 *
+	 * @param string $key
+	 * @param string|null $default
+	 *
+	 * @return mixed
+	 */
+	public function getOption( $key, $default = null ) {
+
+		if ( !$this->options instanceof Options ) {
+			$this->options = new Options();
+		}
+
+		if ( $this->options->has( $key ) ) {
+			return $this->options->get( $key );
+		}
+
+		return $default;
 	}
 
 }

@@ -20,7 +20,6 @@ use SMWQueryProcessor;
 /**
  * @covers \SMW\ResultPrinter
  *
- * @ingroup QueryPrinterTest
  *
  * @group SMW
  * @group SMWExtension
@@ -39,11 +38,11 @@ class ResultPrintersTest extends QueryPrinterTestCase {
 	public function constructorProvider() {
 		global $smwgResultFormats;
 
-		$formats = array();
+		$formats = [];
 
 		foreach ( $smwgResultFormats as $format => $class ) {
-			$formats[] = array( $format, $class, true );
-			$formats[] = array( $format, $class, false );
+			$formats[] = [ $format, $class, true ];
+			$formats[] = [ $format, $class, false ];
 		}
 
 		return $formats;
@@ -64,7 +63,7 @@ class ResultPrintersTest extends QueryPrinterTestCase {
 	public function instanceProvider() {
 		global $smwgResultFormats;
 
-		$instances = array();
+		$instances = [];
 
 		foreach ( $smwgResultFormats as $format => $class ) {
 			$instances[] = new $class( $format, true );
@@ -79,7 +78,7 @@ class ResultPrintersTest extends QueryPrinterTestCase {
 	 * @param \SMWResultPrinter $printer
 	 */
 	public function testGetParamDefinitions( ResultPrinter $printer ) {
-		$params = $printer->getParamDefinitions( SMWQueryProcessor::getParameters() );
+		$params = $printer->getParamDefinitions( SMWQueryProcessor::getParameters( null, $printer ) );
 
 		$params = ParamDefinition::getCleanDefinitions( $params );
 

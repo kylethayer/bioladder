@@ -6,11 +6,11 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * Options interface for parsers.
+ * Object holding options for a parser.
  *
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 final class ParserOptions {
@@ -24,11 +24,15 @@ final class ParserOptions {
 
 	/**
 	 * @since 0.1
+	 *
+	 * @param array $options
+	 *
+	 * @throws InvalidArgumentException
 	 */
-	public function __construct( array $options = array() ) {
+	public function __construct( array $options = [] ) {
 		foreach ( array_keys( $options ) as $option ) {
 			if ( !is_string( $option ) ) {
-				throw new InvalidArgumentException( 'Option names need to be strings' );
+				throw new InvalidArgumentException( 'Option names need to be strings.' );
 			}
 		}
 
@@ -47,7 +51,7 @@ final class ParserOptions {
 	 */
 	public function setOption( $option, $value ) {
 		if ( !is_string( $option ) ) {
-			throw new InvalidArgumentException( 'Option name needs to be a string' );
+			throw new InvalidArgumentException( 'Option name needs to be a string.' );
 		}
 
 		$this->options[$option] = $value;
@@ -62,6 +66,7 @@ final class ParserOptions {
 	 * @param string $option
 	 *
 	 * @throws InvalidArgumentException
+	 * @return mixed
 	 */
 	public function getOption( $option ) {
 		if ( !array_key_exists( $option, $this->options ) ) {
@@ -78,7 +83,7 @@ final class ParserOptions {
 	 *
 	 * @param string $option
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function hasOption( $option ) {
 		return array_key_exists( $option, $this->options );
@@ -110,7 +115,7 @@ final class ParserOptions {
 	 */
 	public function requireOption( $option ) {
 		if ( !$this->hasOption( $option ) ) {
-			throw new RuntimeException( 'Required option"' . $option . '" is not set' );
+			throw new RuntimeException( 'Required option "' . $option . '" is not set.' );
 		}
 	}
 

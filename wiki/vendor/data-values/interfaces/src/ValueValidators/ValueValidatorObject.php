@@ -7,7 +7,7 @@ namespace ValueValidators;
  *
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 abstract class ValueValidatorObject implements ValueValidator {
@@ -37,26 +37,24 @@ abstract class ValueValidatorObject implements ValueValidator {
 	 *
 	 * @var array
 	 */
-	protected $options = array();
+	protected $options = [];
 
 	/**
 	 * @since 0.1
 	 *
 	 * @var Error[]
 	 */
-	protected $errors = array();
+	protected $errors = [];
 
 	/**
 	 * @see ValueValidator::validate
-	 *
-	 * @since 0.1
 	 *
 	 * @param mixed $value
 	 *
 	 * @return Result
 	 */
-	public final function validate( $value ) {
-		$this->errors = array();
+	final public function validate( $value ) {
+		$this->errors = [];
 
 		if ( $this->enableWhitelistRestrictions() ) {
 			$this->valueIsAllowed( $value );
@@ -64,10 +62,9 @@ abstract class ValueValidatorObject implements ValueValidator {
 
 		$this->doValidation( $value );
 
-		if ( $this->errors === array() ) {
+		if ( $this->errors === [] ) {
 			return Result::newSuccess();
-		}
-		else {
+		} else {
 			return Result::newError( $this->errors );
 		}
 	}
@@ -96,13 +93,11 @@ abstract class ValueValidatorObject implements ValueValidator {
 	 *
 	 * @param mixed $value
 	 */
-	public abstract function doValidation( $value );
+	abstract public function doValidation( $value );
 
 	/**
 	 * Sets the parameter definition values contained in the provided array.
 	 * @see ParamDefinition::setArrayValues
-	 *
-	 * @since 0.1
 	 *
 	 * @param array $param
 	 */
@@ -166,9 +161,14 @@ abstract class ValueValidatorObject implements ValueValidator {
 	 * @param string|null $property
 	 * @param array $optionMap
 	 */
-	protected function runSubValidator( $value, ValueValidator $validator, $property = null, array $optionMap = array() ) {
-		if ( $optionMap !== array() ) {
-			$options = array();
+	protected function runSubValidator(
+		$value,
+		ValueValidator $validator,
+		$property = null,
+		array $optionMap = []
+	) {
+		if ( $optionMap !== [] ) {
+			$options = [];
 
 			foreach ( $optionMap as $source => $target ) {
 				if ( array_key_exists( $source, $this->options ) ) {
@@ -192,7 +192,7 @@ abstract class ValueValidatorObject implements ValueValidator {
 	 *
 	 * @since 0.1
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function enableWhitelistRestrictions() {
 		return true;
@@ -206,7 +206,7 @@ abstract class ValueValidatorObject implements ValueValidator {
 	 *
 	 * @since 0.1
 	 *
-	 * @return array|boolean false
+	 * @return array|bool false
 	 */
 	public function getWhitelistedValues() {
 		return $this->allowedValues;

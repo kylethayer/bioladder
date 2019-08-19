@@ -27,7 +27,7 @@
 	"smw_ask_ascorder": "Toenemend",
 	"smw_ask_descorder": "Afnemend",
 	"smw_ask_submit": "Vind resultate",
-	"smw_ask_editquery": "[Wysig navraag]",
+	"smw_ask_editquery": "Wysig navraag",
 	"smw_ask_hidequery": "Versteek navraag",
 	"smw_ask_help": "Navraag hulp",
 	"smw_ask_queryhead": "Navraag",
@@ -37,6 +37,7 @@
 	"smw_sbv_property": "Eienskap:",
 	"smw_sbv_value": "Waarde:",
 	"smw_sbv_submit": "Vind resultate",
+	"browse": "Blaai deur wiki",
 	"smw_browse_go": "Laat waai",
 	"smw_pp_from": "Vanaf bladsy",
 	"smw_pp_type": "Eienskap",
@@ -45,5 +46,6 @@
 	"smw_result_next": "Volgende",
 	"smw_result_results": "Resultate",
 	"smw_result_noresults": "Geen resultate.",
-	"smw_unknowntype": "Onondersteunde tipe \"$1\" gedefinieer vir eienskap."
+	"smw_unknowntype": "Onondersteunde tipe \"$1\" gedefinieer vir eienskap.",
+	"smw-livepreview-loading": "Laai tans…"
 }

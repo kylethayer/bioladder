@@ -2,36 +2,27 @@
 
 namespace SMW\Test;
 
-use SMW\Tests\Util\Mock\MockSuperUser;
-use SMW\Tests\Util\Mock\MockObjectBuilder;
-use SMW\Tests\Util\Mock\CoreMockObjectRepository;
-use SMW\Tests\Util\Mock\MediaWikiMockObjectRepository;
-
-use SMW\SimpleDependencyBuilder;
-use SMW\DependencyContainer;
-use SMW\DataValueFactory;
-use SMW\StoreFactory;
-use SMW\SemanticData;
-use SMW\DIWikiPage;
-use SMW\DIProperty;
-use SMW\Settings;
-
-use RequestContext;
 use FauxRequest;
-use WebRequest;
 use Language;
-use Title;
-
 use ReflectionClass;
-
-use SMWDataItem;
+use RequestContext;
+use SMW\DependencyContainer;
+use SMW\DIWikiPage;
+use SMW\Settings;
+use SMW\SimpleDependencyBuilder;
+use SMW\StoreFactory;
+use SMW\Tests\Utils\Mock\CoreMockObjectRepository;
+use SMW\Tests\Utils\Mock\MediaWikiMockObjectRepository;
+use SMW\Tests\Utils\Mock\MockObjectBuilder;
+use SMW\Tests\Utils\Mock\MockSuperUser;
+use Title;
+use WebRequest;
 
 /**
  * @codeCoverageIgnore
  *
  * Class contains general purpose methods
  *
- * @ingroup Test
  *
  * @group SMW
  * @group SMWExtension
@@ -149,7 +140,7 @@ abstract class SemanticMediaWikiTestCase extends \PHPUnit_Framework_TestCase {
 	 *
 	 * @return RequestContext
 	 */
-	protected function newContext( $request = array() ) {
+	protected function newContext( $request = [] ) {
 
 		$context = new RequestContext();
 
@@ -199,7 +190,7 @@ abstract class SemanticMediaWikiTestCase extends \PHPUnit_Framework_TestCase {
 	 *
 	 * @return Settings
 	 */
-	protected function newSettings( array $settings = array() ) {
+	protected function newSettings( array $settings = [] ) {
 		return Settings::newFromArray( $settings );
 	}
 
@@ -260,7 +251,7 @@ abstract class SemanticMediaWikiTestCase extends \PHPUnit_Framework_TestCase {
 	protected function arrayWrap( array $elements ) {
 		return array_map(
 			function ( $element ) {
-				return array( $element );
+				return [ $element ];
 			},
 			$elements
 		);

@@ -3,8 +3,6 @@
 namespace ParamProcessor;
 
 /**
- * Error class.
- *
  * @since 1.0
  *
  * @licence GNU GPL v2+
@@ -34,26 +32,26 @@ class ProcessingError {
 	 *
 	 * @since 0.4
 	 *
-	 * @var array
+	 * @var string[]
 	 */
-	protected $tags;
+	private $tags;
 
 	/**
 	 * Where the error occurred.
 	 *
 	 * @since 0.4
 	 *
-	 * @var mixed: string or false
+	 * @var string|bool
 	 */
 	public $element;
 
 	/**
-	 * @since 0.4
-	 *
 	 * @param string $message
 	 * @param integer $severity
+	 * @param string|bool $element
+	 * @param string[] $tags
 	 */
-	public function __construct( $message, $severity = self::SEVERITY_NORMAL, $element = false, array $tags = array() ) {
+	public function __construct( string $message, int $severity = self::SEVERITY_NORMAL, $element = false, array $tags = [] ) {
 		$this->message = $message;
 		$this->severity = $severity;
 		$this->element = $element;
@@ -65,98 +63,67 @@ class ProcessingError {
 	 *
 	 * @since 0.4.1
 	 *
-	 * @param mixed $criteria string or array of string
+	 * @param string|string[] $criteria
 	 */
 	public function addTags() {
 		$args = func_get_args();
 		$this->tags = array_merge( $this->tags, is_array( $args[0] ) ? $args[0] : $args );
 	}
 
-	/**
-	 * Returns the error message describing the error.
-	 *
-	 * @since 0.4
-	 *
-	 * @return string
-	 */
-	public function getMessage() {
+	public function getMessage(): string {
 		return $this->message;
 	}
 
 	/**
 	 * Returns the element this error occurred at, or 'unknown' when i's unknown.
-	 *
-	 * @since 0.4
-	 *
-	 * @return string
 	 */
-	public function getElement() {
-		return $this->element === false ? 'unknown' : $this->element;
+	public function getElement(): string {
+		return ( $this->element === false || $this->element === '' ) ? 'unknown' : $this->element;
 	}
 
 	/**
 	 * Returns the severity of the error.
-	 *
-	 * @since 0.4
-	 *
-	 * @return integer Element of the ProcessingError::SEVERITY_ enum
+	 * @return integer Element of the self::SEVERITY_ enum
 	 */
-	public function getSeverity() {
+	public function getSeverity(): int {
 		return $this->severity;
 	}
 
 	/**
 	 * Returns if the severity is equal to or bigger then the provided one.
-	 *
-	 * @since 0.4
-	 *
-	 * @param integer $severity
-	 *
-	 * @return boolean
 	 */
-	public function hasSeverity( $severity ) {
+	public function hasSeverity( int $severity ): bool {
 		return $this->severity >= $severity;
 	}
 
 	/**
 	 * Returns if the error has a certain tag.
-	 *
-	 * @since 0.4.1
-	 *
-	 * @param string $tag
-	 *
-	 * @return boolean
 	 */
-	public function hasTag( $tag ) {
+	public function hasTag( string $tag ): bool {
 		return in_array( $tag, $this->tags );
 	}
 
 	/**
-	 * Returns the tags.
-	 *
-	 * @since 0.4.1
-	 *
-	 * @return array
+	 * @return string[]
 	 */
-	public function getTags() {
+	public function getTags(): array {
 		return $this->tags;
 	}
 
 	/**
 	 * Returns the action associated with the errors severity.
 	 *
-	 * @since 0.4
-	 *
-	 * @return integer Element of the ProcessingError::ACTION_ enum
+	 * @return integer Element of the self::ACTION_ enum
+	 * @throws \Exception
 	 */
-	public function getAction() {
+	public function getAction(): int {
 		// TODO: as option
-		$errorActions = array(
-			ProcessingError::SEVERITY_MINOR => ProcessingError::ACTION_LOG,
-			ProcessingError::SEVERITY_LOW => ProcessingError::ACTION_WARN,
-			ProcessingError::SEVERITY_NORMAL => ProcessingError::ACTION_SHOW,
-			ProcessingError::SEVERITY_HIGH => ProcessingError::ACTION_DEMAND,
-		);
+		$errorActions = [
+			self::SEVERITY_MINOR => self::ACTION_LOG,
+			self::SEVERITY_LOW => self::ACTION_WARN,
+			self::SEVERITY_NORMAL => self::ACTION_SHOW,
+			self::SEVERITY_HIGH => self::ACTION_DEMAND,
+		];
 
 		if ( $this->severity === self::SEVERITY_FATAL ) {
 			// This action should not be configurable, as lowering it would break in the Validator class.
@@ -172,67 +139,43 @@ class ProcessingError {
 
 	/**
 	 * Returns if the action associated with the severity is equal to or bigger then the provided one.
-	 *
-	 * @since 0.4
-	 *
-	 * @return boolean
 	 */
-	public function hasAction( $action ) {
+	public function hasAction( int $action ): bool {
 		return $this->getAction() >= $action;
 	}
 
 	/**
 	 * Returns if the error is fatal.
-	 *
-	 * @since 0.4
-	 *
-	 * @return boolean
 	 */
-	public function isFatal() {
+	public function isFatal(): bool {
 		return $this->hasSeverity( self::SEVERITY_FATAL );
 	}
 
 	/**
 	 * Returns if the error should be logged.
-	 *
-	 * @since 0.4
-	 *
-	 * @return boolean
 	 */
-	public function shouldLog() {
+	public function shouldLog(): bool {
 		return $this->hasAction( self::ACTION_LOG );
 	}
 
 	/**
 	 * Returns if there should be a warning that errors are present.
-	 *
-	 * @since 0.4
-	 *
-	 * @return boolean
 	 */
-	public function shouldWarn() {
+	public function shouldWarn(): bool {
 		return $this->hasAction( self::ACTION_WARN );
 	}
 
 	/**
 	 * Returns if the error message should be shown.
-	 *
-	 * @since 0.4
-	 *
-	 * @return boolean
 	 */
-	public function shouldShow() {
+	public function shouldShow(): bool {
 		return $this->hasAction( self::ACTION_SHOW );
 	}
 
 	/**
 	 * Returns if the error message should be shown, and the output not be rendered.
-	 *
-	 * @since 0.4
-	 *
-	 * @return boolean
 	 */
-	public function shouldDemand() {
+	public function shouldDemand(): bool {
 		return $this->hasAction( self::ACTION_DEMAND );
 	}
 

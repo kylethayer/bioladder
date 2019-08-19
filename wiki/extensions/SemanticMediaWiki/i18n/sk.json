@@ -2,13 +2,14 @@
 	"@metadata": {
 		"authors": [
 			"Helix84",
-			"아라"
+			"아라",
+			"Kghbln"
 		]
 	},
-	"smw-desc": "Sprístupnenie vašej wiki pre stroje ''aj'' ľudí ([https://semantic-mediawiki.org/wiki/Help:User_manual dokumentácia])",
+	"smw-desc": "Sprístupnenie vašej wiki pre stroje ''aj'' ľudí ([https://www.semantic-mediawiki.org/wiki/Help:User_manual dokumentácia])",
 	"smw_viewasrdf": "RDF kanál",
 	"smw_finallistconjunct": " a",
-	"smw_factbox_head": "Skutočnosti o $1 &mdash; Kliknutím na <span class=\"smwsearchicon\">+</span> vyhľadáte podobné stránky.",
+	"smw_factbox_head": "Skutočnosti o $1",
 	"smw_isspecprop": "Táto vlastnosť je špeciálna vlastnosť na tejto wiki.",
 	"smw_concept_description": "Popis pojmu „$1”",
 	"smw_no_concept_namespace": "Pojmy je možné definovať iba na stránkach v mennom priestore Concept:",
@@ -74,7 +75,7 @@
 	"smw_attribute_header": "Stránky používajúce vlastnosť „$1“",
 	"smw_attributearticlecount": "Zobrazuje sa $1 {{PLURAL:$1|stránka|stránky|stránok}}, ktoré používajú túto vlastnosť.",
 	"smw_subproperty_header": "Podvlastnosti",
-	"smw_subpropertyarticlecount": "Táto vlastnosť má {{PLURAL:|nasledovnú podvlastnosť|nasledovné $1 podvlastnosti|nasledovných $1 podvlastností}}:",
+	"smw-subpropertylist-count": "Táto vlastnosť má {{PLURAL:|nasledovnú podvlastnosť|nasledovné $1 podvlastnosti|nasledovných $1 podvlastností}}:",
 	"exportrdf": "Exportovať stránky do RDF",
 	"smw_exportrdf_docu": "Táto stránka vám umožňuje exportovať časti stránok do formátu RDF. Po zadaní názvov stránok do spodného textového poľa, jeden názov na riadok, môžete exportovať stránky.",
 	"smw_exportrdf_recursive": "Rekurzívne exportovať všetky súvisiace stránky. Pozor, výsledok môže byť veľmi veľký!",
@@ -97,15 +98,15 @@
 	"smw_purge": "Obnoviť",
 	"types": "Typy",
 	"smw_types_docu": "Nasleduje zoznam všetkých údajových typov, ktoré je možné priradiť atribútom. Každý údajový typ má stránku, kde je možné poskytnúť dodatočné informácie.",
-	"semanticstatistics": "Sémantická štatistika",
-	"smw_semstats_text": "Táto wiki obsahuje '''$1''' {{PLURAL:$1|hodnotu|hodnoty|hodnôt}} vlastností celkom {{PLURAL:$2|'''jednej''' vlastnosti|'''$2''' rozličných vlastností|'''$2''' rozličných vlastností}}. {{PLURAL:$3|'''Jedna''' vlastnosť má|'''$3''' vlastnosti majú|'''$3''' vlastností má}} vlastnú stránku a zamýšľaný údajový typ {{PLURAL:$4|má uvedený '''$4''' z nich|majú uvedené '''$4''' z nich|má uvedených '''$4''' z nich}}.\nNiektoré z existujúcich vlastností môžu byť [[Special:UnusedProperties|nepoužité]].\nVlastnosti, ktorým stále chýba stránka sa nachádzajú na [[Special:WantedProperties|zozname žiadaných vlastností]].",
+
+
 	"smw_uri_doc": "URI resolver sa stará o implementáciu [$1 W3C TAG hľadanie na httpRange-14].\nStará sa o to, aby sa ľudia nestali webstránkami.",
 	"ask": "Sémantické vyhľadávanie",
 	"smw_ask_sortby": "Zoradiť podľa stĺpca",
 	"smw_ask_ascorder": "Vzostupne",
 	"smw_ask_descorder": "Zostupne",
 	"smw_ask_submit": "Nájdi výsledky",
-	"smw_ask_editquery": "[Upraviť požiadavku]",
+	"smw_ask_editquery": "Upraviť požiadavku",
 	"smw_add_sortcondition": "[Pridať podmienku na zoradenie]",
 	"smw_ask_hidequery": "Skryť požiadavku",
 	"smw_ask_help": "Pomocník pre požiadavky",
@@ -155,11 +156,9 @@
 	"smw_smwadmin_docu": "Táto špeciálna stránka vám pomôže počas inštalácie a aktualizácie <a href=\"http://semantic-mediawiki.org\">Semantic MediaWiki</a>.\nPamätajte na zálohovanie dôležitých údajov pred vykonávaním správcovských funkcií.",
 	"smw_smwadmin_db": "Inštalácia a aktualizácia databázy",
 	"smw_smwadmin_dbdocu": "Semantic MediaWiki vyžaduje niektoré rozšírenia databázy MediaWiki, aby molo ukladať sémantické údaje.\nFunkcia nižšie zabezpečuje správne nastavenie databázy.\nZmeny vykonané v tomto kroku neovplyvňujú zvyšok databázy MediaWiki a ak je to potrebné, je ich možno jednoducho vrátiť.\nTúto funkcia nastavenia možno vykonať viacnásobne bez akejkoľvek ujmy, ale je potrebná iba raz počas inštalácie či aktualizácie.",
-	"smw_smwadmin_permissionswarn": "Ak táto operácia zlyhá na chybách SQL, používateľ databázy, ktorého využíva vaša wiki (pozrite sa do LocalSettings.php) pravdepodobne nemá dostatočné privilégiá.\nBuď udeľte tomuto používateľovi ďalšie privilégiá na vytváranie a mazanie tabuliek, dočasne zadajte prihlasovacie údaje používateľa root databázy do LocalSettings.php alebo použite skript na údržbu t>SMW_setup.php</code>, ktorý dokáže využiť oprávnenia z AdminSettings.php.",
+	"smw_smwadmin_permissionswarn": "Ak táto operácia zlyhá na chybách SQL, používateľ databázy, ktorého využíva vaša wiki (pozrite sa do LocalSettings.php) pravdepodobne nemá dostatočné privilégiá.\nBuď udeľte tomuto používateľovi ďalšie privilégiá na vytváranie a mazanie tabuliek, dočasne zadajte prihlasovacie údaje používateľa root databázy do LocalSettings.php alebo použite skript na údržbu t>setupStore.php</code>, ktorý dokáže využiť oprávnenia z AdminSettings.php.",
 	"smw_smwadmin_dbbutton": "Inicializovať alebo aktualizovať tabuľky",
 	"smw_smwadmin_announce": "Oznámiť vašu wiki",
-	"smw_smwadmin_announcedocu": "Semantic MediaWiki má webovú službu na oznamovanie nových sémantických wiki lokalít.\nTým pomáha  udržiavať zoznam verejných lokalít používajúcich Semantic MediaWiki. najmä aby pomohla <a href=\"http://semantic-mediawiki.org/wiki/SMW_Project\">projektu Semantic MediaWiki</a> získať prehľad typických využití Semantic MediaWiki.\nďalšie informácie o tejto službe nájdete na <a href=\"http://semantic-mediawiki.org/wiki/Registry\">domovskej stránke Semantic MediaWiki</a>.",
-	"smw_smwadmin_announcebutton": "Stlačením nasledovného tlačidla odošlete URL vašej wiki tejto službe.\nSlužba nebude registrovať wiki, ktoré nie sú verejne prístupné a bude ukladať iba verejne dostupné informácie.",
 	"smw_smwadmin_datarefresh": "Oprava a aktualizácia dát",
 	"smw_smwadmin_datarefreshdocu": "Je možné obnoviť všetky údaje Semantic MediaWiki na základe aktuálneho obsahu wiki.\nTo sa hodí na opravu poškodených údajov alebo obnovu údajov ak sa pri aktualizácii softvéru zmenil vnútorný formát ukladania údajov.\nAktualizáciu je možné spustiť na špeciálnej stránke a nebude dokočená okamžite.\nTu sa zobrazuje priebeh aktualizácie a môžete tu spustiť alebo zastaviť aktualizácie (ak túto funkciu správca nevypol).",
 	"smw_smwadmin_datarefreshprogress": "<strong>Aktualizácia už prebieha.</strong>\nJe normálne, že aktualizácie prebieha pomaly, pretože obnovuje údaje iba po malých kúskoch naraz, keď používateľ zobrazí stránku wiki.\nRýchlejšie dokončenie tejto aktualizácie môžete dosiahnuť vyvolaním údržbového skriptu MediaWiki <code>runJobs.php</code> (použite voľbu <code>--maxjobs 1000</code> na obmedzenie počtu aktualizácií v jednej dávke).\nOdhadovaný priebeh aktualizácie:",
@@ -179,5 +178,6 @@
 	"smw-createproperty-allowedvals": "{{PLURAL:$1|Povolená hodnota|Povolené hodnoty}} tejto vlastnosti {{PLURAL:$1|je|sú}}:",
 	"smw_unknowntype": "Pre atribút je definovaný nepodporovaný typ \"$1\".",
 	"smw_concept_header": "Návrh „$1”",
-	"smw_conceptarticlecount": "Zobrazuje sa $1 {{PLURAL:$1|stránka patriaca|stránky patriace|stránok patriacich}} tomuto návrhu."
+	"smw_conceptarticlecount": "Zobrazuje sa $1 {{PLURAL:$1|stránka patriaca|stránky patriace|stránok patriacich}} tomuto návrhu.",
+	"smw-livepreview-loading": "Načítava sa…"
 }

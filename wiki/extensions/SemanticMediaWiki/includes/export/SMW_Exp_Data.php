@@ -1,12 +1,16 @@
 <?php
+
+use SMW\Exporter\Element;
+
 /**
  * SMWExpData is a class representing semantic data that is ready for easy
  * serialisation in OWL or RDF.
  *
  * @author Markus Krötzsch
- * @file
  * @ingroup SMW
  */
+
+
 
 /**
  * SMWExpData is a data container for export-ready semantic content. It is
@@ -19,31 +23,84 @@
  *
  * @ingroup SMW
  */
-class SMWExpData extends SMWExpElement {
+class SMWExpData implements Element {
+
+	/**
+	 * @var DataItem|null
+	 */
+	private $dataItem;
+
 	/**
 	 * The subject of the data that we store.
 	 * @var SMWExpResource
 	 */
 	protected $m_subject;
+
 	/**
 	 * Array mapping property URIs to arrays their values, given as
 	 * SMWExpElement objects.
 	 * @var array of array of SMWElement
 	 */
-	protected $m_children = array();
+	protected $m_children = [];
+
 	/**
 	 * Array mapping property URIs to arrays their SMWExpResource
 	 * @var array of SMWExpResource
 	 */
-	protected $m_edges = array();
+	protected $m_edges = [];
+
+	/**
+	 * @var string|null
+	 */
+	private $hash = null;
 
 	/**
 	 * Constructor. $subject is the SMWExpResource for the
 	 * subject about which this SMWExpData is.
 	 */
 	public function __construct( SMWExpResource $subject ) {
-		parent::__construct( $subject->getDataItem() );
+		$this->dataItem = $subject->getDataItem();
 		$this->m_subject = $subject;
+	}
+
+	/**
+	 * @since 2.2
+	 *
+	 * @return DataItem|null
+	 */
+	public function getDataItem() {
+		return $this->dataItem;
+	}
+
+	/**
+	 * @since 2.2
+	 *
+	 * @return string
+	 */
+	public function getHash() {
+
+		if ( $this->hash !== null ) {
+			return $this->hash;
+		}
+
+		$hashes = [];
+		$hashes[] = $this->m_subject->getHash();
+
+		foreach ( $this->getProperties() as $property ) {
+
+			$hashes[] = $property->getHash();
+
+			foreach ( $this->getValues( $property ) as $child ) {
+				$hashes[] = $child->getHash();
+			}
+		}
+
+		sort( $hashes );
+
+		$this->hash = md5( implode( '#', $hashes ) );
+		unset( $hashes );
+
+		return $this->hash;
 	}
 
 	/**
@@ -53,18 +110,29 @@ class SMWExpData extends SMWExpElement {
 	 * @return SMWExpData
 	 */
 	public static function makeCollection( array $elements ) {
+
 		if ( count( $elements ) == 0 ) {
-			return new SMWExpData( SMWExporter::getSpecialNsResource( 'rdf', 'nil' ) );
-		} else {
-			$rdftype  = SMWExporter::getSpecialNsResource( 'rdf', 'type' );
-			$rdffirst = SMWExporter::getSpecialNsResource( 'rdf', 'first' );
-			$rdfrest  = SMWExporter::getSpecialNsResource( 'rdf', 'rest' );
-			$result = new SMWExpData( new SMWExpResource( '' ) ); // bnode
-			$result->addPropertyObjectValue( $rdftype, new SMWExpData( SMWExporter::getSpecialNsResource( 'rdf', 'List' ) ) );
-			$result->addPropertyObjectValue( $rdffirst, array_shift( $elements ) );
-			$result->addPropertyObjectValue( $rdfrest, SMWExpData::makeCollection( $elements ) );
-			return $result;
+			return new SMWExpData( SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'nil' ) );
 		}
+
+		$result = new SMWExpData( new SMWExpResource( '' ) ); // bnode
+
+		$result->addPropertyObjectValue(
+			SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'type' ),
+			new SMWExpData( SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'List' ) )
+		);
+
+		$result->addPropertyObjectValue(
+			SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'first' ),
+			array_shift( $elements )
+		);
+
+		$result->addPropertyObjectValue(
+			SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'rest' ),
+			self::makeCollection( $elements )
+		);
+
+		return $result;
 	}
 
 	/**
@@ -82,13 +150,17 @@ class SMWExpData extends SMWExpElement {
 	 * already (which is typically used to generate this object).
 	 *
 	 * @param SMWExpNsResource $property
-	 * @param SMWExpData $child
+	 * @param Element $child
 	 */
-	public function addPropertyObjectValue( SMWExpNsResource $property, SMWExpElement $child ) {
+	public function addPropertyObjectValue( SMWExpNsResource $property, Element $child ) {
+
+		$this->hash = null;
+
 		if ( !array_key_exists( $property->getUri(), $this->m_edges ) ) {
-			$this->m_children[$property->getUri()] = array();
+			$this->m_children[$property->getUri()] = [];
 			$this->m_edges[$property->getUri()] = $property;
 		}
+
 		$this->m_children[$property->getUri()][] = $child;
 	}
 
@@ -109,23 +181,24 @@ class SMWExpData extends SMWExpElement {
 	 * @return array of SMWExpElement
 	 */
 	public function getValues( SMWExpResource $property ) {
+
 		if ( array_key_exists( $property->getUri(), $this->m_children ) ) {
 			return $this->m_children[$property->getUri()];
-		} else {
-			return array();
 		}
+
+		return [];
 	}
 
 	/**
 	 * Return the list of SMWExpData values associated to some property that is
-	 * specifed by a standard namespace id and local name.
+	 * specified by a standard namespace id and local name.
 	 *
 	 * @param $namespaceId string idetifying a known special namespace (e.g. "rdf")
 	 * @param $localName string of local name (e.g. "type")
 	 * @return array of SMWExpData
 	 */
 	public function getSpecialValues( $namespaceId, $localName ) {
-		$pe = SMWExporter::getSpecialNsResource( $namespaceId, $localName );
+		$pe = SMWExporter::getInstance()->getSpecialNsResource( $namespaceId, $localName );
 		return $this->getValues( $pe );
 	}
 
@@ -142,7 +215,7 @@ class SMWExpData extends SMWExpElement {
 	 * @return SMWExpElement
 	 */
 	public function extractMainType() {
-		$pe = SMWExporter::getSpecialNsResource( 'rdf', 'type' );
+		$pe = SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'type' );
 		if ( array_key_exists( $pe->getUri(), $this->m_children ) ) {
 			$result = array_shift( $this->m_children[$pe->getUri()] );
 			if ( count( $this->m_children[$pe->getUri()] ) == 0 ) {
@@ -151,7 +224,7 @@ class SMWExpData extends SMWExpElement {
 			}
 			return ( $result instanceof SMWExpData ) ? $result->getSubject() : $result;
 		} else {
-			return SMWExporter::getSpecialNsResource( 'rdf', 'Resource' );
+			return SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'Resource' );
 		}
 	}
 
@@ -166,10 +239,10 @@ class SMWExpData extends SMWExpElement {
 	 * @return mixed array of SMWExpElement (but not SMWExpLiteral) or false
 	 */
 	public function getCollection() {
-		$rdftypeUri  = SMWExporter::getSpecialNsResource( 'rdf', 'type' )->getUri();
-		$rdffirstUri = SMWExporter::getSpecialNsResource( 'rdf', 'first' )->getUri();
-		$rdfrestUri  = SMWExporter::getSpecialNsResource( 'rdf', 'rest' )->getUri();
-		$rdfnilUri   = SMWExporter::getSpecialNsResource( 'rdf', 'nil' )->getUri();
+		$rdftypeUri  = SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'type' )->getUri();
+		$rdffirstUri = SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'first' )->getUri();
+		$rdfrestUri  = SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'rest' )->getUri();
+		$rdfnilUri   = SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'nil' )->getUri();
 		// first check if we are basically an RDF List:
 		if ( ( $this->m_subject->isBlankNode() ) &&
 		     ( count( $this->m_children ) == 3 ) &&
@@ -182,7 +255,7 @@ class SMWExpData extends SMWExpElement {
 		     ( array_key_exists( $rdfrestUri, $this->m_children ) ) &&
 		     ( count( $this->m_children[$rdfrestUri] ) == 1 ) ) {
 			$typedata = end( $this->m_children[$rdftypeUri] );
-			$rdflistUri = SMWExporter::getSpecialNsResource( 'rdf', 'List' )->getUri();
+			$rdflistUri = SMWExporter::getInstance()->getSpecialNsResource( 'rdf', 'List' )->getUri();
 			if ( $typedata->getSubject()->getUri() == $rdflistUri ) {
 				$first = end( $this->m_children[$rdffirstUri] );
 				$rest  = end( $this->m_children[$rdfrestUri] );
@@ -196,7 +269,7 @@ class SMWExpData extends SMWExpElement {
 					}
 				} elseif ( ( $rest instanceof SMWExpResource ) &&
 				           ( $rest->getUri() == $rdfnilUri ) )  {
-					return array( $first );
+					return [ $first ];
 				} else {
 					return false;
 				}
@@ -204,7 +277,7 @@ class SMWExpData extends SMWExpElement {
 				return false;
 			}
 		} elseif ( ( count( $this->m_children ) == 0 ) && ( $this->m_subject->getUri() == $rdfnilUri ) ) {
-			return array();
+			return [];
 		} else {
 			return false;
 		}
@@ -216,7 +289,7 @@ class SMWExpData extends SMWExpElement {
 	 *
 	 * @return array of array of SMWExpElement
 	 */
-	public function getTripleList( SMWExpElement $subject = null ) {
+	public function getTripleList( Element $subject = null ) {
 		global $smwgBnodeCount;
 		if ( !isset( $smwgBnodeCount ) ) {
 			$smwgBnodeCount = 0;
@@ -226,7 +299,7 @@ class SMWExpData extends SMWExpElement {
 			$subject = $this->m_subject;
 		}
 
-		$result = array();
+		$result = [];
 
 		foreach ( $this->m_edges as $key => $edge ) {
 			foreach ( $this->m_children[$key] as $childElement ) {
@@ -242,7 +315,7 @@ class SMWExpData extends SMWExpElement {
 					$childSubject = new SMWExpResource( '_' . $smwgBnodeCount++, $childSubject->getDataItem() );
 				}
 
-				$result[] = array( $subject, $edge, $childSubject );
+				$result[] = [ $subject, $edge, $childSubject ];
 				if ( $childElement instanceof SMWExpData ) { // recursively add child's triples
 					$result = array_merge( $result, $childElement->getTripleList( $childSubject ) );
 				}

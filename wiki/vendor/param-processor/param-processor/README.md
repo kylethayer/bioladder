@@ -1,17 +1,19 @@
 # ParamProcessor
 
 ParamProcessor is a parameter processing library that provides a way to
-decoratively define a set of parameters and how they should be processed.
+declaratively define a set of parameters and how they should be processed.
 It can take such declarations together with a list of raw parameters and
 provide the processed values. For example, if one defines a parameter to
 be an integer, in the range `[0, 100]`, then ParamProcessor will verify the
 input is an integer, in the specified range, and return it as an actual
 integer variable.
 
+Also see [ParserHooks](https://github.com/JeroenDeDauw/ParserHooks), a library
+that builds on top of ParamProcessor and provides MediaWiki integration.
+
 [![Build Status](https://secure.travis-ci.org/JeroenDeDauw/ParamProcessor.png?branch=master)](http://travis-ci.org/JeroenDeDauw/ParamProcessor)
-[![Code Coverage](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/coverage.png?s=2ab5df62d929329584536005cdca7d2bec5501f4)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/)
-[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/quality-score.png?s=c15b2cfd1c600724e0f8b754fefa8b099f90a354)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/)
-[![Dependency Status](https://www.versioneye.com/php/param-processor:param-processor/badge.png)](https://www.versioneye.com/php/param-processor:param-processor)
+[![Code Coverage](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/?branch=master)
 
 
 On [Packagist](https://packagist.org/packages/param-processor/param-processor):
@@ -27,13 +29,15 @@ The recommended way to use this library is via [Composer](http://getcomposer.org
 To add this package as a local, per-project dependency to your project, simply add a
 dependency on `param-processor/param-processor` to your project's `composer.json` file.
 Here is a minimal example of a `composer.json` file that just defines a dependency on
-version 1.0 of this package:
+version 1.x of this package:
 
-    {
-        "require": {
-            "param-processor/param-processor": "1.0.*"
-        }
+```json
+{
+    "require": {
+        "param-processor/param-processor": "~1.0"
     }
+}
+```
 
 ### Manual
 
@@ -60,7 +64,7 @@ value, for instance "42" (string), it will be turned in the appropriate 42 (int)
 ## Implementation structure
 
 Parameters are defined using the `ParamProcessor\ParamDefinition` class. Users can also use the array
-format to define parameters and not be bound to this class. At present, it is prefered to use this
+format to define parameters and not be bound to this class. At present, it is preferred to use this
 array format as the class itself is not stable yet.
 
 Processing is done via `ParamProcessor\Processor`.
@@ -105,7 +109,7 @@ These fields are supported:
 	<tr>
 		<th>trim</th>
 		<td>boolean</td>
-		<td><i>inherited from pocessor options</i></td>
+		<td><i>inherited from processor options</i></td>
 		<td>If the value should be trimmed</td>
 	</tr>
 	<tr>
@@ -118,7 +122,7 @@ These fields are supported:
 		<th>delimiter</th>
 		<td>string</td>
 		<td>,</td>
-		<td>The delimieter between values if it is a list</td>
+		<td>The delimiter between values if it is a list</td>
 	</tr>
 	<tr>
 		<th>manipulatedefault</th>
@@ -144,7 +148,7 @@ These fields are supported:
 		<td><i>none</i></td>
 		<td>Takes the value as only parameter and returns the new value</td>
 	</tr>
-	
+
 </table>
 
 The requires fields currently are: name and message
@@ -158,6 +162,20 @@ The requires fields currently are: name and message
 		<th>Description</th>
 	</tr>
 	<tr>
+		<th>string</th>
+		<td>string</td>
+		<td>
+			Default type<br />
+			Supported options:
+			<ul>
+				<li>length: int or false (overrides minlength and maxlength)</li>
+				<li>minlength: int or false</li>
+				<li>maxlength: int or false</li>
+				<li>regex: string</li>
+			</ul>
+		</td>
+	</tr>
+	<tr>
 		<th>boolean</th>
 		<td>boolean</td>
 		<td>Accepts "yes", "no", "on", "off", "true" and "false"</td>
@@ -165,27 +183,39 @@ The requires fields currently are: name and message
 	<tr>
 		<th>float</th>
 		<td>float</td>
-		<td></td>
+		<td>
+			Supported options:
+			<ul>
+				<li>lowerbound: int, float or false</li>
+				<li>upperbound: int, float or false</li>
+				<li>range: [lowerbound, upperbound]</li>
+				<li>withinrange: [float $point, float $deviation]</li>
+			</ul>
+		</td>
 	</tr>
 	<tr>
 		<th>integer</th>
 		<td>integer</td>
-		<td></td>
-	</tr>
-	<tr>
-		<th>string</th>
-		<td>string</td>
-		<td></td>
-	</tr>
-	<tr>
-		<th>coordinate</th>
-		<td>DataValues\LatLongValue</td>
-		<td></td>
+		<td>
+			Supported options: same as for float
+		</td>
 	</tr>
 	<tr>
 		<th>dimension</th>
 		<td>string</td>
-		<td>Value for a width or hight attribute in HTML</td>
+		<td>
+			Value for a width or height attribute in HTML<br />
+			Supported options:
+			<ul>
+				<li>allowauto: bool</li>
+				<li>maxpercentage: int</li>
+				<li>minpercentage: int</li>
+				<li>units: array of string</li>
+				<li>defaultunit: string</li>
+				<li>lowerbound: int, float or false</li>
+				<li>upperbound: int, float or false</li>
+			</ul>
+		</td>
 	</tr>
 </table>
 
@@ -195,63 +225,202 @@ The requires fields currently are: name and message
 * <code>validation-callback</code> Callback that gets the raw value as only parameter and returns a boolean
 * <code>validator</code> Name of a class that implements the `ValueValidators\ValueValidator` interface
 
-## Examples
+As an example, the Maps MediaWiki extension defines a `coordinate` parameter type that turns the input into a `DataValues\LatLongValue` value object.
 
-### Parameter definitions
+## Usage example
+
+### Defining parameters
 
 ```php
-$paramDefintions = array();
-
-$paramDefintions[] = array(
-    'name' => 'username',
-);
-
-$paramDefintions[] = array(
-    'name' => 'job',
-    'default' => 'unknown',
-    'values' => array( 'Developer', 'Designer', 'Manager', 'Tester' ),
-);
-
-$paramDefintions[] = array(
-    'name' => 'favourite-numbers',
-    'islist' => true,
-    'type' => 'int',
-    'default' => array(),
-);
+$parameterDefinitions = [
+    'username' => [
+        'minlength' => 1,
+        'maxlength' => 20
+    ],
+    'job' => [
+        'default' => 'unknown',
+        'values' => [ 'Developer', 'Designer', 'Peasant' ]
+    ],
+    'favourite-numbers' => [
+        'type' => 'int',
+        'islist' => true,
+        'default' => []
+    ]
+]
 ```
 
-### Processing
+### Processing input using defined parameters
 
 ```php
-$inputParams = array(
-    'username' => 'Jeroen',
-    'job' => 'Developer',
-);
-
 $processor = ParamProcessor\Processor::newDefault();
 
-$processor->setParameters( $inputParams, $paramDefintions );
+$processor->setParameters(
+    [
+        'username' => 'Jeroen',
+        'favourite-numbers' => '42, 1337, not a number',
+    ],
+    $paramDefinitions
+);
 
-$processingResult = $processor->processParameters();
+foreach ($processor->processParameters()->getParameters() $parameter) {
+    echo $parameter->getName();
+    var_dump($parameter->getValue());
+};
 
-$processedParams = $processingResult->getParameters();
+// username: string(6) "Jeroen"
+// job: string(7) "unknown"
+// favourite-numbers: array(2) {[0]=>int(42), [1]=>int(1337)}
 ```
 
-## Tests
+Alternative way to input parameters:
 
-This library comes with a set up PHPUnit tests that cover all non-trivial code. You can run these
-tests using the PHPUnit configuration file found in the root directory. The tests can also be run
-via TravisCI, as a TravisCI configuration file is also provided in the root directory.
+```php
+$processor->setFunctionParams(
+    [
+        'username = Jeroen',
+        'favourite-numbers=42, 1337, not a number',
+    ],
+    $paramDefinitions
+);
+```
+
+## Contributing
+
+* [File an issue](https://github.com/JeroenDeDauw/ParamProcessor/issues)
+* [Submit a pull request](https://github.com/JeroenDeDauw/ParamProcessor/pulls) ([tasks for newcomers](https://github.com/JeroenDeDauw/ParamProcessor/issues?q=is%3Aissue+is%3Aopen+label%3Anewcomer))
 
 ## Authors
 
-ParamProcessor has been written by [Jeroen De Dauw](https://github.com/JeroenDeDauw) to
-support the [Maps](https://github.com/JeroenDeDauw/Maps) and [Semantic MediaWiki]
-(https://semantic-mediawiki.org/) projects.
+ParamProcessor has been written by [Jeroen De Dauw](https://www.entropywins.wtf/) to
+support the [Maps](https://github.com/JeroenDeDauw/Maps) and
+[Semantic MediaWiki](https://semantic-mediawiki.org/) projects.
 
 ## Release notes
 
-### 1.1 (2014-05-07)
+### 1.10.0 (2019-08-03)
+
+* Removed `DimensionParam`
+* Fixed bug in parsing of parameters of type `dimension`
+
+### 1.9.0 (2019-08-03)
+
+* Added `ParamDefinitionFactory::newDefinitionsFromArrays`
+
+### 1.8.0 (2019-08-03)
+
+* Removed `ParamDefinitionFactory::getComponentForType`
+* Added `ParamDefinitionFactory` constructor
+* Added `ParameterTypes` constructor
+* Added `ParameterTypes::addType`
+* Added `ParameterTypes::newCoreTypes`
+* Added `ProcessingResult::getParameterArray`
+
+### 1.7.0 (2019-08-02)
+
+* Added `ParameterTypes` public constants: `BOOLEAN`, `FLOAT`, `INTEGER`, `STRING`, `DIMENSION`
+* Deprecated `ParamDefinition::getCleanDefinitions` in favour of `ParamDefinitionFactory`
+* Deprecated `ParamDefinition::setDefault` in favour of constructor parameter
+* Deprecated `Processor::getParameterValues` in favour of `processParameters` and `ProcessingResult`
+* Deprecated `Processor::getErrors` in favour of `processParameters` and `ProcessingResult`
+* Deprecated `Processor::getErrorMessages` in favour of `processParameters` and `ProcessingResult`
+* Deprecated `Processor::hasErrors` in favour of `processParameters` and `ProcessingResult`
+* Deprecated `Processor::hasFatalError` in favour of `processParameters` and `ProcessingResult`
+* Deprecated parameter dependencies
+    * Deprecated `ParamDefinition::hasDependency`
+    * Deprecated `ParamDefinition::addDependencies`
+    * Deprecated `ParamDefinition::getDependencies`
+    * Deprecated `dependencies` key in `ParamDefinition::setArrayValues` parameter
+    * Deprecated `TopologicalSort`
+    * Deprecated `TSNode`
+* Deprecated extending `ParamDefinition`
+* Deprecated `StringParam`
+* Deprecated `DimensionParam`
+* Deprecated `ParamDefinition::setArrayValues`
+* Deprecated `ParamDefinition::$acceptOverriding`
+* Deprecated `ParamDefinition::$accumulateParameterErrors`
+* Deprecated `Param::$accumulateParameterErrors`
+* Deprecated `Settings`
+* Deprecated `Options::setRawStringInputs`
+* Deprecated `Options::isStringlyTyped`
+
+### 1.6.1 (2019-07-28)
+
+* Fixed message defaulting bug in `ParamDefinition`
+
+### 1.6.0 (2019-07-28)
+
+* Added `Processor::setParameterDefinitions`
+* Deprecated second parameter of `Processor::setParameters` in favour of `setParameterDefinitions`
+* Deprecated second parameter of `Processor::setFunctionParams` in favour of `setParameterDefinitions`
+* Deprecated second parameter of `ParamDefinitionFactory::newDefinitionFromArray`
+* Deprecated return value of `ParamDefinitionFactory::registerType`
+* Deprecated `ParamDefinitionFactory::registerGlobals`
+* Deprecated `typed-parser` key in parameter type definitions
+
+### 1.5.0 (2019-07-28)
+
+* Improved code comments and added extra type checks
+
+### 1.4.2 (2018-11-26)
+
+* Fixed defaulting behaviour of list parameters
+
+### 1.4.1 (2018-11-26)
+
+* List parameters are no longer set to their default when a single value is invalid
+
+### 1.4.0 (2018-11-25)
+
+* Dropped support for PHP older than 7.1
+* Added `ParameterTypes` to allow gradual migration away from the now deprecated `$wgParamDefinitions`
+* Deprecated `$wgParamDefinitions`
+* Deprecated `$egValidatorSettings`
+
+### 1.3.4 (2018-05-05)
+
+* Fixed deprecation notice occurring with PHP 7.2+
+
+### 1.3.3 (2017-09-28)
+
+* Installation together with DataValues 2.x is now allowed
+* Installation together with DataValues Common 0.4.x is now allowed
+
+### 1.3.2 (2017-03-26)
+
+* Fixed clearing of processing errors when making multiple processing calls to one `Processor` instance
+
+### 1.3.1 (2016-09-21)
+
+* Fixed `ParamDefinitionFactory` emitting a warning when initialized without the global `wgParamDefinitions` being set
+
+### 1.3.0 (2016-07-15)
+
+* Dropped support for PHP 5.3 and PHP 5.4.
+* Fixed bug in `ParamDefinition::format`
+
+### 1.2.5 (2016-05-23)
+
+* Fixed bug in `Processor::newProcessingResult`
+
+### 1.2.4 (2016-05-15)
+
+* Fixed bug in `ParamDefinition::getAllowedValues`
+
+### 1.2.3 (2016-04-04)
+
+* Installation together with DataValues Interfaces 0.2.x is now allowed
+* Installation together with DataValues Common 0.3.x is now allowed
+* The component is now also tested against PHP 7
+
+### 1.2.2 (2014-10-24)
+
+* Installation together with DataValues 1.x is now allowed.
+
+### 1.2.0 (2014-09-12)
+
+* Dropped dependency on DataValues Geo.
+
+### 1.1.0 (2014-05-07)
 
 * Dropped dependency on DataValues Time.
 * Use PSR-4 based loading rather than PSR-0 based loading.
@@ -267,7 +436,7 @@ support the [Maps](https://github.com/JeroenDeDauw/Maps) and [Semantic MediaWiki
 * Implemented ProcessingResult::hasFatal
 * Added ProcessingResultTest
 
-### 1.0 (2013-11-21)
+### 1.0.0 (2013-11-21)
 
 First release as standalone PHP library.
 

@@ -2,25 +2,17 @@
 
 namespace SMW\Tests\Integration\MediaWiki;
 
-use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Util\MwApiFactory;
-use SMW\Tests\Util\SemanticDataFactory;
-
-use SMW\MediaWiki\Api\BrowseBySubject;
-
-use SMW\SemanticData;
-use SMW\DIWikiPage;
 use SMW\DataValueFactory;
-use SMW\Subobject;
+use SMW\MediaWiki\Api\BrowseBySubject;
 use SMW\SerializerFactory;
+use SMW\Subobject;
+use SMW\Tests\MwDBaseUnitTestCase;
+use SMW\Tests\Utils\MwApiFactory;
+use SMW\Tests\Utils\SemanticDataFactory;
 
 /**
- * @ingroup Test
- *
- * @group SMW
- * @group SMWExtension
  * @group semantic-mediawiki-integration
- * @group mediawiki-database
+ * @group medium
  *
  * @license GNU GPL v2+
  * @since 2.0
@@ -29,7 +21,7 @@ use SMW\SerializerFactory;
  */
 class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 
-	protected $destroyDatabaseTablesOnEachRun = true;
+	protected $destroyDatabaseTablesAfterRun = true;
 
 	private $apiFactory;
 	private $dataValueFactory;
@@ -60,7 +52,7 @@ class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\SemanticData',
-			$this->serializerFactory->deserialize( $resultData['query'] )
+			$this->serializerFactory->getDeserializerFor( $resultData['query'] )->deserialize( $resultData['query'] )
 		);
 
 		$this->assertInternalType(
@@ -74,7 +66,7 @@ class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 		$semanticData = $this->semanticDataFactory->newEmptySemanticData( __METHOD__ );
 
 		$semanticData->addDataValue(
-			$this->dataValueFactory->newPropertyValue( __METHOD__ , 'Bar' )
+			$this->dataValueFactory->newDataValueByText( __METHOD__, 'Bar' )
 		);
 
 		$this->getStore()->updateData( $semanticData );
@@ -88,7 +80,7 @@ class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\SemanticData',
-			$this->serializerFactory->deserialize( $resultData['query'] )
+			$this->serializerFactory->getDeserializerFor( $resultData['query'] )->deserialize( $resultData['query'] )
 		);
 
 		$this->assertInternalType(
@@ -102,14 +94,14 @@ class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 		$semanticData = $this->semanticDataFactory->newEmptySemanticData( __METHOD__ );
 
 		$semanticData->addDataValue(
-			$this->dataValueFactory->newPropertyValue( __METHOD__ , 'Bar' )
+			$this->dataValueFactory->newDataValueByText( __METHOD__, 'Bar' )
 		);
 
 		$subobject = new Subobject( $semanticData->getSubject()->getTitle() );
-		$subobject->setEmptySemanticDataForId( 'Foo' );
+		$subobject->setEmptyContainerForId( 'Foo' );
 
 		$subobject->addDataValue(
-			$this->dataValueFactory->newPropertyValue( __METHOD__ , 'Bam' )
+			$this->dataValueFactory->newDataValueByText( __METHOD__, 'Bam' )
 		);
 
 		$semanticData->addPropertyObjectValue(
@@ -128,7 +120,7 @@ class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\SemanticData',
-			$this->serializerFactory->deserialize( $resultData['query'] )
+			$this->serializerFactory->getDeserializerFor( $resultData['query'] )->deserialize( $resultData['query'] )
 		);
 
 		$this->assertInternalType(
@@ -140,17 +132,19 @@ class ApiBrowseBySubjectDBIntegrationTest extends MwDBaseUnitTestCase {
 	private function newBrowseBySubject( $subject, $asRawMode = false ) {
 
 		$instance = new BrowseBySubject(
-			$this->apiFactory->newApiMain( array( 'subject' => $subject ) ),
+			$this->apiFactory->newApiMain( [ 'subject' => $subject ] ),
 			'browsebysubject'
 		);
 
-		if ( $asRawMode ) {
+		// Went away with 1.26/1.27
+		if ( function_exists( 'setRawMode' ) && $asRawMode ) {
 			$instance->getMain()->getResult()->setRawMode();
 		}
 
 		$instance->execute();
 
-		return $instance;
+		// MW 1.25
+		return method_exists( $instance, 'getResult' ) ? $instance->getResult() : $instance;
 	}
 
 }

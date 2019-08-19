@@ -2,10 +2,8 @@
 
 namespace SMW;
 
+use FormatJson;
 use SMWQueryResult;
-use SMWQueryProcessor;
-use SMWQuery;
-use FormatJSON;
 
 /**
  * Print links to JSON files representing query results.
@@ -14,7 +12,6 @@ use FormatJSON;
  *
  * @since 1.5.3
  *
- * @file
  *
  * @license GNU GPL v2 or later
  * @author mwjames
@@ -62,57 +59,55 @@ class JsonResultPrinter extends FileExportPrinter {
 	 * @return string|boolean
 	 */
 	public function getFileName( SMWQueryResult $queryResult ) {
+
 		if ( $this->getSearchLabel( SMW_OUTPUT_WIKI ) !== '' ) {
 			return str_replace( ' ', '_', $this->getSearchLabel( SMW_OUTPUT_WIKI ) ) . '.json';
-		} else {
-			return 'result.json';
 		}
-	}
 
-	/**
-	 * File exports use MODE_INSTANCES on special pages (so that instances are
-	 * retrieved for the export) and MODE_NONE otherwise (displaying just a download link).
-	 *
-	 * @param $context
-	 *
-	 * @return integer
-	 */
-	public function getQueryMode( $context ) {
-		return ( $context == SMWQueryProcessor::SPECIAL_PAGE ) ? SMWQuery::MODE_INSTANCES : SMWQuery::MODE_NONE;
+		return 'result.json';
 	}
 
 	/**
 	 * Returns a filename that is to be sent to the caller
 	 *
 	 * @param SMWQueryResult $res
-	 * @param $outputmode integer
+	 * @param $outputMode integer
 	 *
 	 * @return string
 	 */
-	protected function getResultText( SMWQueryResult $res, $outputmode ) {
+	protected function getResultText( SMWQueryResult $res, $outputMode ) {
 
-		if ( $outputmode == SMW_OUTPUT_FILE ) {
+		if ( $outputMode == SMW_OUTPUT_FILE ) {
 
 			// No results, just bailout
 			if ( $res->getCount() == 0 ){
 				return $this->params['default'] !== '' ? $this->params['default'] : '';
 			}
 
+			$flags = $this->params['prettyprint'] ? JSON_PRETTY_PRINT : 0;
+			$flags = $flags | ( $this->params['unescape'] ? JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES : 0 );
+
 			// Serialize queryResult
-			$result = FormatJSON::encode(
-				array_merge(
+			if ( isset( $this->params['type'] ) && $this->params['type'] === 'simple' ) {
+				$result = $this->serializeAsSimpleList( $res );
+			} else {
+				$result = array_merge(
 					$res->serializeToArray(),
-					array ( 'rows' => $res->getCount() )
-				),
-				$this->params['prettyprint']
+					[ 'rows' => $res->getCount() ]
+				);
+			}
+
+			$result = json_encode(
+				$result,
+				$flags
 			);
 
 		} else {
 			// Create a link that points to the JSON file
-			$result = $this->getLink( $res, $outputmode )->getText( $outputmode, $this->mLinker );
+			$result = $this->getLink( $res, $outputMode )->getText( $outputMode, $this->mLinker );
 
 			// Code can be viewed as HTML if requested, no more parsing needed
-			$this->isHTML = $outputmode == SMW_OUTPUT_HTML;
+			$this->isHTML = $outputMode == SMW_OUTPUT_HTML;
 		}
 
 		return $result;
@@ -131,24 +126,64 @@ class JsonResultPrinter extends FileExportPrinter {
 	public function getParamDefinitions( array $definitions ) {
 		$params = parent::getParamDefinitions( $definitions );
 
-		$params['searchlabel']->setDefault( $this->msg( 'smw_json_link' )->text() );
+		$params['searchlabel']->setDefault( $this->msg( 'smw_json_link' )->inContentLanguage()->text() );
 
 		$params['limit']->setDefault( 100 );
 
-		$params['prettyprint'] = array(
+		$params['type'] = [
+			'values' => [ 'simple', 'full' ],
+			'default' => 'full',
+			'message' => 'smw-paramdesc-json-type',
+		];
+
+		$params['prettyprint'] = [
 			'type' => 'boolean',
 			'default' => '',
 			'message' => 'smw-paramdesc-prettyprint',
-		);
+		];
+
+		$params['unescape'] = [
+			'type' => 'boolean',
+			'default' => '',
+			'message' => 'smw-paramdesc-json-unescape',
+		];
 
 		return $params;
 	}
-}
 
-/**
- * SMWJsonResultPrinter
- * @codeCoverageIgnore
- *
- * @deprecated since SMW 1.9
- */
-class_alias( 'SMW\JsonResultPrinter', 'SMWJsonResultPrinter' );
+	private function serializeAsSimpleList( $res ) {
+
+		$result = [];
+
+		while ( $row = $res->getNext() ) {
+			$item = [];
+			$subject = '';
+
+			foreach ( $row as /* SMWResultArray */ $field ) {
+				$label = $field->getPrintRequest()->getLabel();
+
+				if ( $label === '' ) {
+					continue;
+				}
+
+				$values = [];
+				$subject = $field->getResultSubject()->getHash();
+
+				while ( ( $dataValue = $field->getNextDataValue() ) !== false ) {
+					$values[] = $dataValue->getWikiValue();
+				}
+
+				$item[$label] = $values;
+			}
+
+			if ( $this->params['mainlabel'] === '-' || $subject === '' ) {
+				$result[] = $item;
+			} else {
+				$result[$subject] = $item;
+			}
+		}
+
+		return $result;
+	}
+
+}

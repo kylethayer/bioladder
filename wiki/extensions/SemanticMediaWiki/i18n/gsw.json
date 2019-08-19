@@ -6,7 +6,7 @@
 			"아라"
 		]
 	},
-	"smw-desc": "Dyy Wiki zuegängliger mache - fir Maschine ''un'' Mänsche ([https://semantic-mediawiki.org/wiki/Help:User_manual online-Dokumäntation])",
+	"smw-desc": "Dyy Wiki zuegängliger mache - fir Maschine ''un'' Mänsche ([https://www.semantic-mediawiki.org/wiki/Help:User_manual online-Dokumäntation])",
 	"smw_viewasrdf": "RDF-Feed",
 	"smw_finallistconjunct": " un",
 	"smw_factbox_head": "Fakte zue $1",
@@ -86,7 +86,7 @@
 	"smw_attribute_header": "Syte mit dr Eigeschaft „$1“",
 	"smw_attributearticlecount": "S {{PLURAL:$1|wird ei Syten|wäre $1 Syten}} aazeigt, wu die Eigeschaft {{PLURAL:$1|bruucht|bruuche}}:",
 	"smw_subproperty_header": "Untereigeschafte",
-	"smw_subpropertyarticlecount": "Die Eigeschaft het {{PLURAL:$1|die Untereigeschaft|die $1 Untereigeschafte}}:",
+	"smw-subpropertylist-count": "Die Eigeschaft het {{PLURAL:$1|die Untereigeschaft|die $1 Untereigeschafte}}:",
 	"exportrdf": "Syten as RDF exportiere",
 	"smw_exportrdf_docu": "Doo chenne Informationen iber einzelni Syten im RDF-Format abgruefe wäre. Bitte gib d Name vu dr Syte  <i>zyylewyys</i> yy.",
 	"smw_exportrdf_recursive": "Exportier au alli relevante Syte rekursiv. Dänk dra, ass d Ergebnis chenne arg groß syy!",
@@ -109,15 +109,15 @@
 	"smw_purge": "nej lade",
 	"types": "Datetype",
 	"smw_types_docu": "Die Datetype chenne Eigeschafte zuegwise wäre. E jede Datetyp het e eigeni Syte, wu gnaueri Informatione druf chenne yytrage wäre.",
-	"semanticstatistics": "Statischtik iber semantischi Date",
-	"smw_semstats_text": "In däm Wiki {{PLURAL:$1|isch '''1''' Wert|sin '''$1''' Wärt}} fir insgsamt '''$2''' [[Special:Properties|{{PLURAL:$2|Eigeschaft|verschideni Eigeschafte}}]] yygee wore. '''$3''' {{PLURAL:$3|Eigeschaft het|Eigeschafte hän}} e eigeni Syte un dr gwischt Datetyp isch fir '''$4''' vu däne aagee wore. E paar vo dr Eigeschafte, wu s het, chenne [[Special:UnusedProperties|verwaisti Eigeschafte]] syy. Eigeschafte, wu no ne Syte sott aagleit wäre derfir, sin in dr [[Special:WantedProperties|Lischt vu dr gwinschte Eigeschafte]] ufgfiert.",
+
+
 	"smw_uri_doc": "Dr URI-Ufleser setzt d Empfählige »[$1 W3C TAG finding on httpRange-14]« um.\nÄr sorgt defir, ass Mänsche nit zue Netzsyte wäre.",
 	"ask": "Semantischi Suechi",
 	"smw_ask_sortby": "Sortiere no Spalte (optional)",
 	"smw_ask_ascorder": "Obsgi",
 	"smw_ask_descorder": "Nidsgi",
 	"smw_ask_submit": "Ergebnis finde",
-	"smw_ask_editquery": "[Aafrog bearbeite]",
+	"smw_ask_editquery": "Aafrog bearbeite",
 	"smw_add_sortcondition": "[Sortieraawyysig zuefiege]",
 	"smw_ask_hidequery": "Aafrog uusblände",
 	"smw_ask_help": "Hilf",
@@ -167,11 +167,9 @@
 	"smw_smwadmin_docu": "Die Spezialsyte hilft währed dr Installation un em Upgrade vu <a href=\"http://semantic-mediawiki.org\">Semantic MediaWiki</a>.\nDänk dra, wichtigi Date vor dr Uusfierig vu adminischtrative Funktione z sichere.",
 	"smw_smwadmin_db": "Datebankinstallation un -aktualisierig",
 	"smw_smwadmin_dbdocu": "Semantic MediaWiki bruucht e paar Erwyterige an dr MediaWiki-Datebank go di semantische Date z spychere.\nDie Funktion gwährleischtet, ass d Datebank richtig yygrichtet isch.\nD Änderige, wu in däm Schritt gmacht wäre, stere dr Räscht vu dr MediaWiki-Datebank nit un chenne eifach zrugggsetzt wäre, wänn gwinscht.\nDie Setup-Funktion cha e paar Mol uusgfiert wäre ohni Schade z verursache, s isch aber nume eimol netig bi dr  Installation oder em Update.",
-	"smw_smwadmin_permissionswarn": "Wänn d Aktion mit eme SQL-Fähler abbricht, chennt s syy, ass dr Datebankbenutzer, wu s Wiki iber en uf d Datenbank zuegryft (lueg d Datei LocalSettings.php), nit d Rächt dezue het.\nGo des Probläm lese  isch s megli, em Benutzer zuesätzligi Rächt fir s Aalege und Lesche vu Tabälle z gee, dr  Datebank-Adminischtrator zytwyys in d LocalSettings.php yyztrage oder s Wartigsskript <code>SMW_setup.php</code> z verwände, wu d Benutzerdate us AdminSettings.php cha verwände.",
+	"smw_smwadmin_permissionswarn": "Wänn d Aktion mit eme SQL-Fähler abbricht, chennt s syy, ass dr Datebankbenutzer, wu s Wiki iber en uf d Datenbank zuegryft (lueg d Datei LocalSettings.php), nit d Rächt dezue het.\nGo des Probläm lese  isch s megli, em Benutzer zuesätzligi Rächt fir s Aalege und Lesche vu Tabälle z gee, dr  Datebank-Adminischtrator zytwyys in d LocalSettings.php yyztrage oder s Wartigsskript <code>setupStore.php</code> z verwände, wu d Benutzerdate us AdminSettings.php cha verwände.",
 	"smw_smwadmin_dbbutton": "Tabällen initialisiere oder aktualisere",
 	"smw_smwadmin_announce": "Dyy Wiki aachinde",
-	"smw_smwadmin_announcedocu": "Semantic MediaWiki het e Netzservice zum neji semantischi Wikisyte bekannt gee.\nDää Service wird bruucht go ne Lischt kriege, weli effentligi Syte Semantic MediaWiki bruuche, in dr Hauptsach aber zum im <a href=\"http://semantic-mediawiki.org/wiki/SMW_Project\">Semantic-MediaWiki-Projäkt</a> e Iberbick iber typischi Aawändige vu  Semantic MediaWiki z gee.\nLueg d Semantic-MediaWiki-Homepage fir <a href=\"http://semantic-mediawiki.org/wiki/Registry\">meh Informatione iber dää Service</a>.",
-	"smw_smwadmin_announcebutton": "Druck dää Chnopf go d URL vu Dynem Wiki zue däm Dienscht zuefiege.\nDää Dienscht nimmt kei Wiki uf, wu nit efffentlig zuegängig sin. Gspycheret wäre au nume effentlig zuegängigi Informatione.",
 	"smw_smwadmin_datarefresh": "Datereparatur un -aktualisierig",
 	"smw_smwadmin_datarefreshdocu": "S isch megli alli Datebanke vu Semantic MediaWiki uf dr Grundlag vum aktuälle Inhalt vum Wiki widerhärzstelle.\nDes cha hälfe, ne kaputti Datebank nej z lade oder Date z aktualisiere, wänn wägen eme Softwareupgrade d Datebankstruktur gänderet wore isch.\nS Update wird fir jedi Syte uusgfiert un wird e Wyyli bruuche.\nDoo wird zeigt, eb e Update lauft un Di wird erlaubt e Update z starte oder z stoppe (usser wänn die Funktion vum Sytebetryyber deaktiviert woren isch).",
 	"smw_smwadmin_datarefreshprogress": "<strong>E Update lauft scho.</strong>\nE Update bruucht nromalerwyys lang, wel d Date nume in chleine Prtione aktualisiert wäre, jedes Mol wänn eber uf s Wiki zuegryft.\nGo des Update schnäller z beände, cha mer s MediaWiki-Wartigsskript <code>runJobs.php</code> bruuche (mit em Parameter <code>--maxjobs 1000</code> cha d Aazahl vu dr Updates, wu uf eimol durgfiert wäre, bschränkt wäre).\nGschätzte Fortschritt vum Update, wu grad lauft:",
@@ -191,5 +189,6 @@
 	"smw-createproperty-allowedvals": "{{PLURAL:$1|Dr erlaubt Wärt fir die Eigeschaft isch|Di erlaubte Wärt fir die Eigeschaft sin}}:",
 	"smw_unknowntype": "Imn dr Eigeschaft isch dr nit bekannt Datetyp „$1“ zuegwise wore.",
 	"smw_concept_header": "Syte vum Konzäpt „$1“",
-	"smw_conceptarticlecount": "S {{PLURAL:$1|wird ei Syten|wäre $1 Syten}} aazeigt, wu zue däm Konzäpt {{PLURAL:$1|ghert|ghere}}:"
+	"smw_conceptarticlecount": "S {{PLURAL:$1|wird ei Syten|wäre $1 Syten}} aazeigt, wu zue däm Konzäpt {{PLURAL:$1|ghert|ghere}}:",
+	"smw-livepreview-loading": "Am Lade …"
 }
