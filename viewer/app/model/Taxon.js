@@ -31,9 +31,9 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (exampleMember, record) {
                     if (exampleMember && typeof exampleMember === 'string') {
-						exampleMember = exampleMember.replace(/%20/g, " ");
+						exampleMember = BioLadderOrg.model.Taxon.cleanTaxonName(exampleMember);
                         //make sure the name is a legitimate name
-                        if (!/^[-_\w\s]+$/.test(exampleMember)) {
+                        if (!BioLadderOrg.model.Taxon.isTaxonNameValid(exampleMember)) {
                             window.console.error('Example Member name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
@@ -48,8 +48,8 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 name: 'name',
                 type: 'string',
                 convert: function (name, record) { //make sure the name is a legitimate name
-					name = name.replace(/%20/g, " ");
-                    if (typeof name !== 'string' || !/^[-_\w\s]+$/.test(name)) {
+					name = BioLadderOrg.model.Taxon.cleanTaxonName(name);
+                    if (typeof name !== 'string' || !BioLadderOrg.model.Taxon.isTaxonNameValid(name)) {
                         window.console.error('Name must be normal characters:', name);
                         return 'Could not parse name';
                     }
@@ -76,8 +76,8 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 convert: function (parentTaxon, record) {
                     if (parentTaxon && typeof parentTaxon === 'string') {
                         //make sure the name is a legitimate name
-						parentTaxon = parentTaxon.replace(/%20/g, " ");
-                        if (!/^[-_\w\s]+$/.test(parentTaxon)) {
+						parentTaxon = BioLadderOrg.model.Taxon.cleanTaxonName(parentTaxon);
+                        if (!BioLadderOrg.model.Taxon.isTaxonNameValid(parentTaxon)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
@@ -92,8 +92,8 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
                         //make sure the name is a legitimate name
-						popAncestor = popAncestor.replace(/%20/g, " ");
-                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+						popAncestor = BioLadderOrg.model.Taxon.cleanTaxonName(popAncestor);
+                        if (!BioLadderOrg.model.Taxon.isTaxonNameValid(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
@@ -107,9 +107,9 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
-						popAncestor = popAncestor.replace(/%20/g, " ");
+						popAncestor = BioLadderOrg.model.Taxon.cleanTaxonName(popAncestor);
                         //make sure the name is a legitimate name
-                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                        if (!BioLadderOrg.model.Taxon.isTaxonNameValid(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
@@ -123,9 +123,9 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
-						popAncestor = popAncestor.replace(/%20/g, " ");
+						popAncestor = BioLadderOrg.model.Taxon.cleanTaxonName(popAncestor);
                         //make sure the name is a legitimate name
-                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                        if (!BioLadderOrg.model.Taxon.isTaxonNameValid(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
@@ -139,9 +139,9 @@ Ext.define('BioLadderOrg.model.Taxon', {
                 type: 'auto',
                 convert: function (popAncestor, record) {
                     if (popAncestor && typeof popAncestor === 'string') {
-						popAncestor = popAncestor.replace(/%20/g, " ");
+						popAncestor = BioLadderOrg.model.Taxon.cleanTaxonName(popAncestor);
                         //make sure the name is a legitimate name
-                        if (!/^[-_\w\s]+$/.test(popAncestor)) {
+                        if (!BioLadderOrg.model.Taxon.isTaxonNameValid(popAncestor)) {
                             window.console.error('Parent Taxon name must be normal characters:', ancestor);
                             return Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                         }
@@ -157,9 +157,9 @@ Ext.define('BioLadderOrg.model.Taxon', {
                     if(popularSubTaxa != null && popularSubTaxa.length > 0){
                         for(var i = 0; i < popularSubTaxa.length; i++){
                             if (popularSubTaxa[i] && typeof popularSubTaxa[i] === 'string') {
-								popularSubTaxa[i] = popularSubTaxa[i].replace(/%20/g, " ");
+								popularSubTaxa[i] = BioLadderOrg.model.Taxon.cleanTaxonName(popularSubTaxa[i]);
                                 //make sure the name is a legitimate name
-                                if (!/^[-_\w\s]+$/.test(popularSubTaxa[i])) {
+                                if (!BioLadderOrg.model.Taxon.isTaxonNameValid(popularSubTaxa[i])) {
                                     window.console.error('Popular Subtaxa name must be normal characters:', popularSubTaxa[i]);
                                     popularSubTaxa[i] = Ext.getStore('Taxa').findOrCreateTaxon('Could not parse name');
                                 }
@@ -256,6 +256,7 @@ Ext.define('BioLadderOrg.model.Taxon', {
             });
         }
     },
+	
 
     whenLoaded: function (callback) {
         var me = this;
@@ -277,7 +278,20 @@ Ext.define('BioLadderOrg.model.Taxon', {
         //make sure a new array is created so we don't mess with the default array
         me.set('subTaxaLoadedCallbacks', [callback].concat(me.get('subTaxaLoadedCallbacks')));
         me.ensureFullyLoaded();
-    }
+    },
+	
+	statics:{
+		cleanTaxonName: function(name){
+			return name
+					.replace(/%20/g, " ")
+					.replace(/%27/g, "'")
+					.replace(/%F1/g, "ñ");
+		},
+		
+		isTaxonNameValid: function(name){
+			return /^[-_\w\s'ñ]+$/.test(name)
+		}
+	}
 });
 
 Ext.define('BioLadderOrg.model.TaxonSearch', {
@@ -334,10 +348,10 @@ Ext.define('BioLadderOrg.model.TaxonSearch', {
                 taxaStore = Ext.getStore('Taxa');
                 for (taxonName in results) {
                     taxonFields = {
-                        'name': results[taxonName].fulltext.replace(/%20/g, " "),
+                        'name': BioLadderOrg.model.Taxon.cleanTaxonName(results[taxonName].fulltext),
                         'wikiPage': results[taxonName].fullurl
                     };
-                    if (typeof taxonFields.name !== 'string' || !/^[-_\w\s]+$/.test(taxonFields.name)) {
+                    if (typeof taxonFields.name !== 'string' || !BioLadderOrg.model.Taxon.isTaxonNameValid(taxonFields.name)) {
                         window.console.error('Name must be normal characters:', taxonFields.name);
                         taxonFields.name = 'Could not parse name';
                     }
