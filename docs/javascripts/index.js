@@ -7,12 +7,12 @@ window.onhashchange = function () {
         let taxonName = window.location.hash.substring(1);
         navigateToTaxon(taxonName);
     } else{
-        window.location.hash = "#Human";
+        window.location.hash = "#human";
     } 
 }
 
 if(!window.location.hash){
-    window.location.hash = "#Human";
+    window.location.hash = "#human";
 } else {
     window.onhashchange() // first time loading make sure to trigger the first navigation
 }

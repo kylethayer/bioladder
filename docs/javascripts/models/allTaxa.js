@@ -6,6 +6,7 @@ const allTaxaDictionary = {}
 
 function findOrCreateTaxon(taxonName){
     if(!(taxonName in allTaxaDictionary)){
+        taxonName = taxonName.toLowerCase()
         allTaxaDictionary[taxonName] = new Taxon(taxonName)
     }
     return allTaxaDictionary[taxonName];
