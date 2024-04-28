@@ -9,7 +9,7 @@ class Taxon extends EventTarget{
     constructor(name){
         super();
         if(!isTaxonNameValid(name)){
-            throw Error("Invalid Taxon name")
+            throw Error("Invalid Taxon name: " + name)
         }
         this.name = name
         this.loadInfo = {
@@ -77,8 +77,9 @@ class Taxon extends EventTarget{
             if(taxonData.scientificName !== undefined){
                 this.scientificName = taxonData.scientificName
             }
-            //TODO: add subtaxa to dataset source
-            this.subtaxa = []
+            if(taxonData.subtaxa !== undefined){
+                this.subtaxa = taxonData.subtaxa.map(subtaxonName => findOrCreateTaxon(subtaxonName))
+            }
 
         //TODO  wikipedia_img
     //     convert: function (wikipediaImage, record) { //make sure it is a string and a wikimedia url
