@@ -29,44 +29,44 @@ class Taxon extends EventTarget{
         // How do I await if it is loading but not loaded?
         if(!this.loadInfo.isLoaded && !this.loadInfo.isLoading){
             this.loadInfo.isLoading = true;
-            let taxon_file_name = this.name.replaceAll(" ", "_") + ".json"
+            let taxon_file_name = this.name + ".json"
 
-            const taxonDataResponse = await fetch(settings.data_url_base + "taxa/" + taxon_file_name)
+            const taxonDataResponse = await fetch(settings.data_url_base + "taxa_processed/" + taxon_file_name)
             const taxonData = await taxonDataResponse.json();
 
             if(taxonData.description !== undefined){
                 this.description = taxonData.description
             }
-            if(taxonData.example_member !== undefined && taxonData.example_member !== ""){
-                this.exampleMember = findOrCreateTaxon(taxonData.example_member)
+            if(taxonData.exampleMember !== undefined && taxonData.exampleMember !== ""){
+                this.exampleMember = findOrCreateTaxon(taxonData.exampleMember)
             }
-            if(taxonData.example_member_type !== undefined){
-                this.exampleMemberType = taxonData.example_member_type
+            if(taxonData.exampleMemberType !== undefined){
+                this.exampleMemberType = taxonData.exampleMemberType
             }
             if(taxonData.extinct !== undefined){
                 this.isExtinct = taxonData.extinct
             }
-            if(taxonData.other_names !== undefined){
-                this.otherNames = taxonData.other_names
+            if(taxonData.otherNames !== undefined){
+                this.otherNames = taxonData.otherNames
             }
-            if(taxonData.parent_taxon !== undefined && taxonData.parent_taxon !== ""){
-                this.parentTaxon = findOrCreateTaxon(taxonData.parent_taxon)
+            if(taxonData.parentTaxon !== undefined && taxonData.parentTaxon !== ""){
+                this.parentTaxon = findOrCreateTaxon(taxonData.parentTaxon)
             }
 
-            if(taxonData.popular_ancestors !== undefined){
-                this.popularAncestors = taxonData.popular_ancestors.map(popAncTaxonName => {
+            if(taxonData.popularAncestors !== undefined){
+                this.popularAncestors = taxonData.popularAncestors.map(popAncTaxonName => {
                     if(popAncTaxonName == null){
                         return undefined
                     } else {
-                        findOrCreateTaxon(popAncTaxonName)
+                        return findOrCreateTaxon(popAncTaxonName)
                     }
                 })
             }else{
                 this.popularAncestors = []
             }
 
-            if(taxonData.popular_subtaxa !== undefined){
-                this.popularSubtaxa = taxonData.popular_subtaxa.map(popSubTaxonName => findOrCreateTaxon(popSubTaxonName))
+            if(taxonData.popularSubtaxa !== undefined){
+                this.popularSubtaxa = taxonData.popularSubtaxa.map(popSubTaxonName => findOrCreateTaxon(popSubTaxonName))
             }else{
                 this.popularSubtaxa = []
             }
@@ -74,8 +74,8 @@ class Taxon extends EventTarget{
             if(taxonData.popularity !== undefined){
                 this.popularity = taxonData.popularity
             }
-            if(taxonData.scientific_name !== undefined){
-                this.scientificName = taxonData.scientific_name
+            if(taxonData.scientificName !== undefined){
+                this.scientificName = taxonData.scientificName
             }
             //TODO: add subtaxa to dataset source
             this.subtaxa = []
@@ -90,8 +90,8 @@ class Taxon extends EventTarget{
     //         return wikipediaImage;
     //     }
             
-            if(taxonData.taxonomic_rank !== undefined){
-                this.taxonomicRank = taxonData.taxonomic_rank
+            if(taxonData.taxonomicRank !== undefined){
+                this.taxonomicRank = taxonData.taxonomicRank
             }
             
             // TODO wikipedia_page
@@ -110,10 +110,8 @@ class Taxon extends EventTarget{
             
 
         } else if(!this.loadInfo.isLoaded && this.loadInfo.isLoading){
-            console.log("ensureloaded trying to await load of " + this.name) 
             // if currently loading, wait until loaded event is fired
             await new Promise((resolve, reject) => this.addEventListener("loaded", resolve))
-            console.log("ensureloaded continuing after await load of " + this.name)
         }
     }
 
