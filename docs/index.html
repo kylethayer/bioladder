@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
-    
+    <script src="libs/d3v7/d3.v7.js"></script>
+    <!-- <script src="libs/d3v7/d3.v7.min.js"></script> -->
 </head>
 
 <body>
     <h1> Bioladder: A Tree of life viewer</h1>
-    <svg id="mainView"></svg>
+    <svg id="mainView">
+        <g id="taxaContainer">
+
+        </g>
+    </svg>
     <script type="module"  src="javascripts/index.js"></script>
 </body>
 </html>
