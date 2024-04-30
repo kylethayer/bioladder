@@ -16,6 +16,7 @@ class Taxon extends EventTarget{
             isLoaded: false,
             isLoading: false,
             loadedEvent: new CustomEvent("loaded"),
+            loadedUpdateFunction: () => {}, // view update function to call when this is loaded
             areRelatedLoaded: false,
             areRelatedLoading: false,
             areRelatedRelatedLoaded: false,
@@ -108,7 +109,7 @@ class Taxon extends EventTarget{
 
             this.loadInfo.isLoaded = true;
             this.dispatchEvent(this.loadInfo.loadedEvent)
-            
+            this.loadInfo.loadedUpdateFunction()            
 
         } else if(!this.loadInfo.isLoaded && this.loadInfo.isLoading){
             // if currently loading, wait until loaded event is fired

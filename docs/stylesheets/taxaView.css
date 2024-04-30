@@ -1,0 +1,16 @@
+#mainView{
+    width:100%;
+    height:1000px;
+    background-color: #EEE
+}
+
+.taxon-box-background{
+    fill: white
+}
+
+.taxon-box-outline{
+    stroke-width: .75;
+    stroke: black;
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 5.472px;
+    fill: none
+}
