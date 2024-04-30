@@ -81,30 +81,29 @@ class Taxon extends EventTarget{
             if(taxonData.subtaxa !== undefined){
                 this.subtaxa = taxonData.subtaxa.map(subtaxonName => findOrCreateTaxon(subtaxonName))
             }
-
-        //TODO  wikipedia_img
-    //     convert: function (wikipediaImage, record) { //make sure it is a string and a wikimedia url
-    //         if (wikipediaImage && (typeof wikipediaImage !== 'string' ||
-    //             !/^https?:\/\/upload\.wikimedia\.org\/[%\w\.\/-]+$/.test(wikipediaImage))) {
-    //             window.console.error('wikipediaImage must be at http://upload.wikimedia.org/:', wikipediaImage);
-    //             return null;
-    //         }
-    //         return wikipediaImage;
-    //     }
-            
+            if(taxonData.wikipediaImg !== undefined && taxonData.wikipediaImg !== ""){
+                if (typeof taxonData.wikipediaImg !== 'string' ||
+                    !/^https?:\/\/upload\.wikimedia\.org\/[%\w\.\/-]+$/.test(taxonData.wikipediaImg)) 
+                {
+                    window.console.error('wikipediaImage must be at http://upload.wikimedia.org/:', taxonData.wikipediaImg);
+                } else {
+                    this.wikipediaImg = taxonData.wikipediaImg
+                }
+            }
             if(taxonData.taxonomicRank !== undefined){
                 this.taxonomicRank = taxonData.taxonomicRank
             }
-            
-            // TODO wikipedia_page
-    //     convert: function (wikipediaPage, record) { //make sure it is a string and a wikipedia page
-    //         if (wikipediaPage && (typeof wikipediaPage !== 'string' ||
-    //             !/^https?:\/\/en\.wikipedia\.org\/wiki\/[\w\s-_%#]+$/.test(wikipediaPage))) {
-    //             window.console.error('wikipediaPage must be at http://en.wikipedia.org/:', wikipediaPage);
-    //             return null;
-    //         }
-    //         return wikipediaPage;
-    //     }
+            if(taxonData.wikipediaPage !== undefined && taxonData.wikipediaPage !== ""){
+                if (typeof taxonData.wikipediaPage !== 'string' ||
+                !/^https?:\/\/en\.wikipedia\.org\/wiki\/[\w\s-_%#]+$/.test(taxonData.wikipediaPage)) 
+                {
+                    window.console.error('wikipediaPage must be at http://en.wikipedia.org/:', taxonData.wikipediaPage);
+                } else {
+                    this.wikipediaPage = taxonData.wikipediaPage
+                }
+                
+            }
+ 
             console.log("loaded taxon", this) 
 
             this.loadInfo.isLoaded = true;

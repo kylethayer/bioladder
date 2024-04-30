@@ -70,6 +70,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
         .attr('height', (d) => d.labelHeight)
         .attr('fill', 'orange')
 
+    // label text
     taxon_svg_groups
         .selectAll("text.taxon-label-text")
         .data(taxonBoxes, (d) => d.taxon.name)
@@ -80,6 +81,19 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
         .attr('text-anchor', 'middle')
         .attr('x', (d) => d.width / 2)
         .attr('y', (d) => d.labelHeight / 2)
+
+    // image (only for those that have images)
+    let wikiImgsTaxonBoxes = taxonBoxes.filter(taxonBox =>
+        taxonBox.taxon.wikipediaImg && taxonBox.isOpen
+    )
+    taxon_svg_groups
+        .selectAll("image.taxon-wikipedia-img")
+        .data(wikiImgsTaxonBoxes, (d) => d.taxon.name)
+        .join('image')
+        .attr('class', 'taxon-wikipedia-img')
+        .attr('href', (d) => (d).taxon.wikipediaImg)
+        .attr('x', 10)
+        .attr('y', (d) => d.labelHeight +10)
 
 
     // outline
