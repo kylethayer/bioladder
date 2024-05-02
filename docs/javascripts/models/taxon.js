@@ -25,6 +25,15 @@ class Taxon extends EventTarget{
         
     }
 
+    getPreviewImage(){
+        if(this.wikipediaImg){
+            return this.wikipediaImg
+        }
+        if(this.exampleMember){
+            return this.exampleMember.wikipediaImg
+        }
+    }
+
     // Loads this taxon info
     async ensureLoaded(){
         // How do I await if it is loading but not loaded?

@@ -37,7 +37,7 @@ class TaxaView{
     let mainTaxon = this.mainTaxonBox.taxon
     if(this.mainTaxonBox.taxon.loadInfo.isLoaded){
       if(mainTaxon.parentTaxon){
-        if(!this.parentTaxonBox || this.parentTaxonBox.taxa.name != mainTaxon.parentTaxon.name){
+        if(!this.parentTaxonBox || this.parentTaxonBox.taxon.name != mainTaxon.parentTaxon.name){
           this.parentTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon.parentTaxon)
         }
       }
@@ -74,6 +74,9 @@ class TaxaView{
     // set up update function calls for when things load:
     if(! this.mainTaxonBox.taxon.isLoaded){
       this.mainTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
+    }
+    if(this.mainTaxonBox.taxon.exampleMember && !this.mainTaxonBox.taxon.exampleMember.isLoaded){
+      this.mainTaxonBox.taxon.exampleMember.loadInfo.loadedUpdateFunction = d3Update
     }
   }
 
