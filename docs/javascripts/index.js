@@ -5,6 +5,7 @@ console.log("initialized")
 window.onhashchange = function () {
     if(window.location.hash){
         let taxonName = window.location.hash.substring(1);
+        taxonName = decodeURIComponent(taxonName)
         navigateToTaxon(taxonName);
     } else{
         window.location.hash = "#human";

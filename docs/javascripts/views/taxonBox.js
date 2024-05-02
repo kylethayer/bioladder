@@ -12,8 +12,8 @@ class TaxonBox{
         this.width = taxonBoxClosedWidth
         this.height = taxonBoxClosedHeight
         this.labelHeight = taxonLabelHeight
-        this.x = 0
-        this.y = 0
+        this.centerX = 0
+        this.centerY = 0
     }
 
     setOpen(isOpen){
@@ -27,6 +27,16 @@ class TaxonBox{
         }
     }
 
+    updatePositions(){
+        this.x = this.centerX - this.width / 2
+        this.y = this.centerY - this.height / 2
+
+        this.leftX = this.x
+        this.rightX = this.x + this.width
+        this.topY = this.y
+        this.bottomY = this.y + this.height
+    }
+
 }
 
 function taxonBoxD3(taxonBoxes, taxaContainer){
@@ -36,19 +46,31 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
     taxaContainer
       .selectAll("g.taxon-box")
       .data(taxonBoxes, (d) => d.taxon.name)
-      .join('g')
+      .join(enter => {
+        let g = enter.append('g')
+        //background (with box shadow)
+        g.append('rect')
+            .attr('class', 'taxon-box-background')
+        //taxonLabel rectangle
+        g.append('rect')
+            .attr('class', 'taxon-label-rect')
+        // label text
+        g.append('text')
+            .attr('class', 'taxon-label-text')
+        // image (only for those that have images)
+        g.append('image')
+          .attr('class', 'taxon-wikipedia-img')
+        // outline
+        g.append('rect')
+            .attr('class', 'taxon-box-outline')
+        return g
+      })
       .attr('class', 'taxon-box')
       .attr('transform', (d) =>  
         `translate(${d.x},${d.y})`)
 
-    // TODO: Below causes duplication, perhaps I need new data/join for each of the following
-
     //background (with box shadow)
-    taxon_svg_groups
-      .selectAll("rect.taxon-box-background")
-      .data(taxonBoxes, (d) => d.taxon.name)
-      .join('rect')
-      .attr('class', 'taxon-box-background')
+    d3.selectAll("rect.taxon-box-background")
       .attr('width', (d) => d.width)
       .attr('height', (d) => d.height)
       .attr('style', (d) => {
@@ -57,51 +79,35 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
         let minShadowWidth = popularity / 100.0 * 0.3;
         let maxShadowWidth = popularity / 100.0 * 0.9;
         return `filter: drop-shadow(0 ${minShadowWidth}em ${maxShadowWidth}em rgba(0,0,0,0.8));`
-
-      })
+    })
     
-    // taxonLabelHeight
-    taxon_svg_groups
-        .selectAll("rect.taxon-label-rect")
-        .data(taxonBoxes, (d) => d.taxon.name)
-        .join('rect')
-        .attr('class', 'taxon-label-rect')
+    //taxonLabel rectangle
+    d3.selectAll("rect.taxon-label-rect")
         .attr('width', (d) => d.width)
         .attr('height', (d) => d.labelHeight)
         .attr('fill', 'orange')
 
     // label text
-    taxon_svg_groups
-        .selectAll("text.taxon-label-text")
-        .data(taxonBoxes, (d) => d.taxon.name)
-        .join('text')
-        .attr('class', 'taxon-label-text')
-        .text((d) => d.taxon.name)
+    d3.selectAll("text.taxon-label-text")
+        .text((d) => {
+            console.log("text label taxon name", d.taxon.name); 
+            return d.taxon.name})
         .attr('dominant-baseline', 'central')
         .attr('text-anchor', 'middle')
         .attr('x', (d) => d.width / 2)
         .attr('y', (d) => d.labelHeight / 2)
 
     // image (only for those that have images)
-    let wikiImgsTaxonBoxes = taxonBoxes.filter(taxonBox =>
-        taxonBox.taxon.wikipediaImg && taxonBox.isOpen
-    )
-    taxon_svg_groups
-        .selectAll("image.taxon-wikipedia-img")
-        .data(wikiImgsTaxonBoxes, (d) => d.taxon.name)
-        .join('image')
+    d3.selectAll("image.taxon-wikipedia-img")
         .attr('class', 'taxon-wikipedia-img')
-        .attr('href', (d) => (d).taxon.wikipediaImg)
+        .attr('href', (d) => d.taxon.wikipediaImg)
+        .attr('hidden', (d) => d.taxon.wikipediaImg && d.isOpen ? null: true)
         .attr('x', 10)
         .attr('y', (d) => d.labelHeight +10)
 
 
     // outline
-    taxon_svg_groups
-      .selectAll("rect.taxon-box-outline")
-      .data(taxonBoxes, (d) => d.taxon.name)
-      .join('rect')
-      .attr('class', 'taxon-box-outline')
+    d3.selectAll("rect.taxon-box-outline")
       .attr('width', (d) => d.width)
       .attr('height', (d) => d.height)
 

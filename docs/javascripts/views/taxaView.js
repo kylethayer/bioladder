@@ -21,6 +21,7 @@ function gotoTaxon(taxon){
 function d3Update(){
   let taxaContainer = d3.select("#taxaContainer")
 
+  taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
 
   taxaView.setUpdateFunctionCalls()
@@ -28,15 +29,44 @@ function d3Update(){
 
 class TaxaView{
   constructor(mainTaxon){
-      this.mainTaxonBox = new TaxonBox(mainTaxon)
+    this.mainTaxonBox = new TaxonBox(mainTaxon)
+  }
+
+  updateTaxonBoxes(){
+    let mainTaxon = this.mainTaxonBox.taxon
+    if(this.mainTaxonBox.taxon.loadInfo.isLoaded){
+      if(mainTaxon.parentTaxon){
+        if(!this.parentTaxonBox || this.parentTaxonBox.taxa.name != mainTaxon.parentTaxon.name){
+          this.parentTaxonBox = new TaxonBox(mainTaxon.parentTaxon)
+        }
+      }
+    }
   }
 
   getTaxonBoxes(){
-    //TODO: set position, scale, and open for each TaxonBox
+    let taxaContainer = d3.select("#taxaContainer")
+    let taxaContainerWidth = taxaContainer.node().getBoundingClientRect().width;
+    let taxaContainerHeight = taxaContainer.node().getBoundingClientRect().height;
+
+    let taxonBoxes = []
+    
+    //set position, scale, and open for each TaxonBox
     this.mainTaxonBox.setOpen(true)
-    this.mainTaxonBox.x = 50 
-    this.mainTaxonBox.y = 50 
-    return [this.mainTaxonBox]
+    this.mainTaxonBox.centerX = taxaContainerWidth/2 
+    this.mainTaxonBox.centerY = taxaContainerHeight/2 
+    this.mainTaxonBox.updatePositions()
+    taxonBoxes.push(this.mainTaxonBox)
+
+    if(this.parentTaxonBox){
+      this.parentTaxonBox.setOpen(false)
+      this.parentTaxonBox.centerX = this.mainTaxonBox.centerX
+      this.parentTaxonBox.centerY = this.mainTaxonBox.topY - 50
+      this.parentTaxonBox.updatePositions()
+      taxonBoxes.push(this.parentTaxonBox)
+    }
+
+
+    return taxonBoxes
   }
 
   setUpdateFunctionCalls(){

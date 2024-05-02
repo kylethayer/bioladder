@@ -104,7 +104,7 @@ class Taxon extends EventTarget{
                 
             }
  
-            console.log("loaded taxon", this) 
+            //console.log("loaded taxon", this) 
 
             this.loadInfo.isLoaded = true;
             this.dispatchEvent(this.loadInfo.loadedEvent)

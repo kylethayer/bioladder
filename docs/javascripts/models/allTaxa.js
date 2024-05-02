@@ -13,13 +13,13 @@ function findOrCreateTaxon(taxonName){
 }
 
 async function loadAllTaxa(){
-    console.log("loading all taxa data")
+    //console.log("loading all taxa data")
     const allTaxaListResponse = await fetch(settings.data_url_base + "taxon_list.json")
     const allTaxaList = await allTaxaListResponse.json();
     allTaxaList.forEach(taxonName => {
         findOrCreateTaxon(taxonName);
     })
-    console.log("all taxa data loaded", allTaxaDictionary)
+    //console.log("all taxa data loaded", allTaxaDictionary)
 }
 
 loadAllTaxa()

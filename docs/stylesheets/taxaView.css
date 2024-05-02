@@ -1,4 +1,4 @@
-#mainView{
+#taxaContainer{
     width:100%;
     height:100%;
     background-color: #EEE
@@ -14,3 +14,4 @@
     box-shadow: rgba(0, 0, 0, 0.8) 0px 5.472px;
     fill: none
 }
+
