@@ -1,8 +1,12 @@
-body {
-    overflow: hidden;
+html, body{
+    height:100%;
 }
-
-.page-contents {
-    height: 100vh;
-    padding: 0
+body{
+    display: flex;
+    flex-direction:column;
+    padding: 0 !important;
+}
+.content{
+    background-color:gray;
+    flex-grow: 1;
 }
