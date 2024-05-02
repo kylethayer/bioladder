@@ -1,0 +1,8 @@
+body {
+    overflow: hidden;
+}
+
+.page-contents {
+    height: 100vh;
+    padding: 0
+}
