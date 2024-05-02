@@ -1,3 +1,5 @@
+import {navigateToTaxonViaUrl} from "../controllers/mainController.js"
+
 const taxonBoxClosedWidth = 200
 const taxonBoxClosedHeight = 21
 const taxonLabelHeight = taxonBoxClosedHeight
@@ -39,6 +41,64 @@ class TaxonBox{
 
 }
 
+function findOrCreateTaxonBox(taxaContainer, taxon){
+    let allCurrentTaxonBoxes = 
+        taxaContainer
+            .selectAll("g.taxon-box")
+            .data()
+
+    for(const taxonBox of allCurrentTaxonBoxes){
+        if(taxonBox.taxon.name == taxon.name){
+            return taxonBox
+        }
+    }
+    return new TaxonBox(taxon)
+}
+
+function taxon_box_initial_features (g){
+    g.attr('transform', (d) =>  `translate(${d.x},${-10})`)
+}
+
+function taxon_box_transform_features (g){
+    g.attr('transform', (d) =>  `translate(${d.x},${d.y})`)
+}
+
+function taxon_box_background_transform_features (background){
+    background
+        .attr('width', (d) => d.width)
+        .attr('height', (d) => d.height)
+        .attr('style', (d) => {
+            let popularity = d.taxon.popularity ? d.taxon.popularity : 0;
+            let minShadowWidth = popularity / 100.0 * 0.3;
+            let maxShadowWidth = popularity / 100.0 * 0.9;
+            return `filter: drop-shadow(0 ${minShadowWidth}em ${maxShadowWidth}em rgba(0,0,0,0.8));`
+        })
+}
+
+function taxon_box_label_rect_transform_features(label_rect){
+    label_rect
+        .attr('width', (d) => d.width)
+        .attr('height', (d) => d.labelHeight)
+        .attr('fill', 'orange')
+}
+
+function taxon_box_label_text_transform_features(label_text){
+    label_text
+        .attr('x', (d) => d.width / 2)
+        .attr('y', (d) => d.labelHeight / 2)
+}
+
+function taxon_box_image_transform_features(image){
+    image.attr('x', 10)
+        .attr('y', (d) => d.labelHeight +10)
+}
+
+function taxon_box_outline_transform_features(outline){
+    outline
+    .attr('width', (d) => d.width)
+    .attr('height', (d) => d.height)
+}
+
 function taxonBoxD3(taxonBoxes, taxaContainer){
 
     // NOTE: We'll also need a loading circle for unknown / loading
@@ -48,70 +108,75 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .data(taxonBoxes, (d) => d.taxon.name)
       .join(enter => {
         let g = enter.append('g')
+        taxon_box_initial_features(g)
+
         //background (with box shadow)
-        g.append('rect')
+        let background = g.append('rect')
             .attr('class', 'taxon-box-background')
+        taxon_box_background_transform_features(background)
+            
         //taxonLabel rectangle
-        g.append('rect')
+        let label_rect = g.append('rect')
             .attr('class', 'taxon-label-rect')
+        taxon_box_label_rect_transform_features(label_rect)
+        
         // label text
-        g.append('text')
+        let label_text = g.append('text')
             .attr('class', 'taxon-label-text')
+        taxon_box_label_text_transform_features(label_text)
+        
         // image (only for those that have images)
-        g.append('image')
+        let image = g.append('image')
           .attr('class', 'taxon-wikipedia-img')
+        taxon_box_image_transform_features(image)
+
         // outline
-        g.append('rect')
+        let outline = g.append('rect')
             .attr('class', 'taxon-box-outline')
+        taxon_box_outline_transform_features(outline)
+        
         return g
       })
       .attr('class', 'taxon-box')
+      .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
+      .transition().duration(700)
       .attr('transform', (d) =>  
         `translate(${d.x},${d.y})`)
+  
 
     //background (with box shadow)
-    d3.selectAll("rect.taxon-box-background")
-      .attr('width', (d) => d.width)
-      .attr('height', (d) => d.height)
-      .attr('style', (d) => {
-        let popularity = d.taxon.popularity ? d.taxon.popularity : 0;
-        console.log("taxon", d.taxon.name, "popularity", popularity)
-        let minShadowWidth = popularity / 100.0 * 0.3;
-        let maxShadowWidth = popularity / 100.0 * 0.9;
-        return `filter: drop-shadow(0 ${minShadowWidth}em ${maxShadowWidth}em rgba(0,0,0,0.8));`
-    })
+    let background = d3.selectAll("rect.taxon-box-background")
+      .transition()
+    taxon_box_background_transform_features(background)
     
     //taxonLabel rectangle
-    d3.selectAll("rect.taxon-label-rect")
-        .attr('width', (d) => d.width)
-        .attr('height', (d) => d.labelHeight)
-        .attr('fill', 'orange')
+    let label_rect = d3.selectAll("rect.taxon-label-rect")
+        .transition()
+    taxon_box_label_rect_transform_features(label_rect)
 
     // label text
-    d3.selectAll("text.taxon-label-text")
-        .text((d) => {
-            console.log("text label taxon name", d.taxon.name); 
-            return d.taxon.name})
+    let label_text = d3.selectAll("text.taxon-label-text")
+        .text((d) => d.taxon.name)
         .attr('dominant-baseline', 'central')
         .attr('text-anchor', 'middle')
-        .attr('x', (d) => d.width / 2)
-        .attr('y', (d) => d.labelHeight / 2)
+        .transition()
+    taxon_box_label_text_transform_features(label_text)
+        
 
     // image (only for those that have images)
-    d3.selectAll("image.taxon-wikipedia-img")
+    let image = d3.selectAll("image.taxon-wikipedia-img")
         .attr('class', 'taxon-wikipedia-img')
         .attr('href', (d) => d.taxon.wikipediaImg)
         .attr('hidden', (d) => d.taxon.wikipediaImg && d.isOpen ? null: true)
-        .attr('x', 10)
-        .attr('y', (d) => d.labelHeight +10)
-
-
+        .transition()
+    taxon_box_image_transform_features(image)
+        
     // outline
-    d3.selectAll("rect.taxon-box-outline")
-      .attr('width', (d) => d.width)
-      .attr('height', (d) => d.height)
+    let outline = d3.selectAll("rect.taxon-box-outline")
+      .transition()
+    taxon_box_outline_transform_features(outline)
 
 
 }
 
-export {TaxonBox, taxonBoxD3}
+export {TaxonBox, taxonBoxD3, findOrCreateTaxonBox}

@@ -1,8 +1,9 @@
 //import * as d3 from '../../libs/d3v7/d3.v7.js'
 //import * from '../../libs/d3v7/d3.v7.min.js'
-import {TaxonBox, taxonBoxD3} from './taxonBox.js'
+import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
 
 let taxaView;
+let taxaContainer = d3.select("#taxaContainer")
 
 /**
  * goToTaxon function
@@ -19,8 +20,6 @@ function gotoTaxon(taxon){
 }
 
 function d3Update(){
-  let taxaContainer = d3.select("#taxaContainer")
-
   taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
 
@@ -28,16 +27,18 @@ function d3Update(){
 }
 
 class TaxaView{
+  
   constructor(mainTaxon){
-    this.mainTaxonBox = new TaxonBox(mainTaxon)
+    this.mainTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon)
   }
+
 
   updateTaxonBoxes(){
     let mainTaxon = this.mainTaxonBox.taxon
     if(this.mainTaxonBox.taxon.loadInfo.isLoaded){
       if(mainTaxon.parentTaxon){
         if(!this.parentTaxonBox || this.parentTaxonBox.taxa.name != mainTaxon.parentTaxon.name){
-          this.parentTaxonBox = new TaxonBox(mainTaxon.parentTaxon)
+          this.parentTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon.parentTaxon)
         }
       }
     }

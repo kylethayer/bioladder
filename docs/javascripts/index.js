@@ -1,6 +1,4 @@
-import navigateToTaxon from "./controllers/mainController.js"
-
-console.log("initialized")
+import {navigateToTaxon} from "./controllers/mainController.js"
 
 window.onhashchange = function () {
     if(window.location.hash){
