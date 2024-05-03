@@ -90,7 +90,9 @@ const taxonBoxElements = [
         className: 'taxon-wikipedia-img',
         refreshPreTransitionFn: selection => selection
             .attr('class', 'taxon-wikipedia-img')
-            .attr('href', (d) => d.taxon.getPreviewImage())
+            .attr('href', (d) => 
+                d.taxon.getPreviewImage()
+            )
             .attr('hidden', (d) => d.taxon.getPreviewImage() && d.isOpen ? null: true)
         ,
         postTransitionFn: selection => selection

@@ -2,6 +2,11 @@ const taxonLabelHeight = 4
 const taxonBoxOpenHeight = 28
 const taxonBoxOpenWidth = 90
 const taxonBoxClosedWidth = 40
+const distantTaxonResizeAmt = 0.75
+const taxonChildHorizontalSpacing = 2
+
+//////////////////////////
+// vertical spacing
 
 // vertical space is divided into 100 units as follows:
 const verticalSpacing = [
@@ -14,7 +19,7 @@ const verticalSpacing = [
     {height: 8, use: "elbow-children-parent"}, // - 8 units elbow joint
     {height: taxonLabelHeight, use: "child-box"}, // - 4 units child boxes
     {height: 8, use: "elbow-pop-descendents-parent"},// - 8 units elbow joints
-    {height: .75*taxonBoxClosedWidth, use: "pop-descendents-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
+    {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendents-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
     {height: 2, use: "bottom-padding"}, // - 2 units padding
 ]
 
@@ -42,15 +47,48 @@ function setVerticalPixels(pixels){
     pixelScale = d3.scaleLinear([0, totalHeightUnits], [0, verticalPixels]);
 }
 
+//////////////////////////
+// horizontal spacing
+let totalWidthUnits = 100 // default, should be recalculated
+
+function getHorizontalCenter(){
+    return totalWidthUnits / 2
+}
+
+function getSubtaxonHorizontalCenter(childNum, numChildren){
+    let totalSubtaxonsWidth = numChildren * taxonBoxClosedWidth + (numChildren - 1) * taxonChildHorizontalSpacing
+    let leftPosStart = getHorizontalCenter() - totalSubtaxonsWidth / 2 // start of leftmost subtaxon
+    let numBoxesToLeft = childNum // index is the number of children to left (index 0 has none to left)
+
+    let boxCenter = leftPosStart +  //left start
+                    numBoxesToLeft * (taxonBoxClosedWidth + taxonChildHorizontalSpacing) + // space taken by left boxes
+                    taxonBoxClosedWidth / 2 // move to center of this box
+    return boxCenter
+}
+
+
+function setHorizontalWidth(taxaContainerWidth){
+    totalWidthUnits = pixelScale.invert(taxaContainerWidth)
+}
+
+
+/////////////////////
+// set up
+function setScales(taxaContainerHeight, taxaContainerWidth){
+    setVerticalPixels(taxaContainerHeight)
+    setHorizontalWidth(taxaContainerWidth)
+}
 
 export {
     taxonLabelHeight,
     taxonBoxOpenHeight,
     taxonBoxClosedWidth,
     taxonBoxOpenWidth,
-    setVerticalPixels, 
     pixelScale, 
-    verticalSpacingLookup}
+    setScales, 
+    verticalSpacingLookup,
+    getHorizontalCenter,
+    getSubtaxonHorizontalCenter}
 
 
 

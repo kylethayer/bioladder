@@ -2,7 +2,7 @@
 //import * from '../../libs/d3v7/d3.v7.min.js'
 import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
 import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,
-  setVerticalPixels, pixelScale, verticalSpacingLookup} from "./taxonBoxPositionCalculator.js"
+  setScales, pixelScale, verticalSpacingLookup, getHorizontalCenter, getSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
 let taxaContainer = d3.select("#taxaContainer")
@@ -23,7 +23,8 @@ function gotoTaxon(taxon){
 
 function d3Update(){
   let taxaContainerHeight = taxaContainer.node().getBoundingClientRect().height;
-  setVerticalPixels(taxaContainerHeight)
+  let taxaContainerWidth = taxaContainer.node().getBoundingClientRect().width;
+  setScales(taxaContainerHeight, taxaContainerWidth)
 
   taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
@@ -37,7 +38,8 @@ class TaxaView{
     this.mainTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon)
   }
 
-
+  // this functions sets the data for this object to have all the taxonBoxes
+  // (but it doesn't position them)
   updateTaxonBoxes(){
     let mainTaxon = this.mainTaxonBox.taxon
     if(this.mainTaxonBox.taxon.loadInfo.isLoaded){
@@ -48,41 +50,36 @@ class TaxaView{
       }
       if(mainTaxon.subtaxa && mainTaxon.subtaxa.length > 0){
         this.subtaxonBoxes = []
-        // TODO: Do all, but for now test with just one
-        this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, mainTaxon.subtaxa[0]))
-        // for(const subtaxa of this.subtaxa){
-        //   this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, mainTaxon.subtaxa))
-        // }
+        for(const subtaxa of mainTaxon.subtaxa){
+          this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, subtaxa))
+        }
       }
     }
   }
 
   getTaxonBoxes(){
-    let taxaContainer = d3.select("#taxaContainer")
-    let taxaContainerWidth = taxaContainer.node().getBoundingClientRect().width;
-    let taxaContainerHeight = taxaContainer.node().getBoundingClientRect().height;
-
     let taxonBoxes = []
     
     //set position, scale, and open for each TaxonBox
     this.mainTaxonBox.isOpen = true
-    this.mainTaxonBox.centerX = taxaContainerWidth/2 
+    this.mainTaxonBox.centerX = pixelScale(getHorizontalCenter())
     this.mainTaxonBox.centerY = pixelScale(verticalSpacingLookup["main-box"].middle)
     this.mainTaxonBox.updatePositionsAndSizes()
     taxonBoxes.push(this.mainTaxonBox)
 
     if(this.parentTaxonBox){
       this.parentTaxonBox.isOpen = false
-      this.parentTaxonBox.centerX = this.mainTaxonBox.centerX
+      this.parentTaxonBox.centerX = pixelScale(getHorizontalCenter())
       this.parentTaxonBox.centerY = pixelScale(verticalSpacingLookup["parent-box"].middle)
       this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
     }
 
     if(this.subtaxonBoxes){
-      for(const subtaxonBox of this.subtaxonBoxes){
+      const numSubtaxa = this.subtaxonBoxes.length
+      for(const [subtaxonNum, subtaxonBox] of this.subtaxonBoxes.entries()){
         subtaxonBox.isOpen = false
-        subtaxonBox.centerX = this.mainTaxonBox.centerX
+        subtaxonBox.centerX = pixelScale(getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa))
         subtaxonBox.centerY = pixelScale(verticalSpacingLookup["child-box"].middle)
         subtaxonBox.updatePositionsAndSizes()
         taxonBoxes.push(subtaxonBox)
