@@ -36,6 +36,8 @@ class TaxonBox{
 
 }
 
+// Look up d3's current data to see if this TaxonBox already exists to reuse
+// otherwise, make a new TaxonBox
 function findOrCreateTaxonBox(taxaContainer, taxon){
     let allCurrentTaxonBoxes = 
         taxaContainer
@@ -50,9 +52,8 @@ function findOrCreateTaxonBox(taxaContainer, taxon){
     return new TaxonBox(taxon)
 }
 
-
+// code to create or update the d3 taxon boxes
 function taxonBoxD3(taxonBoxes, taxaContainer){
-
     // NOTE: We'll also need a loading circle for unknown / loading
     let taxon_svg_groups = 
     taxaContainer

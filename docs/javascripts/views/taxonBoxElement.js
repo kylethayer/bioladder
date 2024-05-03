@@ -5,7 +5,7 @@ class TaxonBoxElement{
     // - className - the class name to give these elements
     // - refreshPreTransitionFn - settings to set on elements before transition (e.g., permenent, non-transition settings)
     // - postTransitionFn - settings to transition to for new state
-    // - initialTransitionFeatures - settings to start with for new elements to transition from on first appearance
+    // - initialTransitionFeatures - settings to start with for new elements to transition from on first appearance (defaults to using postTransitionFn)
     constructor(options){
         this.elementName = options.elementName
         this.className = options.className
@@ -80,9 +80,11 @@ const taxonBoxElements = [
         postTransitionFn: selection => selection
             .attr('x', (d) => d.width / 2)
             .attr('y', (d) => d.labelHeight / 2)
+            // TODO: SCALE FONT SIZE BASED ON LABEL HEIGHT
         
     }),
     // image (only for those that have images)
+    // TODO MAKE IMAGE SMALL BUT VISIBLE IN CLOSED TAXONBOX LABEL
     new TaxonBoxElement({
         elementName: 'image', 
         className: 'taxon-wikipedia-img',
