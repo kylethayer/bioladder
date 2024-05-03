@@ -83,32 +83,37 @@ const taxonBoxElements = [
             // TODO: SCALE FONT SIZE BASED ON LABEL HEIGHT
         
     }),
-    // image (only for those that have images)
-    // TODO MAKE IMAGE SMALL BUT VISIBLE IN CLOSED TAXONBOX LABEL
+    // image (hidden if no image)
     new TaxonBoxElement({
         elementName: 'image', 
         className: 'taxon-wikipedia-img',
         refreshPreTransitionFn: selection => selection
             .attr('class', 'taxon-wikipedia-img')
-            .attr('href', (d) => 
-                d.taxon.getPreviewImage()
-            )
-            .attr('hidden', (d) => d.taxon.getPreviewImage() && d.isOpen ? null: true)
+            .attr('href', (d) =>  d.taxon.getPreviewImage())
+            .attr('hidden', (d) => d.taxon.getPreviewImage() ? null: true)
         ,
         postTransitionFn: selection => selection
-            .attr('x', 10)
-            .attr('y', (d) => d.labelHeight +10)
-            .attr('style', (d) => {
-                return `width:${d.width / 2}px; height:${d.height / 2}px;`
+            .attr('x', (d) => {
+                if(d.isOpen){
+                    return d.labelHeight / 2
+                } else {
+                    return d.labelHeight / 10
+                }
             })
-        ,
-        initialTransitionFeatures: selection => selection
-            .attr('x', 10)
-            .attr('y', (d) => d.labelHeight +10)
-            .attr('style', (d) => {
-                return `width:${0}px; height:${0}px;`
+            .attr('y', (d) => {
+                if(d.isOpen){
+                    return d.labelHeight + 10
+                } else {
+                    return d.labelHeight / 10
+                }
             })
-        
+            .attr('style', (d) => {
+                if(d.isOpen){
+                    return `width:${d.width / 2}px; height:${d.height - d.labelHeight - 20}px;`
+                } else {
+                    return  `width:${d.labelHeight * 8 / 10 * 2}px; height:${d.labelHeight * 8 / 10}px;`
+                }
+            })        
     }),
     // outline
     new TaxonBoxElement({

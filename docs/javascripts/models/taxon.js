@@ -115,6 +115,15 @@ class Taxon extends EventTarget{
  
             //console.log("loaded taxon", this) 
 
+            // if there is an example subtaxa, then we are only partially loaded
+            if(this.exampleMember){
+                // go ahead and run updates since we are partially loaded
+                this.loadInfo.loadedUpdateFunction()  
+                
+                // then wait for the example member to be fully loaded before saying we are fully loaded
+                await this.exampleMember.ensureLoaded()
+            }
+
             this.loadInfo.isLoaded = true;
             this.dispatchEvent(this.loadInfo.loadedEvent)
             this.loadInfo.loadedUpdateFunction()            

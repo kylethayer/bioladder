@@ -92,12 +92,39 @@ class TaxaView{
 
   setUpdateFunctionCalls(){
     // set up update function calls for when things load:
+
+    // update for main taxon and preview image loaded
     if(! this.mainTaxonBox.taxon.isLoaded){
       this.mainTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
     }
     if(this.mainTaxonBox.taxon.exampleMember && !this.mainTaxonBox.taxon.exampleMember.isLoaded){
       this.mainTaxonBox.taxon.exampleMember.loadInfo.loadedUpdateFunction = d3Update
     }
+
+    // update for parent preview image
+    if(this.parentTaxonBox){
+      if(! this.parentTaxonBox.taxon.isLoaded){
+        this.parentTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
+      }
+      if(this.parentTaxonBox.taxon.exampleMember && !this.parentTaxonBox.taxon.exampleMember.isLoaded){
+        this.parentTaxonBox.taxon.exampleMember.loadInfo.loadedUpdateFunction = d3Update
+      }
+    }
+
+    // update for subtaxa and their preview images
+    if(this.subtaxonBoxes){
+      // setting update on
+      for(const subtaxonBox of this.subtaxonBoxes){
+        if(!subtaxonBox.taxon.isLoaded){
+          subtaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
+        }
+        if(subtaxonBox.taxon.exampleMember && !subtaxonBox.taxon.exampleMember.isLoaded){
+          subtaxonBox.taxon.exampleMember.loadInfo.loadedUpdateFunction = d3Update
+        }
+      }
+    }
+
+
   }
 
 }
