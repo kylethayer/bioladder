@@ -1,5 +1,5 @@
 import findOrCreateTaxon from '../models/allTaxa.js'
-import gotoTaxon from '../views/taxaView.js'
+import {gotoTaxon, d3Update} from '../views/taxaView.js'
 
 function navigateToTaxonViaUrl(taxonName){
     window.location.hash = "#"+taxonName;
@@ -12,4 +12,4 @@ function navigateToTaxon(taxonName){
     gotoTaxon(newTargetTaxon)
 }
 
-export {navigateToTaxon, navigateToTaxonViaUrl}
+export {navigateToTaxon, navigateToTaxonViaUrl, d3Update}

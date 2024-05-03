@@ -1,6 +1,8 @@
 //import * as d3 from '../../libs/d3v7/d3.v7.js'
 //import * from '../../libs/d3v7/d3.v7.min.js'
 import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
+import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,
+  setVerticalPixels, pixelScale, verticalSpacingLookup} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
 let taxaContainer = d3.select("#taxaContainer")
@@ -20,6 +22,9 @@ function gotoTaxon(taxon){
 }
 
 function d3Update(){
+  let taxaContainerHeight = taxaContainer.node().getBoundingClientRect().height;
+  setVerticalPixels(taxaContainerHeight)
+
   taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
 
@@ -52,17 +57,17 @@ class TaxaView{
     let taxonBoxes = []
     
     //set position, scale, and open for each TaxonBox
-    this.mainTaxonBox.setOpen(true)
+    this.mainTaxonBox.isOpen = true
     this.mainTaxonBox.centerX = taxaContainerWidth/2 
     this.mainTaxonBox.centerY = taxaContainerHeight/2 
-    this.mainTaxonBox.updatePositions()
+    this.mainTaxonBox.updatePositionsAndSizes()
     taxonBoxes.push(this.mainTaxonBox)
 
     if(this.parentTaxonBox){
-      this.parentTaxonBox.setOpen(false)
+      this.parentTaxonBox.isOpen = false
       this.parentTaxonBox.centerX = this.mainTaxonBox.centerX
       this.parentTaxonBox.centerY = this.mainTaxonBox.topY - 50
-      this.parentTaxonBox.updatePositions()
+      this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
     }
 
@@ -83,4 +88,4 @@ class TaxaView{
 }
 
 
-export default gotoTaxon
+export {gotoTaxon, d3Update}

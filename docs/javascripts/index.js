@@ -1,4 +1,4 @@
-import {navigateToTaxon} from "./controllers/mainController.js"
+import {navigateToTaxon, d3Update} from "./controllers/mainController.js"
 
 window.onhashchange = function () {
     if(window.location.hash){
@@ -15,6 +15,8 @@ if(!window.location.hash){
 } else {
     window.onhashchange() // first time loading make sure to trigger the first navigation
 }
+
+d3.select(window).on('resize', d3Update);
 
 
 export default {}

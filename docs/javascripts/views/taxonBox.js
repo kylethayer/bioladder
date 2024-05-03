@@ -1,10 +1,5 @@
 import {navigateToTaxonViaUrl} from "../controllers/mainController.js"
-
-const taxonBoxClosedWidth = 200
-const taxonBoxClosedHeight = 21
-const taxonLabelHeight = taxonBoxClosedHeight
-const taxonBoxOpenWidth = 500
-const taxonBoxOpenHeight = 293
+import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,  pixelScale} from "./taxonBoxPositionCalculator.js"
 
 const transitionSpeed = 1000
 
@@ -13,25 +8,23 @@ class TaxonBox{
     constructor(taxon){
         this.taxon = taxon
         this.isOpen = false
-        this.width = taxonBoxClosedWidth
-        this.height = taxonBoxClosedHeight
-        this.labelHeight = taxonLabelHeight
         this.centerX = 0
         this.centerY = 0
+        this.updatePositionsAndSizes()
     }
 
-    setOpen(isOpen){
-        this.isOpen = isOpen
-        if(isOpen){
-            this.width = taxonBoxOpenWidth
-            this.height = taxonBoxOpenHeight
+    updatePositionsAndSizes(){
+        this.labelHeight = pixelScale(taxonLabelHeight)
+
+        if(this.isOpen){
+            this.width = pixelScale(taxonBoxOpenWidth)
+            this.height = pixelScale(taxonBoxOpenHeight)
         }else{
-            this.width = taxonBoxClosedWidth
-            this.height = taxonBoxClosedHeight
+            this.width = pixelScale(taxonBoxClosedWidth)
+            this.height = pixelScale(taxonLabelHeight)
         }
-    }
 
-    updatePositions(){
+
         this.x = this.centerX - this.width / 2
         this.y = this.centerY - this.height / 2
 
@@ -111,6 +104,7 @@ function taxon_box_outline_transform_features(outline){
     .attr('width', (d) => d.width)
     .attr('height', (d) => d.height)
 }
+
 
 function taxonBoxD3(taxonBoxes, taxaContainer){
 
