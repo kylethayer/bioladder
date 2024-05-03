@@ -107,6 +107,7 @@ const taxonBoxElements = [
                     return d.labelHeight / 10
                 }
             })
+            .attr('transform', (d) =>  `rotate(${-d.rotate}, ${d.labelHeight/1.5}, ${d.labelHeight/1.5})`)  // WHY IS ROTATE 1.5???
             .attr('style', (d) => {
                 if(d.isOpen){
                     return `width:${d.width / 2}px; height:${d.height - d.labelHeight - 20}px;`

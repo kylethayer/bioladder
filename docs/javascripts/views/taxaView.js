@@ -2,7 +2,7 @@
 //import * from '../../libs/d3v7/d3.v7.min.js'
 import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
 import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,
-  setScales, pixelScale, verticalSpacingLookup, getHorizontalCenter, getSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
+  setScales, pixelScale, verticalSpacingLookup, getHorizontalCenter, getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
 let taxaContainer = d3.select("#taxaContainer")
@@ -50,8 +50,17 @@ class TaxaView{
       }
       if(mainTaxon.subtaxa && mainTaxon.subtaxa.length > 0){
         this.subtaxonBoxes = []
-        for(const subtaxa of mainTaxon.subtaxa){
-          this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, subtaxa))
+        for(const [subtaxonNum, subtaxon] of mainTaxon.subtaxa.entries()){
+          this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, subtaxon))
+          if(subtaxon.popularSubtaxa && subtaxon.popularSubtaxa.length > 0){
+            if(!this.popularSubtaxonBoxes){
+              this.popularSubtaxonBoxes = []
+            }
+            this.popularSubtaxonBoxes[subtaxonNum] = []
+            for(const popSubtaxon of subtaxon.popularSubtaxa){
+              this.popularSubtaxonBoxes[subtaxonNum].push(findOrCreateTaxonBox(taxaContainer, popSubtaxon))
+            }
+          }
         }
       }
     }
@@ -64,6 +73,7 @@ class TaxaView{
     this.mainTaxonBox.isOpen = true
     this.mainTaxonBox.centerX = pixelScale(getHorizontalCenter())
     this.mainTaxonBox.centerY = pixelScale(verticalSpacingLookup["main-box"].middle)
+    this.mainTaxonBox.rotate = 0
     this.mainTaxonBox.updatePositionsAndSizes()
     taxonBoxes.push(this.mainTaxonBox)
 
@@ -71,6 +81,7 @@ class TaxaView{
       this.parentTaxonBox.isOpen = false
       this.parentTaxonBox.centerX = pixelScale(getHorizontalCenter())
       this.parentTaxonBox.centerY = pixelScale(verticalSpacingLookup["parent-box"].middle)
+      this.parentTaxonBox.rotate = 0
       this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
     }
@@ -81,8 +92,28 @@ class TaxaView{
         subtaxonBox.isOpen = false
         subtaxonBox.centerX = pixelScale(getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa))
         subtaxonBox.centerY = pixelScale(verticalSpacingLookup["child-box"].middle)
+        subtaxonBox.rotate = 0
         subtaxonBox.updatePositionsAndSizes()
         taxonBoxes.push(subtaxonBox)
+      }
+    }
+
+    if(this.popularSubtaxonBoxes){
+      const numSubtaxa = this.subtaxonBoxes.length
+      for(const [subtaxonNum, a] of this.popularSubtaxonBoxes.entries()){
+        if(a){
+          let numPopSubtaxa = a.length
+          for(const [popSubtaxonNum, popSubtaxonBox] of a.entries()){
+            popSubtaxonBox.isOpen = false
+            popSubtaxonBox.centerX = pixelScale(
+              getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum, numPopSubtaxa)
+            )
+            popSubtaxonBox.centerY = pixelScale(verticalSpacingLookup["pop-descendents-box"].middle)
+            popSubtaxonBox.rotate = 90
+            popSubtaxonBox.updatePositionsAndSizes()
+            taxonBoxes.push(popSubtaxonBox)
+          }
+        }
       }
     }
 
@@ -123,8 +154,6 @@ class TaxaView{
         }
       }
     }
-
-
   }
 
 }

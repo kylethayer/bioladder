@@ -4,6 +4,7 @@ const taxonBoxOpenWidth = 90
 const taxonBoxClosedWidth = 40
 const distantTaxonResizeAmt = 0.75
 const taxonChildHorizontalSpacing = 2
+const popSubtaxonHorizontalSpacing = 2
 
 //////////////////////////
 // vertical spacing
@@ -51,6 +52,10 @@ function setVerticalPixels(pixels){
 // horizontal spacing
 let totalWidthUnits = 100 // default, should be recalculated
 
+function setHorizontalWidth(taxaContainerWidth){
+    totalWidthUnits = pixelScale.invert(taxaContainerWidth)
+}
+
 function getHorizontalCenter(){
     return totalWidthUnits / 2
 }
@@ -66,10 +71,20 @@ function getSubtaxonHorizontalCenter(childNum, numChildren){
     return boxCenter
 }
 
+function getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum, numPopSubtaxa){
+    let parentSubtaxaCenter = getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa)
 
-function setHorizontalWidth(taxaContainerWidth){
-    totalWidthUnits = pixelScale.invert(taxaContainerWidth)
+    let totalPopSubtaxonsWidth = numPopSubtaxa * taxonLabelHeight + (numPopSubtaxa - 1) * popSubtaxonHorizontalSpacing
+    let leftPosStart = parentSubtaxaCenter - totalPopSubtaxonsWidth / 2 // start of leftmost subtaxon
+    let numBoxesToLeft = popSubtaxonNum // index is the number of children to left (index 0 has none to left)
+
+    let boxCenter = leftPosStart +  //left start
+                    numBoxesToLeft * (taxonLabelHeight + popSubtaxonHorizontalSpacing) + // space taken by left boxes
+                    taxonLabelHeight / 2 // move to center of this box
+    return boxCenter
 }
+
+
 
 
 /////////////////////
@@ -88,7 +103,8 @@ export {
     setScales, 
     verticalSpacingLookup,
     getHorizontalCenter,
-    getSubtaxonHorizontalCenter}
+    getSubtaxonHorizontalCenter,
+    getPopSubtaxonHorizontalCenter}
 
 
 

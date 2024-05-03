@@ -10,6 +10,7 @@ class TaxonBox{
         this.isOpen = false
         this.centerX = 0
         this.centerY = 0
+        this.rotate = 0
         this.updatePositionsAndSizes()
     }
 
@@ -61,8 +62,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .data(taxonBoxes, (d) => d.taxon.name)
       .join(enter => {
         let g = enter.append('g')
-            .attr('transform', (d) =>  `translate(${d.x},${-50})`)
-
+            .attr('transform', (d) =>  `translate(${d.x},${-50}) rotate(${d.rotate}, ${d.width/2}, ${d.height/2})`) //
         // add the other taxonBoxElements
         for(const taxonBoxElement of taxonBoxElements){
             taxonBoxElement.enterFn(g)
@@ -73,7 +73,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .attr('class', 'taxon-box')
       .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
       .transition().duration(transitionSpeed)
-      .attr('transform', (d) =>  `translate(${d.x},${d.y})`)
+      .attr('transform', (d) =>  `translate(${d.x},${d.y}) rotate(${d.rotate}, ${d.width/2}, ${d.height/2})`)
 
   
     for(const taxonBoxElement of taxonBoxElements){
