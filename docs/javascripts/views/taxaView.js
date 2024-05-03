@@ -46,6 +46,14 @@ class TaxaView{
           this.parentTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon.parentTaxon)
         }
       }
+      if(mainTaxon.subtaxa && mainTaxon.subtaxa.length > 0){
+        this.subtaxonBoxes = []
+        // TODO: Do all, but for now test with just one
+        this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, mainTaxon.subtaxa[0]))
+        // for(const subtaxa of this.subtaxa){
+        //   this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, mainTaxon.subtaxa))
+        // }
+      }
     }
   }
 
@@ -59,16 +67,26 @@ class TaxaView{
     //set position, scale, and open for each TaxonBox
     this.mainTaxonBox.isOpen = true
     this.mainTaxonBox.centerX = taxaContainerWidth/2 
-    this.mainTaxonBox.centerY = taxaContainerHeight/2 
+    this.mainTaxonBox.centerY = pixelScale(verticalSpacingLookup["main-box"].middle)
     this.mainTaxonBox.updatePositionsAndSizes()
     taxonBoxes.push(this.mainTaxonBox)
 
     if(this.parentTaxonBox){
       this.parentTaxonBox.isOpen = false
       this.parentTaxonBox.centerX = this.mainTaxonBox.centerX
-      this.parentTaxonBox.centerY = this.mainTaxonBox.topY - 50
+      this.parentTaxonBox.centerY = pixelScale(verticalSpacingLookup["parent-box"].middle)
       this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
+    }
+
+    if(this.subtaxonBoxes){
+      for(const subtaxonBox of this.subtaxonBoxes){
+        subtaxonBox.isOpen = false
+        subtaxonBox.centerX = this.mainTaxonBox.centerX
+        subtaxonBox.centerY = pixelScale(verticalSpacingLookup["child-box"].middle)
+        subtaxonBox.updatePositionsAndSizes()
+        taxonBoxes.push(subtaxonBox)
+      }
     }
 
 

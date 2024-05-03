@@ -10,7 +10,7 @@ const verticalSpacing = [
     {height: 4, use: "elbow-parent-pop-ancestor"}, // - 4 units elbow joint
     {height: taxonLabelHeight, use: "parent-box"}, // - 4 units parent taxon box
     {height: 4, use: "elbow-main-parent"}, // - 4 units elbow joint (straight up and down)
-    {height: taxonBoxOpenHeight, use: "elbow-main-parent-box"}, // - 28 units main taxon box (title bar is 4 of those units)
+    {height: taxonBoxOpenHeight, use: "main-box"}, // - 28 units main taxon box (title bar is 4 of those units)
     {height: 8, use: "elbow-children-parent"}, // - 8 units elbow joint
     {height: taxonLabelHeight, use: "child-box"}, // - 4 units child boxes
     {height: 8, use: "elbow-pop-descendents-parent"},// - 8 units elbow joints
