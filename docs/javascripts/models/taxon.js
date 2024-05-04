@@ -11,7 +11,8 @@ class Taxon extends EventTarget{
         if(!isTaxonNameValid(name)){
             throw Error("Invalid Taxon name: " + name)
         }
-        this.name = name
+        this.name = name.toLowerCase()
+        this.displayName = name.charAt(0).toUpperCase() + name.slice(1)
         this.loadInfo = {
             isLoaded: false,
             isLoading: false,
@@ -48,6 +49,9 @@ class Taxon extends EventTarget{
             const taxonDataResponse = await fetch(settings.data_url_base + "taxa_processed/" + taxon_file_name)
             const taxonData = await taxonDataResponse.json();
 
+            if(taxonData.name !== undefined){
+                this.displayName = taxonData.name
+            }
             if(taxonData.description !== undefined){
                 this.description = taxonData.description
             }

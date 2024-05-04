@@ -73,7 +73,7 @@ const taxonBoxElements = [
         elementName: 'text', 
         className: 'taxon-label-text',
         refreshPreTransitionFn: selection => selection
-            .text((d) => d.taxon.name)
+            .text((d) => d.taxon.displayName)
             .attr('dominant-baseline', 'central')
             .attr('text-anchor', 'middle')
         ,
