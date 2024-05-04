@@ -1,7 +1,7 @@
 //import * as d3 from '../../libs/d3v7/d3.v7.js'
 //import * from '../../libs/d3v7/d3.v7.min.js'
 import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
-import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,
+import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth, distantTaxonResizeAmt,
   setScales, pixelScale, verticalSpacingLookup, getHorizontalCenter, getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
@@ -74,6 +74,7 @@ class TaxaView{
     this.mainTaxonBox.centerX = pixelScale(getHorizontalCenter())
     this.mainTaxonBox.centerY = pixelScale(verticalSpacingLookup["main-box"].middle)
     this.mainTaxonBox.rotate = 0
+    this.mainTaxonBox.scale = 1
     this.mainTaxonBox.updatePositionsAndSizes()
     taxonBoxes.push(this.mainTaxonBox)
 
@@ -82,6 +83,7 @@ class TaxaView{
       this.parentTaxonBox.centerX = pixelScale(getHorizontalCenter())
       this.parentTaxonBox.centerY = pixelScale(verticalSpacingLookup["parent-box"].middle)
       this.parentTaxonBox.rotate = 0
+      this.parentTaxonBox.scale = 1
       this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
     }
@@ -93,6 +95,7 @@ class TaxaView{
         subtaxonBox.centerX = pixelScale(getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa))
         subtaxonBox.centerY = pixelScale(verticalSpacingLookup["child-box"].middle)
         subtaxonBox.rotate = 0
+        subtaxonBox.scale = 1
         subtaxonBox.updatePositionsAndSizes()
         taxonBoxes.push(subtaxonBox)
       }
@@ -110,6 +113,7 @@ class TaxaView{
             )
             popSubtaxonBox.centerY = pixelScale(verticalSpacingLookup["pop-descendents-box"].middle)
             popSubtaxonBox.rotate = 90
+            popSubtaxonBox.scale = distantTaxonResizeAmt
             popSubtaxonBox.updatePositionsAndSizes()
             taxonBoxes.push(popSubtaxonBox)
           }

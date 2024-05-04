@@ -99,6 +99,7 @@ export {
     taxonBoxOpenHeight,
     taxonBoxClosedWidth,
     taxonBoxOpenWidth,
+    distantTaxonResizeAmt,
     pixelScale, 
     setScales, 
     verticalSpacingLookup,

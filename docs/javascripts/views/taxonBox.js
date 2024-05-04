@@ -11,6 +11,7 @@ class TaxonBox{
         this.centerX = 0
         this.centerY = 0
         this.rotate = 0
+        this.scale = 1
         this.updatePositionsAndSizes()
     }
 
@@ -26,13 +27,13 @@ class TaxonBox{
         }
 
 
-        this.x = this.centerX - this.width / 2
-        this.y = this.centerY - this.height / 2
+        this.x = this.centerX - this.width * this.scale / 2
+        this.y = this.centerY - this.height * this.scale / 2
 
         this.leftX = this.x
-        this.rightX = this.x + this.width
+        this.rightX = this.x + this.width * this.scale
         this.topY = this.y
-        this.bottomY = this.y + this.height
+        this.bottomY = this.y + this.height * this.scale
     }
 
 }
@@ -62,7 +63,11 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .data(taxonBoxes, (d) => d.taxon.name)
       .join(enter => {
         let g = enter.append('g')
-            .attr('transform', (d) =>  `translate(${d.x},${-50}) rotate(${d.rotate}, ${d.width/2}, ${d.height/2})`) //
+            .attr('transform', (d) =>  `
+                        translate(${d.x},${-50}) 
+                        rotate(${d.rotate}, ${d.width/2}, ${d.height/2})
+                        scale(${d.scale})
+                        `) //
         // add the other taxonBoxElements
         for(const taxonBoxElement of taxonBoxElements){
             taxonBoxElement.enterFn(g)
@@ -73,7 +78,11 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .attr('class', 'taxon-box')
       .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
       .transition().duration(transitionSpeed)
-      .attr('transform', (d) =>  `translate(${d.x},${d.y}) rotate(${d.rotate}, ${d.width/2}, ${d.height/2})`)
+      .attr('transform', (d) =>  `
+                translate(${d.x},${d.y}) 
+                rotate(${d.rotate}, ${d.width/2}, ${d.height/2})
+                scale(${d.scale})
+                `)
 
   
     for(const taxonBoxElement of taxonBoxElements){
