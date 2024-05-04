@@ -69,13 +69,12 @@ class Taxon extends EventTarget{
             }
 
             if(taxonData.popularAncestors !== undefined){
-                this.popularAncestors = taxonData.popularAncestors.map(popAncTaxonName => {
-                    if(popAncTaxonName == null){
-                        return undefined
-                    } else {
-                        return findOrCreateTaxon(popAncTaxonName)
+                this.popularAncestors = []
+                for(const popAncTaxonName of taxonData.popularAncestors){
+                    if(popAncTaxonName){
+                        this.popularAncestors.push(findOrCreateTaxon(popAncTaxonName))
                     }
-                })
+                }
             }else{
                 this.popularAncestors = []
             }

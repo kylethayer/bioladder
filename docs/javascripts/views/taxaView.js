@@ -2,7 +2,8 @@
 //import * from '../../libs/d3v7/d3.v7.min.js'
 import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
 import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth, distantTaxonResizeAmt,
-  setScales, pixelScale, verticalSpacingLookup, getHorizontalCenter, getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
+  setScales, pixelScale, verticalSpacingLookup, getPopAncestorVerticalCenter, getHorizontalCenter, getPopAncestorHorizontalCenter, 
+  getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
 let taxaContainer = d3.select("#taxaContainer")
@@ -43,11 +44,25 @@ class TaxaView{
   updateTaxonBoxes(){
     let mainTaxon = this.mainTaxonBox.taxon
     if(this.mainTaxonBox.taxon.loadInfo.isLoaded){
+      //parent taxon
       if(mainTaxon.parentTaxon){
         if(!this.parentTaxonBox || this.parentTaxonBox.taxon.name != mainTaxon.parentTaxon.name){
           this.parentTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon.parentTaxon)
         }
+      } else{
+        this.parenTaxonBox = undefined
       }
+      //popular ancestors
+      if(mainTaxon.popularAncestors && mainTaxon.popularAncestors.length > 0){
+        this.popularAncestorsTaxonBoxes = []
+        for(const popularAncestor of mainTaxon.popularAncestors){
+          this.popularAncestorsTaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, popularAncestor))
+        }
+      } else {
+        this.popularAncestorsTaxonBoxes = []
+      }
+
+      //subtaxa and popular descendents of them
       if(mainTaxon.subtaxa && mainTaxon.subtaxa.length > 0){
         this.subtaxonBoxes = []
         for(const [subtaxonNum, subtaxon] of mainTaxon.subtaxa.entries()){
@@ -60,9 +75,15 @@ class TaxaView{
             for(const popSubtaxon of subtaxon.popularSubtaxa){
               this.popularSubtaxonBoxes[subtaxonNum].push(findOrCreateTaxonBox(taxaContainer, popSubtaxon))
             }
+          } else{
+            this.popularSubtaxonBoxes = []
           }
         }
+      }else{
+        this.subtaxonBoxes = []
+        this.popularSubtaxonBoxes = []
       }
+      
     }
   }
 
@@ -86,6 +107,19 @@ class TaxaView{
       this.parentTaxonBox.scale = 1
       this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
+    }
+
+    if(this.popularAncestorsTaxonBoxes){
+      const numPopAncestors = this.popularAncestorsTaxonBoxes.length
+      for(const [popAncestorNum, popAncestorTaxonBox] of this.popularAncestorsTaxonBoxes.entries()){
+        popAncestorTaxonBox.isOpen = false
+        popAncestorTaxonBox.centerX = pixelScale(getPopAncestorHorizontalCenter(popAncestorNum, numPopAncestors))
+        popAncestorTaxonBox.centerY = pixelScale(getPopAncestorVerticalCenter(popAncestorNum, numPopAncestors))
+        popAncestorTaxonBox.rotate = 0
+        popAncestorTaxonBox.scale = distantTaxonResizeAmt
+        popAncestorTaxonBox.updatePositionsAndSizes()
+        taxonBoxes.push(popAncestorTaxonBox)
+      }
     }
 
     if(this.subtaxonBoxes){

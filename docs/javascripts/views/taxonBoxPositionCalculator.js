@@ -5,6 +5,7 @@ const taxonBoxClosedWidth = 40
 const distantTaxonResizeAmt = 0.75
 const taxonChildHorizontalSpacing = 2
 const popSubtaxonHorizontalSpacing = 2
+const popAncestorHorizontalSpacing = 2
 
 //////////////////////////
 // vertical spacing
@@ -48,6 +49,33 @@ function setVerticalPixels(pixels){
     pixelScale = d3.scaleLinear([0, totalHeightUnits], [0, verticalPixels]);
 }
 
+function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
+    if(numAncestors == 1){
+        return verticalSpacingLookup["pop-ancestor-space"].middle
+    }
+
+    let topMiddle = verticalSpacingLookup["pop-ancestor-space"].top + distantTaxonResizeAmt * taxonLabelHeight / 2
+    let bottomMiddle = verticalSpacingLookup["pop-ancestor-space"].bottom - distantTaxonResizeAmt * taxonLabelHeight / 2
+
+    let verticalChange =  bottomMiddle - topMiddle
+    
+    let verticalForThis =  verticalChange / (numAncestors - 1) * (numAncestors - ancestorNum)
+
+    return topMiddle + verticalForThis
+    
+
+    // let totalPopAncestorWidth = numAncestors * taxonBoxClosedWidth + (numAncestors - 1) * popAncestorHorizontalSpacing
+    // let rightPosStart = getHorizontalCenter() + totalPopAncestorWidth / 2 // start of rightmost subtaxon
+    // let numBoxesToRight = ancestorNum // index is the number of children to right (index 0 has none to right)
+
+    // let boxCenter = rightPosStart -  //right start
+    //                 numBoxesToRight * (taxonBoxClosedWidth + popAncestorHorizontalSpacing) - // space taken by left boxes
+    //                 taxonBoxClosedWidth / 2 // move to center of this box
+    // return boxCenter
+
+    return verticalSpacingLookup["pop-ancestor-space"].middle
+}
+
 //////////////////////////
 // horizontal spacing
 let totalWidthUnits = 100 // default, should be recalculated
@@ -58,6 +86,17 @@ function setHorizontalWidth(taxaContainerWidth){
 
 function getHorizontalCenter(){
     return totalWidthUnits / 2
+}
+
+function getPopAncestorHorizontalCenter(ancestorNum, numAncestors){
+    let totalPopAncestorWidth = numAncestors * taxonBoxClosedWidth + (numAncestors - 1) * popAncestorHorizontalSpacing
+    let rightPosStart = getHorizontalCenter() + totalPopAncestorWidth / 2 // start of rightmost subtaxon
+    let numBoxesToRight = ancestorNum // index is the number of children to right (index 0 has none to right)
+
+    let boxCenter = rightPosStart -  //right start
+                    numBoxesToRight * (taxonBoxClosedWidth + popAncestorHorizontalSpacing) - // space taken by left boxes
+                    taxonBoxClosedWidth / 2 // move to center of this box
+    return boxCenter
 }
 
 function getSubtaxonHorizontalCenter(childNum, numChildren){
@@ -104,7 +143,9 @@ export {
     pixelScale, 
     setScales, 
     verticalSpacingLookup,
+    getPopAncestorVerticalCenter,
     getHorizontalCenter,
+    getPopAncestorHorizontalCenter,
     getSubtaxonHorizontalCenter,
     getPopSubtaxonHorizontalCenter}
 
