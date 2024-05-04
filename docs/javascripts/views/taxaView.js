@@ -49,8 +49,6 @@ class TaxaView{
         if(!this.parentTaxonBox || this.parentTaxonBox.taxon.name != mainTaxon.parentTaxon.name){
           this.parentTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon.parentTaxon)
         }
-      } else{
-        this.parenTaxonBox = undefined
       }
       //popular ancestors
       if(mainTaxon.popularAncestors && mainTaxon.popularAncestors.length > 0){
@@ -58,8 +56,6 @@ class TaxaView{
         for(const popularAncestor of mainTaxon.popularAncestors){
           this.popularAncestorsTaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, popularAncestor))
         }
-      } else {
-        this.popularAncestorsTaxonBoxes = []
       }
 
       //subtaxa and popular descendents of them
@@ -75,13 +71,8 @@ class TaxaView{
             for(const popSubtaxon of subtaxon.popularSubtaxa){
               this.popularSubtaxonBoxes[subtaxonNum].push(findOrCreateTaxonBox(taxaContainer, popSubtaxon))
             }
-          } else{
-            this.popularSubtaxonBoxes = []
           }
         }
-      }else{
-        this.subtaxonBoxes = []
-        this.popularSubtaxonBoxes = []
       }
       
     }
