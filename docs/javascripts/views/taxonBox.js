@@ -63,11 +63,17 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .data(taxonBoxes, (d) => d.taxon.name)
       .join(enter => {
         let g = enter.append('g')
+            .attr('opacity', 0)
             .attr('transform', (d) =>  `
-                        translate(${d.x},${-50}) 
+                        translate(${d.x},${d.y}) 
                         rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
                         scale(${d.scale})
                         `) //
+            // .attr('transform', (d) =>  `
+            //             translate(${d.x},${-50}) 
+            //             rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
+            //             scale(${d.scale})
+            //             `)
         // add the other taxonBoxElements
         for(const taxonBoxElement of taxonBoxElements){
             taxonBoxElement.enterFn(g)
@@ -78,6 +84,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .attr('class', 'taxon-box')
       .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
       .transition().duration(transitionSpeed)
+      .attr('opacity', 1)
       .attr('transform', (d) =>  `
                 translate(${d.x},${d.y}) 
                 rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
