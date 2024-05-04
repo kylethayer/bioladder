@@ -17,6 +17,10 @@ class Taxon extends EventTarget{
             isLoading: false,
             loadedEvent: new CustomEvent("loaded"),
             loadedUpdateFunction: () => {}, // view update function to call when this is loaded
+            isPreviewImageLoaded: false,
+            isPreviewImageLoading: false,
+            previewImageloadedEvent: new CustomEvent("loaded"),
+            previewImageloadedUpdateFunction: () => {}, // view update function to call when this is loaded
             areRelatedLoaded: false,
             areRelatedLoading: false,
             areRelatedRelatedLoaded: false,
@@ -35,8 +39,8 @@ class Taxon extends EventTarget{
     }
 
     // Loads this taxon info
+    // can be awaited reliably
     async ensureLoaded(){
-        // How do I await if it is loading but not loaded?
         if(!this.loadInfo.isLoaded && !this.loadInfo.isLoading){
             this.loadInfo.isLoading = true;
             let taxon_file_name = this.name + ".json"
@@ -49,6 +53,7 @@ class Taxon extends EventTarget{
             }
             if(taxonData.exampleMember !== undefined && taxonData.exampleMember !== ""){
                 this.exampleMember = findOrCreateTaxon(taxonData.exampleMember)
+                this.exampleMember.ensureLoaded()
             }
             if(taxonData.exampleMemberType !== undefined){
                 this.exampleMemberType = taxonData.exampleMemberType
@@ -115,18 +120,10 @@ class Taxon extends EventTarget{
  
             //console.log("loaded taxon", this) 
 
-            // if there is an example subtaxa, then we are only partially loaded
-            if(this.exampleMember){
-                // go ahead and run updates since we are partially loaded
-                this.loadInfo.loadedUpdateFunction()  
-                
-                // then wait for the example member to be fully loaded before saying we are fully loaded
-                await this.exampleMember.ensureLoaded()
-            }
-
             this.loadInfo.isLoaded = true;
             this.dispatchEvent(this.loadInfo.loadedEvent)
-            this.loadInfo.loadedUpdateFunction()            
+            this.loadInfo.loadedUpdateFunction()      
+            this.loadInfo.loadedUpdateFunction = () => {}
 
         } else if(!this.loadInfo.isLoaded && this.loadInfo.isLoading){
             // if currently loading, wait until loaded event is fired
@@ -135,7 +132,24 @@ class Taxon extends EventTarget{
     }
 
     async ensurePreviewImageLoaded(){
-        
+        await this.ensureLoaded();
+
+        if(!this.loadInfo.isPreviewImageLoaded && !this.loadInfo.isPreviewImageLoading){
+            this.loadInfo.isPreviewImageLoading = true
+
+            if(!this.wikipediaImg && this.exampleMember){
+                await this.exampleMember.ensureLoaded()
+
+                // we only need separate events if the example member has to be loaded
+                this.loadInfo.isPreviewImageLoaded = true;
+                this.dispatchEvent(this.loadInfo.previewImageloadedEvent)
+                this.loadInfo.previewImageloadedUpdateFunction() 
+                this.loadInfo.previewImageloadedUpdateFunction = () => {}  
+            }
+        } else if(!this.loadInfo.isPreviewImageLoaded && this.loadInfo.isPreviewImageLoading){
+            // if currently loading, wait until loaded event is fired
+            await new Promise((resolve, reject) => this.addEventListener("previewImageloaded", resolve))
+        }
     }
 
     // Loads info on taxa that will appear onscreen if this taxon is in view
