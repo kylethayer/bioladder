@@ -44,19 +44,20 @@ class TaxaView{
   updateTaxonBoxes(){
     let mainTaxon = this.mainTaxonBox.taxon
     if(this.mainTaxonBox.taxon.loadInfo.isLoaded){
-      //parent taxon
+      //parent taxon and popular ancestors
       if(mainTaxon.parentTaxon){
         if(!this.parentTaxonBox || this.parentTaxonBox.taxon.name != mainTaxon.parentTaxon.name){
           this.parentTaxonBox = findOrCreateTaxonBox(taxaContainer, mainTaxon.parentTaxon)
         }
-      }
-      //popular ancestors
-      if(mainTaxon.popularAncestors && mainTaxon.popularAncestors.length > 0){
-        this.popularAncestorsTaxonBoxes = []
-        for(const popularAncestor of mainTaxon.popularAncestors){
-          this.popularAncestorsTaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, popularAncestor))
+        //popular ancestors (of parent)
+        if(mainTaxon.parentTaxon.popularAncestors && mainTaxon.parentTaxon.popularAncestors.length > 0){
+          this.popularAncestorsTaxonBoxes = []
+          for(const popularAncestor of mainTaxon.parentTaxon.popularAncestors){
+            this.popularAncestorsTaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, popularAncestor))
+          }
         }
       }
+      
 
       //subtaxa and popular descendents of them
       if(mainTaxon.subtaxa && mainTaxon.subtaxa.length > 0){
@@ -154,23 +155,32 @@ class TaxaView{
     // set up update function calls for when things load:
 
     // update for main taxon and preview image loaded
-    if(! this.mainTaxonBox.taxon.isLoaded){
+    if(! this.mainTaxonBox.taxon.loadInfo.isLoaded){
       this.mainTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
       this.mainTaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
     }
     // update for parent preview image
     if(this.parentTaxonBox){
-      if(! this.parentTaxonBox.taxon.isLoaded){
+      if(! this.parentTaxonBox.taxon.loadInfo.isLoaded){
         this.parentTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
         this.parentTaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
       }
     }
 
+    // popular ancestors
+    if(this.popularAncestorsTaxonBoxes){
+      for(const popAncestorBox of this.popularAncestorsTaxonBoxes){
+        if(!popAncestorBox.taxon.loadInfo.isLoaded){
+          popAncestorBox.taxon.loadInfo.loadedUpdateFunction = d3Update
+          popAncestorBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
+        }
+      }
+    }
+
     // update for subtaxa and their preview images
     if(this.subtaxonBoxes){
-      // setting update on
       for(const subtaxonBox of this.subtaxonBoxes){
-        if(!subtaxonBox.taxon.isLoaded){
+        if(!subtaxonBox.taxon.loadInfo.isLoaded){
           subtaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
           subtaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
         }
@@ -183,7 +193,7 @@ class TaxaView{
       for(const popSubtaxonBoxList of this.popularSubtaxonBoxes){
         if(popSubtaxonBoxList){
           for(const popSubtaxonBox of popSubtaxonBoxList){
-            if(!popSubtaxonBox.taxon.isLoaded){
+            if(!popSubtaxonBox.taxon.loadInfo.isLoaded){
               popSubtaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
               popSubtaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
             }
