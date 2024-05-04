@@ -1,12 +1,15 @@
 //import * as d3 from '../../libs/d3v7/d3.v7.js'
 //import * from '../../libs/d3v7/d3.v7.min.js'
 import {taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
+import {elbowConnectorD3, findOrCreateElbowConnector} from './elbowConnectors.js'
 import {distantTaxonResizeAmt,
   setScales, pixelScale, verticalSpacingLookup, getPopAncestorVerticalCenter, getHorizontalCenter, getPopAncestorHorizontalCenter, 
   getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
+let taxaViewSVG =  d3.select("#taxaView")
 let taxaContainer = d3.select("#taxaContainer")
+let elbowConnectorContainer = d3.select("#elbowConnectorContainer")
 
 /**
  * goToTaxon function
@@ -23,12 +26,13 @@ function gotoTaxon(taxon){
 }
 
 function d3Update(){
-  let taxaContainerHeight = taxaContainer.node().getBoundingClientRect().height;
-  let taxaContainerWidth = taxaContainer.node().getBoundingClientRect().width;
-  setScales(taxaContainerHeight, taxaContainerWidth)
+  let taxaViewHeight = taxaViewSVG.node().getBoundingClientRect().height;
+  let taxaViewWidth = taxaViewSVG.node().getBoundingClientRect().width;
+  setScales(taxaViewHeight, taxaViewWidth)
 
   taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
+  elbowConnectorD3(taxaView.getElbowConnectors(), elbowConnectorContainer)
 
   taxaView.setUpdateFunctionCalls()
 }
@@ -149,6 +153,27 @@ class TaxaView{
 
 
     return taxonBoxes
+  }
+
+  //NOTE: should be run after getTaxonBoxes
+  getElbowConnectors(){
+    let elbowConnectors = []
+
+    if(this.mainTaxonBox && this.parentTaxonBox){
+      elbowConnectors.push(
+        findOrCreateElbowConnector(elbowConnectorContainer, this.mainTaxonBox, this.parentTaxonBox)
+      )
+    }
+
+    if(this.subtaxonBoxes){
+      for(const subtaxonBox of this.subtaxonBoxes){
+        elbowConnectors.push(
+          findOrCreateElbowConnector(elbowConnectorContainer, subtaxonBox, this.mainTaxonBox)
+        )
+      }
+    }
+
+    return elbowConnectors
   }
 
   setUpdateFunctionCalls(){

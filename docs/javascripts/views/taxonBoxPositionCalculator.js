@@ -1,3 +1,5 @@
+const transitionSpeed = 1000
+
 const taxonOpenLabelHeight = 4
 const taxonClosedLabelHeight = 8
 const taxonBoxOpenHeight = 28
@@ -81,8 +83,8 @@ function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
 // horizontal spacing
 let totalWidthUnits = 100 // default, should be recalculated
 
-function setHorizontalWidth(taxaContainerWidth){
-    totalWidthUnits = pixelScale.invert(taxaContainerWidth)
+function setHorizontalWidth(taxaViewWidth){
+    totalWidthUnits = pixelScale.invert(taxaViewWidth)
 }
 
 function getHorizontalCenter(){
@@ -130,12 +132,13 @@ function getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum,
 
 /////////////////////
 // set up
-function setScales(taxaContainerHeight, taxaContainerWidth){
-    setVerticalPixels(taxaContainerHeight)
-    setHorizontalWidth(taxaContainerWidth)
+function setScales(taxaViewHeight, taxaViewWidth){
+    setVerticalPixels(taxaViewHeight)
+    setHorizontalWidth(taxaViewWidth)
 }
 
 export {
+    transitionSpeed,
     taxonClosedLabelHeight,
     taxonOpenLabelHeight,
     taxonBoxOpenHeight,

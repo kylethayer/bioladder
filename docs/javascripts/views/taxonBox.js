@@ -1,7 +1,7 @@
 import {navigateToTaxonViaUrl} from "../controllers/mainController.js"
-import {taxonClosedLabelHeight, taxonOpenLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,  pixelScale} from "./taxonBoxPositionCalculator.js"
+import {transitionSpeed, taxonClosedLabelHeight, taxonOpenLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,  pixelScale} from "./taxonBoxPositionCalculator.js"
 import {taxonBoxElements} from './taxonBoxElement.js'
-const transitionSpeed = 1000
+
 
 
 class TaxonBox{
@@ -57,7 +57,6 @@ function findOrCreateTaxonBox(taxaContainer, taxon){
 // code to create or update the d3 taxon boxes
 function taxonBoxD3(taxonBoxes, taxaContainer){
     // NOTE: We'll also need a loading circle for unknown / loading
-    let taxon_svg_groups = 
     taxaContainer
       .selectAll("g.taxon-box")
       .data(taxonBoxes, (d) => d.taxon.name)
