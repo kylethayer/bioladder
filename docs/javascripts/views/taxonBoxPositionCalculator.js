@@ -74,12 +74,13 @@ function getSubtaxonHorizontalCenter(childNum, numChildren){
 function getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum, numPopSubtaxa){
     let parentSubtaxaCenter = getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa)
 
-    let totalPopSubtaxonsWidth = numPopSubtaxa * taxonLabelHeight + (numPopSubtaxa - 1) * popSubtaxonHorizontalSpacing
+    let totalPopSubtaxonsWidth = numPopSubtaxa * taxonLabelHeight * distantTaxonResizeAmt
+                                 + (numPopSubtaxa - 1) * popSubtaxonHorizontalSpacing
     let leftPosStart = parentSubtaxaCenter - totalPopSubtaxonsWidth / 2 // start of leftmost subtaxon
     let numBoxesToLeft = popSubtaxonNum // index is the number of children to left (index 0 has none to left)
 
     let boxCenter = leftPosStart +  //left start
-                    numBoxesToLeft * (taxonLabelHeight + popSubtaxonHorizontalSpacing) + // space taken by left boxes
+                    numBoxesToLeft * (taxonLabelHeight * distantTaxonResizeAmt + popSubtaxonHorizontalSpacing) + // space taken by left boxes
                     taxonLabelHeight / 2 // move to center of this box
     return boxCenter
 }

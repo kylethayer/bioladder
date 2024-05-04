@@ -65,7 +65,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
         let g = enter.append('g')
             .attr('transform', (d) =>  `
                         translate(${d.x},${-50}) 
-                        rotate(${d.rotate}, ${d.width/2}, ${d.height/2})
+                        rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
                         scale(${d.scale})
                         `) //
         // add the other taxonBoxElements
@@ -80,7 +80,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
       .transition().duration(transitionSpeed)
       .attr('transform', (d) =>  `
                 translate(${d.x},${d.y}) 
-                rotate(${d.rotate}, ${d.width/2}, ${d.height/2})
+                rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
                 scale(${d.scale})
                 `)
 

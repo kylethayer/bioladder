@@ -134,6 +134,10 @@ class Taxon extends EventTarget{
         }
     }
 
+    async ensurePreviewImageLoaded(){
+        
+    }
+
     // Loads info on taxa that will appear onscreen if this taxon is in view
     async ensureRelatedLoaded(){
         if(!this.loadInfo.areRelatedLoaded && !this.loadInfo.areRelatedLoading){
