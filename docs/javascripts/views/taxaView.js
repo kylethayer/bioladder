@@ -1,7 +1,7 @@
 //import * as d3 from '../../libs/d3v7/d3.v7.js'
 //import * from '../../libs/d3v7/d3.v7.min.js'
-import {TaxonBox, taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
-import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth, distantTaxonResizeAmt,
+import {taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
+import {distantTaxonResizeAmt,
   setScales, pixelScale, verticalSpacingLookup, getPopAncestorVerticalCenter, getHorizontalCenter, getPopAncestorHorizontalCenter, 
   getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 

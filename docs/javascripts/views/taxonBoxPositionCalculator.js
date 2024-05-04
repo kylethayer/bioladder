@@ -1,4 +1,5 @@
-const taxonLabelHeight = 4
+const taxonOpenLabelHeight = 4
+const taxonClosedLabelHeight = 8
 const taxonBoxOpenHeight = 28
 const taxonBoxOpenWidth = 90
 const taxonBoxClosedWidth = 40
@@ -10,16 +11,16 @@ const popAncestorHorizontalSpacing = 2
 //////////////////////////
 // vertical spacing
 
-// vertical space is divided into 100 units as follows:
+// vertical space is divided into units as follows:
 const verticalSpacing = [
     {height: 2, use: "top-padding"}, // - 2 units padding
     {height: 6, use: "pop-ancestor-space"}, // - 6 units popular ancestors (.75 size => 3 units tall), each a little lower and to the side
     {height: 4, use: "elbow-parent-pop-ancestor"}, // - 4 units elbow joint
-    {height: taxonLabelHeight, use: "parent-box"}, // - 4 units parent taxon box
+    {height: taxonClosedLabelHeight, use: "parent-box"}, // - 4 units parent taxon box
     {height: 4, use: "elbow-main-parent"}, // - 4 units elbow joint (straight up and down)
     {height: taxonBoxOpenHeight, use: "main-box"}, // - 28 units main taxon box (title bar is 4 of those units)
     {height: 8, use: "elbow-children-parent"}, // - 8 units elbow joint
-    {height: taxonLabelHeight, use: "child-box"}, // - 4 units child boxes
+    {height: taxonClosedLabelHeight, use: "child-box"}, // - 4 units child boxes
     {height: 8, use: "elbow-pop-descendents-parent"},// - 8 units elbow joints
     {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendents-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
     {height: 2, use: "bottom-padding"}, // - 2 units padding
@@ -54,8 +55,8 @@ function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
         return verticalSpacingLookup["pop-ancestor-space"].middle
     }
 
-    let topMiddle = verticalSpacingLookup["pop-ancestor-space"].top + distantTaxonResizeAmt * taxonLabelHeight / 2
-    let bottomMiddle = verticalSpacingLookup["pop-ancestor-space"].bottom - distantTaxonResizeAmt * taxonLabelHeight / 2
+    let topMiddle = verticalSpacingLookup["pop-ancestor-space"].top + distantTaxonResizeAmt * taxonClosedLabelHeight / 2
+    let bottomMiddle = verticalSpacingLookup["pop-ancestor-space"].bottom - distantTaxonResizeAmt * taxonClosedLabelHeight / 2
 
     let verticalChange =  bottomMiddle - topMiddle
     
@@ -113,14 +114,14 @@ function getSubtaxonHorizontalCenter(childNum, numChildren){
 function getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum, numPopSubtaxa){
     let parentSubtaxaCenter = getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa)
 
-    let totalPopSubtaxonsWidth = numPopSubtaxa * taxonLabelHeight * distantTaxonResizeAmt
+    let totalPopSubtaxonsWidth = numPopSubtaxa * taxonClosedLabelHeight * distantTaxonResizeAmt
                                  + (numPopSubtaxa - 1) * popSubtaxonHorizontalSpacing
     let leftPosStart = parentSubtaxaCenter - totalPopSubtaxonsWidth / 2 // start of leftmost subtaxon
     let numBoxesToLeft = popSubtaxonNum // index is the number of children to left (index 0 has none to left)
 
     let boxCenter = leftPosStart +  //left start
-                    numBoxesToLeft * (taxonLabelHeight * distantTaxonResizeAmt + popSubtaxonHorizontalSpacing) + // space taken by left boxes
-                    taxonLabelHeight / 2 // move to center of this box
+                    numBoxesToLeft * (taxonClosedLabelHeight * distantTaxonResizeAmt + popSubtaxonHorizontalSpacing) + // space taken by left boxes
+                    taxonClosedLabelHeight / 2 // move to center of this box
     return boxCenter
 }
 
@@ -135,7 +136,8 @@ function setScales(taxaContainerHeight, taxaContainerWidth){
 }
 
 export {
-    taxonLabelHeight,
+    taxonClosedLabelHeight,
+    taxonOpenLabelHeight,
     taxonBoxOpenHeight,
     taxonBoxClosedWidth,
     taxonBoxOpenWidth,

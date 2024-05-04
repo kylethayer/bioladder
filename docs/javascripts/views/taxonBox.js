@@ -1,5 +1,5 @@
 import {navigateToTaxonViaUrl} from "../controllers/mainController.js"
-import {taxonLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,  pixelScale} from "./taxonBoxPositionCalculator.js"
+import {taxonClosedLabelHeight, taxonOpenLabelHeight, taxonBoxOpenHeight, taxonBoxClosedWidth, taxonBoxOpenWidth,  pixelScale} from "./taxonBoxPositionCalculator.js"
 import {taxonBoxElements} from './taxonBoxElement.js'
 const transitionSpeed = 1000
 
@@ -16,14 +16,14 @@ class TaxonBox{
     }
 
     updatePositionsAndSizes(){
-        this.labelHeight = pixelScale(taxonLabelHeight)
-
         if(this.isOpen){
             this.width = pixelScale(taxonBoxOpenWidth)
             this.height = pixelScale(taxonBoxOpenHeight)
+            this.labelHeight = pixelScale(taxonOpenLabelHeight)
         }else{
             this.width = pixelScale(taxonBoxClosedWidth)
-            this.height = pixelScale(taxonLabelHeight)
+            this.height = pixelScale(taxonClosedLabelHeight)
+            this.labelHeight = pixelScale(taxonClosedLabelHeight)
         }
 
 
