@@ -167,8 +167,8 @@ class Taxon extends EventTarget{
 
             this.subtaxa.forEach(async subtaxon => {
                 await subtaxon.ensureLoaded()
-                subtaxon.popularAncestors.forEach((subtaxonPopAnc) => 
-                    subtaxonPopAnc != null ? subtaxonPopAnc.ensureLoaded() : null
+                subtaxon.popularSubtaxa.forEach((subtaxonPopSubtaxon) => 
+                    subtaxonPopSubtaxon != null ? subtaxonPopSubtaxon.ensureLoaded() : null
                 )
             })
 
@@ -200,8 +200,9 @@ class Taxon extends EventTarget{
 
             this.subtaxa.forEach(async subtaxon => {
                 await subtaxon.ensureLoaded()
-                subtaxon.popularAncestors.forEach((subtaxonPopAnc) => 
-                    subtaxonPopAnc != null ? subtaxonPopAnc.ensureRelatedLoaded() : null
+                subtaxon.ensureRelatedLoaded()
+                subtaxon.popularSubtaxa.forEach((subtaxonPopSubtaxon) => 
+                    subtaxonPopSubtaxon != null ? subtaxonPopSubtaxon.ensureRelatedLoaded() : null
                 )
             })
 
