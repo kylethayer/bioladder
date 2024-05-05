@@ -10,6 +10,9 @@ const taxonChildHorizontalSpacing = 2
 const popSubtaxonHorizontalSpacing = 2
 const popAncestorHorizontalSpacing = 2
 
+const dashLength1 = 1
+const dashLength2 = 0.5
+
 //////////////////////////
 // vertical spacing
 
@@ -133,6 +136,8 @@ export {
     taxonBoxClosedWidth,
     taxonBoxOpenWidth,
     distantTaxonResizeAmt,
+    dashLength1,
+    dashLength2,
     pixelScale, 
     setScales, 
     verticalSpacingLookup,

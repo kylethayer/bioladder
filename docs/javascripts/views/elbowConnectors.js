@@ -1,4 +1,4 @@
-import {transitionSpeed} from "./taxonBoxPositionCalculator.js"
+import {transitionSpeed, dashLength1, dashLength2, pixelScale,} from "./taxonBoxPositionCalculator.js"
 
 class ElbowConnector{
   
@@ -63,6 +63,13 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
             .attr('d', getElbowConnectorPath) 
             .attr('stroke', 'black')
             .attr('fill', 'none')
+            .attr('stroke-dasharray', (d) => {
+                if(d.childTaxonBox.taxon.parentTaxon && d.childTaxonBox.taxon.parentTaxon.name == d.parentTaxonBox.taxon.name){
+                    return null
+                } else{
+                    return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
+                } //dashed
+            })
             //.attr('stroke-dasharray', (d) => "35,10")
             // TODO Add striped if childTaxon's parent isn't the parentTaxon
  
@@ -75,6 +82,13 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
       //.attr('stroke-dasharray', (d) => "35,10")
       .attr('stroke', 'black')
       .attr('fill', 'none')
+      .attr('stroke-dasharray', (d) => {
+            if(d.childTaxonBox.taxon.parentTaxon && d.childTaxonBox.taxon.parentTaxon.name == d.parentTaxonBox.taxon.name){ // solid
+                return null
+            } else{
+                return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
+            } //dashed
+        })
     // TODO Add striped if childTaxon's parent isn't the parentTaxon
 
   
