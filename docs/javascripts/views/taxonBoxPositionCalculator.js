@@ -16,8 +16,8 @@ const popAncestorHorizontalSpacing = 2
 // vertical space is divided into units as follows:
 const verticalSpacing = [
     {height: 2, use: "top-padding"}, // - 2 units padding
-    {height: 6, use: "pop-ancestor-space"}, // - 6 units popular ancestors (.75 size => 3 units tall), each a little lower and to the side
-    {height: 4, use: "elbow-parent-pop-ancestor"}, // - 4 units elbow joint
+    {height: taxonClosedLabelHeight*distantTaxonResizeAmt * 1.5, use: "pop-ancestor-space"}, //  each a little lower and to the side
+    {height: 6, use: "elbow-parent-pop-ancestor"}, // - 4 units elbow joint
     {height: taxonClosedLabelHeight, use: "parent-box"}, // - 4 units parent taxon box
     {height: 4, use: "elbow-main-parent"}, // - 4 units elbow joint (straight up and down)
     {height: taxonBoxOpenHeight, use: "main-box"}, // - 28 units main taxon box (title bar is 4 of those units)
@@ -65,18 +65,6 @@ function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
     let verticalForThis =  verticalChange / (numAncestors - 1) * (numAncestors - ancestorNum)
 
     return topMiddle + verticalForThis
-    
-
-    // let totalPopAncestorWidth = numAncestors * taxonBoxClosedWidth + (numAncestors - 1) * popAncestorHorizontalSpacing
-    // let rightPosStart = getHorizontalCenter() + totalPopAncestorWidth / 2 // start of rightmost subtaxon
-    // let numBoxesToRight = ancestorNum // index is the number of children to right (index 0 has none to right)
-
-    // let boxCenter = rightPosStart -  //right start
-    //                 numBoxesToRight * (taxonBoxClosedWidth + popAncestorHorizontalSpacing) - // space taken by left boxes
-    //                 taxonBoxClosedWidth / 2 // move to center of this box
-    // return boxCenter
-
-    return verticalSpacingLookup["pop-ancestor-space"].middle
 }
 
 //////////////////////////

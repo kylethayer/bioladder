@@ -159,19 +159,44 @@ class TaxaView{
   getElbowConnectors(){
     let elbowConnectors = []
 
+    // parent box -> main
     if(this.mainTaxonBox && this.parentTaxonBox){
-      elbowConnectors.push(
-        findOrCreateElbowConnector(elbowConnectorContainer, this.mainTaxonBox, this.parentTaxonBox)
-      )
+      let mainParentElbow = findOrCreateElbowConnector(elbowConnectorContainer, this.mainTaxonBox, this.parentTaxonBox)
+      mainParentElbow.sideways = false
+      elbowConnectors.push(mainParentElbow)
     }
 
+    // main -> subtaxa, and subtaxa -> pop ancestors
     if(this.subtaxonBoxes){
-      for(const subtaxonBox of this.subtaxonBoxes){
-        elbowConnectors.push(
-          findOrCreateElbowConnector(elbowConnectorContainer, subtaxonBox, this.mainTaxonBox)
-        )
+
+      for(const [subtaxonBoxNum, subtaxonBox] of this.subtaxonBoxes.entries()){
+        let mainSubtaxaElbow = findOrCreateElbowConnector(elbowConnectorContainer, subtaxonBox, this.mainTaxonBox)
+        mainSubtaxaElbow.sideways = false
+        elbowConnectors.push(mainSubtaxaElbow)
+
+        if(this.popularSubtaxonBoxes && this.popularSubtaxonBoxes[subtaxonBoxNum]){
+          for(const popSubtaxonBox of this.popularSubtaxonBoxes[subtaxonBoxNum]){
+            let subPopSubElbow = findOrCreateElbowConnector(elbowConnectorContainer, popSubtaxonBox, subtaxonBox)
+            subPopSubElbow.sideways = false
+            elbowConnectors.push(subPopSubElbow)
+          }
+        }
       }
     }
+
+    // popAncestors -> next pop ancestors -> parentTaxon
+    if(this.popularAncestorsTaxonBoxes && this.parentTaxonBox){
+      let lastAncestor = this.parentTaxonBox
+      let elbowSideways = false
+      for(const popAncestorBox of this.popularAncestorsTaxonBoxes){
+        let ancElbow = findOrCreateElbowConnector(elbowConnectorContainer, lastAncestor, popAncestorBox)
+        ancElbow.sideways = elbowSideways
+        elbowConnectors.push(ancElbow)
+        lastAncestor = popAncestorBox
+        elbowSideways = true
+      }
+    }
+
 
     return elbowConnectors
   }

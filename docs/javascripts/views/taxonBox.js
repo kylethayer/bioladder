@@ -30,10 +30,17 @@ class TaxonBox{
         this.x = this.centerX - this.width * this.scale / 2
         this.y = this.centerY - this.height * this.scale / 2
 
-        this.leftX = this.x
-        this.rightX = this.x + this.width * this.scale
-        this.topY = this.y
-        this.bottomY = this.y + this.height * this.scale
+        if(this.rotate == 0){
+            this.leftX = this.x
+            this.rightX = this.x + this.width * this.scale
+            this.topY = this.y
+            this.bottomY = this.y + this.height * this.scale
+        } else { // assume sideways
+            this.leftX = this.centerX - this.height * this.scale / 2
+            this.rightX = this.centerX + this.height * this.scale / 2
+            this.topY = this.centerY - this.width * this.scale / 2
+            this.bottomY = this.centerY + this.width * this.scale / 2
+        }
     }
 
 }
