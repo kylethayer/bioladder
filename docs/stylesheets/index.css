@@ -5,8 +5,15 @@ body{
     display: flex;
     flex-direction:column;
     padding: 0 !important;
+    background-color: #acdcff;
 }
 .content{
     background-color:gray;
     flex-grow: 1;
+}
+
+.navbar-custom {
+    background-color: #acdcff;
+    margin-left:10px;
+    margin-right:10px;
 }

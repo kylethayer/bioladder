@@ -1,5 +1,13 @@
 import {navigateToTaxon, d3Update} from "./controllers/mainController.js"
 
+const myModal = document.getElementById('exampleModal')
+const myInput = document.getElementById('myInput')
+
+myModal.addEventListener('shown.bs.modal', () => {
+  //myInput.focus()
+})
+
+
 window.onhashchange = function () {
     if(window.location.hash){
         let taxonName = window.location.hash.substring(1);
@@ -17,6 +25,9 @@ if(!window.location.hash){
 }
 
 d3.select(window).on('resize', d3Update);
+
+
+
 
 
 export default {}
