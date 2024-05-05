@@ -32,27 +32,35 @@ function findOrCreateElbowConnector(elbowConnectorContainer, childTaxonBox, pare
     return new ElbowConnector(childTaxonBox, parentTaxonBox)
 }
 
-function getElbowConnectorPath(d){
+function getElbowConnectorPath(d, lookupCurrentPos){
+    let parentPosition = d.parentTaxonBox
+    let childPosition = d.childTaxonBox
+    if(lookupCurrentPos){
+        parentPosition = parentPosition.getCurrentPosition()
+        childPosition = childPosition.getCurrentPosition()
+    }
+
     if(!d.sideways){
         return `
-        M ${d.parentTaxonBox.centerX} ${d.parentTaxonBox.centerY}
-        L ${d.parentTaxonBox.centerX} ${(d.parentTaxonBox.bottomY + d.childTaxonBox.topY) / 2}
-        L ${d.childTaxonBox.centerX} ${(d.parentTaxonBox.bottomY + d.childTaxonBox.topY) / 2}
-        L ${d.childTaxonBox.centerX} ${d.childTaxonBox.centerY}
+        M ${parentPosition.centerX} ${parentPosition.centerY}
+        L ${parentPosition.centerX} ${(parentPosition.bottomY + childPosition.topY) / 2}
+        L ${childPosition.centerX} ${(parentPosition.bottomY + childPosition.topY) / 2}
+        L ${childPosition.centerX} ${childPosition.centerY}
         `
     }else {
         //debugger
         return `
-        M ${d.parentTaxonBox.centerX} ${d.parentTaxonBox.centerY}
-        L ${(d.parentTaxonBox.rightX + d.childTaxonBox.leftX) / 2} ${d.parentTaxonBox.centerY}
-        L ${(d.parentTaxonBox.rightX + d.childTaxonBox.leftX) / 2} ${d.childTaxonBox.centerY}
-        L ${d.childTaxonBox.centerX} ${d.childTaxonBox.centerY}
+        M ${parentPosition.centerX} ${parentPosition.centerY}
+        L ${(parentPosition.rightX + childPosition.leftX) / 2} ${parentPosition.centerY}
+        L ${(parentPosition.rightX + childPosition.leftX) / 2} ${childPosition.centerY}
+        L ${childPosition.centerX} ${childPosition.centerY}
         `
     }
 }
 
 
-// code to create or update the d3 taxon boxes
+// code to create or update the d3 elbow connectors
+// NOTE: Should be run after the taxon boxes are updated so elbow connector transitions work right
 function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
     // NOTE: We'll also need a loading circle for unknown / loading
     elbowConnectorContainer
@@ -60,7 +68,7 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
       .data(elbowConnectors, (d) => makeElbowDataName(d.childTaxonBox, d.parentTaxonBox))
       .join(enter => enter.append('path')
             .attr('opacity', 0)
-            .attr('d', getElbowConnectorPath) 
+            .attr('d', (d) => getElbowConnectorPath(d, true)) //TODO: Figure out how to base this on current postion, not destination
             .attr('stroke', 'black')
             .attr('fill', 'none')
             .attr('stroke-dasharray', (d) => {
@@ -68,17 +76,15 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
                     return null
                 } else{
                     return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
-                } //dashed
+                }
             })
-            //.attr('stroke-dasharray', (d) => "35,10")
-            // TODO Add striped if childTaxon's parent isn't the parentTaxon
  
 
       )
       .attr('class', 'elbow-connector')
       .transition().duration(transitionSpeed)
       .attr('opacity', 1)
-      .attr('d', getElbowConnectorPath) 
+      .attr('d', (d) => getElbowConnectorPath(d, false)) 
       //.attr('stroke-dasharray', (d) => "35,10")
       .attr('stroke', 'black')
       .attr('fill', 'none')
@@ -87,9 +93,8 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
                 return null
             } else{
                 return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
-            } //dashed
+            }
         })
-    // TODO Add striped if childTaxon's parent isn't the parentTaxon
 
   
 }
