@@ -44,34 +44,10 @@ class TaxonBox{
     }
 
     getCurrentPosition(){
-        // perhap use this
-        //using answer from here: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform/18561829
+        //based on answer from here: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform/18561829
         let taxonName = this.taxon.name
-        console.log("getting position for ",  taxonName)
 
-        console.log(" set position ", {leftX: this.leftX,
-            centerX: this.centerX,
-            rightX: this.rightX,
-            topY: this.topY,
-            centerY: this.centerY,
-            bottomY: this.bottomY})
-
-        // use getBoundingClientRect 
         var taxonBoxg = d3.selectAll("g.taxon-box").filter(function(d){return taxonName == d.taxon.name}).node();
-        let boundingRect = taxonBoxg.getBoundingClientRect();
-
-        let boundingBoxCoords = {leftX: boundingRect.left,
-            centerX: (boundingRect.left + boundingRect.right)/2,
-            rightX: boundingRect.right,
-            topY: boundingRect.top,
-            centerY: (boundingRect.top + boundingRect.bottom)/2,
-            bottomY: boundingRect.bottom}
-
-        
-        console.log("boundingBox", boundingBoxCoords)
-
-        //using answer from here: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform/18561829
-        // CTM
 
         function getScreenCoords(x, y, ctm) {
             var xn = ctm.e + x*ctm.a + y*ctm.c;
@@ -82,8 +58,6 @@ class TaxonBox{
         let topLeft = getScreenCoords(0, 0, taxonBoxg.getCTM());
         let bottomRight = getScreenCoords(this.width*this.scale, this.height*this.scale, taxonBoxg.getCTM());
 
-        console.log(" CTM topLeft", topLeft)
-        console.log(" CTM bottomRight", bottomRight)
 
         let CTMCoords = {leftX: topLeft.x,
             centerX: (topLeft.x + bottomRight.x)/2,
