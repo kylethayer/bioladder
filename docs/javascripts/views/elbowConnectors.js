@@ -78,8 +78,6 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
                     return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
                 }
             })
- 
-
       )
       .attr('class', 'elbow-connector')
       .transition().duration(transitionSpeed)

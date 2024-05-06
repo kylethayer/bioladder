@@ -65,7 +65,15 @@ const taxonBoxElements = [
         postTransitionFn: selection => selection
             .attr('width', (d) => d.width)
             .attr('height', (d) => d.labelHeight)
-            .attr('fill', 'orange')
+            .attr('fill', (d) =>{
+                if(d.taxon.isExtinct === undefined){
+                    return "#b7c9e1" // light blue
+                }else if(d.taxon.isExtinct){
+                    return "#ffcccc" //very light red
+                } else {
+                    return "#90d590" //slightly light green
+                }
+            })
         
     }),
     // label text
