@@ -25,4 +25,4 @@ async function loadAllTaxa(){
 loadAllTaxa()
 
 
-export default findOrCreateTaxon
+export {findOrCreateTaxon, allTaxaDictionary}

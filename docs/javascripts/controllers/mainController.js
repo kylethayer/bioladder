@@ -1,4 +1,4 @@
-import findOrCreateTaxon from '../models/allTaxa.js'
+import {findOrCreateTaxon} from '../models/allTaxa.js'
 import {gotoTaxon, d3Update} from '../views/taxaView.js'
 
 function navigateToTaxonViaUrl(taxonName){

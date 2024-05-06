@@ -1,5 +1,5 @@
 import settings from "../settings.js"
-import findOrCreateTaxon from './allTaxa.js'
+import {findOrCreateTaxon} from './allTaxa.js'
 
 function isTaxonNameValid(taxonName){
     return /^[-_\w\s'ñ]+$/.test(taxonName)
