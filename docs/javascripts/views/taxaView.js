@@ -207,13 +207,15 @@ class TaxaView{
     // update for main taxon and preview image loaded
     if(! this.mainTaxonBox.taxon.loadInfo.isLoaded){
       this.mainTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
-      this.mainTaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
+    }else if(! this.mainTaxonBox.taxon.loadInfo.isPreviewImageLoaded){
+      this.mainTaxonBox.taxon.loadInfo.previewImageloadedUpdateFunction = d3Update
     }
     // update for parent preview image
     if(this.parentTaxonBox){
       if(! this.parentTaxonBox.taxon.loadInfo.isLoaded){
         this.parentTaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
-        this.parentTaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
+      } else if(! this.parentTaxonBox.taxon.loadInfo.isPreviewImageLoaded){
+        this.parentTaxonBox.taxon.loadInfo.previewImageloadedUpdateFunction = d3Update
       }
     }
 
@@ -222,7 +224,8 @@ class TaxaView{
       for(const popAncestorBox of this.popularAncestorsTaxonBoxes){
         if(!popAncestorBox.taxon.loadInfo.isLoaded){
           popAncestorBox.taxon.loadInfo.loadedUpdateFunction = d3Update
-          popAncestorBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
+        } else if(!popAncestorBox.taxon.loadInfo.isPreviewImageLoaded){
+          popAncestorBox.taxon.loadInfo.previewImageloadedUpdateFunction = d3Update
         }
       }
     }
@@ -232,7 +235,8 @@ class TaxaView{
       for(const subtaxonBox of this.subtaxonBoxes){
         if(!subtaxonBox.taxon.loadInfo.isLoaded){
           subtaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
-          subtaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
+        } else if(!subtaxonBox.taxon.loadInfo.isPreviewImageLoaded){
+          subtaxonBox.taxon.loadInfo.previewImageloadedUpdateFunction = d3Update
         }
       }
     }
@@ -245,7 +249,8 @@ class TaxaView{
           for(const popSubtaxonBox of popSubtaxonBoxList){
             if(!popSubtaxonBox.taxon.loadInfo.isLoaded){
               popSubtaxonBox.taxon.loadInfo.loadedUpdateFunction = d3Update
-              popSubtaxonBox.taxon.loadInfo.ensurePreviewImageLoaded = d3Update
+            } else if(!popSubtaxonBox.taxon.loadInfo.isPreviewImageLoaded){
+              popSubtaxonBox.taxon.loadInfo.previewImageloadedUpdateFunction = d3Update
             }
           }
         }

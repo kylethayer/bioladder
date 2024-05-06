@@ -57,7 +57,9 @@ class Taxon extends EventTarget{
             }
             if(taxonData.exampleMember !== undefined && taxonData.exampleMember !== ""){
                 this.exampleMember = findOrCreateTaxon(taxonData.exampleMember)
-                this.exampleMember.ensureLoaded()
+                if(this.exampleMember.loadInfo.isLoaded){
+                    this.loadInfo.isPreviewImageLoaded = true;
+                }
             }
             if(taxonData.exampleMemberType !== undefined){
                 this.exampleMemberType = taxonData.exampleMemberType
@@ -99,6 +101,7 @@ class Taxon extends EventTarget{
                 this.subtaxa = taxonData.subtaxa.map(subtaxonName => findOrCreateTaxon(subtaxonName))
             }
             if(taxonData.wikipediaImg !== undefined && taxonData.wikipediaImg !== ""){
+                this.loadInfo.isPreviewImageLoaded = true;
                 if (typeof taxonData.wikipediaImg !== 'string' ||
                     !/^https?:\/\/upload\.wikimedia\.org\/[%\w\.\/-]+$/.test(taxonData.wikipediaImg)) 
                 {
@@ -121,12 +124,15 @@ class Taxon extends EventTarget{
                 
             }
  
-            //console.log("loaded taxon", this) 
-
             this.loadInfo.isLoaded = true;
             this.dispatchEvent(this.loadInfo.loadedEvent)
             this.loadInfo.loadedUpdateFunction()      
             this.loadInfo.loadedUpdateFunction = () => {}
+
+            if(!this.loadInfo.isPreviewImageLoaded && 
+                this.exampleMember && !this.exampleMember.loadInfo.isLoaded){
+                this.ensurePreviewImageLoaded()
+            }
 
         } else if(!this.loadInfo.isLoaded && this.loadInfo.isLoading){
             // if currently loading, wait until loaded event is fired
@@ -148,6 +154,8 @@ class Taxon extends EventTarget{
                 this.dispatchEvent(this.loadInfo.previewImageloadedEvent)
                 this.loadInfo.previewImageloadedUpdateFunction() 
                 this.loadInfo.previewImageloadedUpdateFunction = () => {}  
+            } else{
+                this.loadInfo.isPreviewImageLoaded = true; // make sure to mark we are done here
             }
         } else if(!this.loadInfo.isPreviewImageLoaded && this.loadInfo.isPreviewImageLoading){
             // if currently loading, wait until loaded event is fired
