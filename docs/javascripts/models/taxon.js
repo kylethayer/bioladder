@@ -39,6 +39,15 @@ class Taxon extends EventTarget{
         }
     }
 
+    getPreviewImageExtinct(){
+        if(this.wikipediaImg){
+            return this.isExtinct
+        }
+        if(this.exampleMember){
+            return this.exampleMember.isExtinct
+        }
+    }
+
     // Loads this taxon info
     // can be awaited reliably
     async ensureLoaded(){

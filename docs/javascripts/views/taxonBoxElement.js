@@ -134,6 +134,50 @@ const taxonBoxElements = [
                 }
             })        
     }),
+    // image outline
+    new TaxonBoxElement({
+        elementName: 'rect', 
+        className: 'taxon-wikipedia-img-outline',
+        refreshPreTransitionFn: selection => selection
+            .attr('class', 'taxon-wikipedia-img-outline')
+            .attr('hidden', (d) => d.taxon.getPreviewImage() ? null: true)
+            .attr('stroke-width', 2)
+            .attr('stroke', (d) =>{
+                if(d.taxon.getPreviewImageExtinct() === undefined){
+                    return "#b7c9e1" // light blue
+                }else if(d.taxon.getPreviewImageExtinct()){
+                    return "#ffcccc" //very light red
+                } else {
+                    return "#90d590" //slightly light green
+                }
+            })
+            .attr("fill", "none")
+        ,
+        postTransitionFn: selection => selection
+            .attr('x', (d) => {
+                if(d.isOpen){
+                    return d.labelHeight / 2
+                } else {
+                    return d.labelHeight / 10
+                }
+            })
+            .attr('y', (d) => {
+                if(d.isOpen){
+                    return d.labelHeight + 10
+                } else {
+                    return d.labelHeight / 10
+                }
+            })
+            .attr('transform', (d) =>  `rotate(${-d.rotate}, ${d.labelHeight/2}, ${d.labelHeight/2})`)  // WHY IS ROTATE 1.5???
+            .attr('style', (d) => {
+                if(d.isOpen){
+                    return `width:${d.width / 2}px; height:${d.height - d.labelHeight - 20}px;`
+                } else {
+                    return  `width:${d.labelHeight * 8 / 10}px; height:${d.labelHeight * 8 / 10}px;`
+                }
+            })
+            .attr('opacity', (d) => d.isOpen ? 1 : 0)      
+    }),
     // outline
     new TaxonBoxElement({
         elementName: 'rect', 
