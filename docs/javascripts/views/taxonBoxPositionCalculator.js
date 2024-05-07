@@ -1,6 +1,6 @@
 const transitionSpeed = 1000
 
-const taxonOpenLabelHeight = 4
+const taxonOpenLabelHeight = 6
 const taxonClosedLabelHeight = 8
 const taxonBoxOpenHeight = 28
 const taxonBoxOpenWidth = 90

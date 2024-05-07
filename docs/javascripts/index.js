@@ -63,6 +63,7 @@ if(!window.location.hash){
     window.onhashchange() // first time loading make sure to trigger the first navigation
 }
 
+
 d3.select(window).on('resize', d3Update);
 
 

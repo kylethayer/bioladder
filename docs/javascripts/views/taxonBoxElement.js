@@ -86,10 +86,20 @@ const taxonBoxElements = [
             .attr('text-anchor', 'middle')
         ,
         postTransitionFn: selection => selection
-            .attr('x', (d) => d.width / 2)
+            .attr('x', (d) => d.labelHeight + (d.width-d.labelHeight) / 2)
             .attr('y', (d) => d.labelHeight / 2)
-            // TODO: SCALE FONT SIZE BASED ON LABEL HEIGHT
-        
+            // Scale Font based on label height https://stackoverflow.com/questions/15430189/pure-svg-way-to-fit-text-to-a-box
+            .attr('transform-origin', (d) => (d.labelHeight + (d.width-d.labelHeight) / 2) + ' ' + d.labelHeight / 2)
+            .attr('transform', (d, i, nodes) => {
+                //debugger
+                var textNode = nodes[i];
+                var bb = textNode.getBBox();
+                var widthTransform = bb.width > 0 ? (d.width-d.labelHeight) / bb.width : 1;
+                var heightTransform = bb.height > 0 ? d.labelHeight / bb.height : 1;
+                var value = widthTransform < heightTransform ? widthTransform : heightTransform;
+                //return "matrix("+value+", 0, 0, "+value+", 0,0)"
+                return `scale(${value*.95})`
+            })
     }),
     // image (hidden if no image)
     new TaxonBoxElement({

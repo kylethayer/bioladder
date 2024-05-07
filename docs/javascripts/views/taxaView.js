@@ -11,6 +11,7 @@ let taxaViewSVG =  d3.select("#taxaView")
 let taxaContainer = d3.select("#taxaContainer")
 let elbowConnectorContainer = d3.select("#elbowConnectorContainer")
 
+
 /**
  * goToTaxon function
  * @param {*} taxon 
