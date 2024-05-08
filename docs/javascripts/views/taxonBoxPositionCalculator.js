@@ -34,25 +34,39 @@ const verticalSpacing = [
 ]
 
 //calculate for each vertical spacing area what the top, bottom and middle points are
-let ySoFar = 0
+let minHeightUnits = 0
 let verticalSpacingLookup = {}
+
 for(const spacingArea of verticalSpacing){
     let currentHeight = spacingArea.height
-
-    spacingArea.top = ySoFar
-    ySoFar += currentHeight
-    spacingArea.bottom = ySoFar
-    spacingArea.middle = (spacingArea.top + spacingArea.bottom) / 2
-
-    verticalSpacingLookup[spacingArea.use] = spacingArea;
+    minHeightUnits += currentHeight
 }
 
-const minHeightUnits = ySoFar
+// minHeightUnits is now set
 
 let totalHeightUnits = 100 // TODO: use this to center vertical
+let extraYForCenter = 0
+
+function setVerticalSpacingLookup(){
+    let ySoFar = extraYForCenter
+    for(const spacingArea of verticalSpacing){
+        let currentHeight = spacingArea.height
+    
+        spacingArea.top = ySoFar
+        ySoFar += currentHeight
+        spacingArea.bottom = ySoFar
+        spacingArea.middle = (spacingArea.top + spacingArea.bottom) / 2
+    
+        verticalSpacingLookup[spacingArea.use] = spacingArea;
+    }
+}
+
+setVerticalSpacingLookup() // make sure this is run at least once
 
 function setVerticalPixels(taxaViewHeight){
     totalHeightUnits = pixelScale.invert(taxaViewHeight)
+    extraYForCenter = (totalHeightUnits - minHeightUnits) / 2
+    setVerticalSpacingLookup()
 }
 
 function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
@@ -171,6 +185,7 @@ export {
     pixelScale, 
     setScales, 
     verticalSpacingLookup,
+    extraYForCenter,
     getPopAncestorVerticalCenter,
     getHorizontalCenter,
     getPopAncestorHorizontalCenter,
