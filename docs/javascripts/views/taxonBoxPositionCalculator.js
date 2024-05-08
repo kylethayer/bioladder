@@ -47,14 +47,12 @@ for(const spacingArea of verticalSpacing){
     verticalSpacingLookup[spacingArea.use] = spacingArea;
 }
 
-const totalHeightUnits = ySoFar
+const minHeightUnits = ySoFar
 
-let verticalPixels = 100
-let pixelScale = (a) => a
+let totalHeightUnits = 100 // TODO: use this to center vertical
 
-function setVerticalPixels(pixels){
-    verticalPixels = pixels
-    pixelScale = d3.scaleLinear([0, totalHeightUnits], [0, verticalPixels]);
+function setVerticalPixels(taxaViewHeight){
+    totalHeightUnits = pixelScale.invert(taxaViewHeight)
 }
 
 function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
@@ -74,6 +72,8 @@ function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
 
 //////////////////////////
 // horizontal spacing
+
+
 let totalWidthUnits = 100 // default, should be recalculated
 
 function setHorizontalWidth(taxaViewWidth){
@@ -84,8 +84,12 @@ function getHorizontalCenter(){
     return totalWidthUnits / 2
 }
 
+function getTotalPopAncestorWidth(numAncestors){
+    return numAncestors * taxonBoxClosedWidth + (numAncestors - 1) * popAncestorHorizontalSpacing
+}
+
 function getPopAncestorHorizontalCenter(ancestorNum, numAncestors){
-    let totalPopAncestorWidth = numAncestors * taxonBoxClosedWidth + (numAncestors - 1) * popAncestorHorizontalSpacing
+    let totalPopAncestorWidth = getTotalPopAncestorWidth(numAncestors)
     let rightPosStart = getHorizontalCenter() + totalPopAncestorWidth / 2 // start of rightmost subtaxon
     let numBoxesToRight = ancestorNum // index is the number of children to right (index 0 has none to right)
 
@@ -121,11 +125,35 @@ function getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum,
 }
 
 
+const sidePadding = 2
+function getMaxWidth(){
+    return 2*sidePadding + Math.max(taxonBoxOpenWidth, getTotalPopAncestorWidth(4))
+}
+let minWidthUnits = getMaxWidth()
+
+
+
 
 
 /////////////////////
 // set up
+
+let pixelScale = (a) => a
+
 function setScales(taxaViewHeight, taxaViewWidth){
+    // figure out whether vertical or horizontal is the main problem and set scale accordinlgy
+    if(taxaViewHeight == 0 || taxaViewWidth == 0){
+        // if one dimension is missing, there is no reasonable action we can take
+        return
+    }
+    let taxaViewAspectRatio = taxaViewWidth / taxaViewHeight
+    let ourMinAspectRatio = minWidthUnits / minHeightUnits
+    
+    if (taxaViewAspectRatio > ourMinAspectRatio){ // more widthy than we need, use height
+        pixelScale = d3.scaleLinear([0, minHeightUnits], [0, taxaViewHeight]);
+    } else{ // more heighty than we need, use width
+        pixelScale = d3.scaleLinear([0, minWidthUnits], [0, taxaViewWidth]);
+    }
     setVerticalPixels(taxaViewHeight)
     setHorizontalWidth(taxaViewWidth)
 }
