@@ -1,6 +1,8 @@
 # bioladder
 An Interactive Tree of Life viewer
 
+See the project live at: [https://kylethayer.github.io/bioladder](https://kylethayer.github.io/bioladder)
+
 The viewer is locaded in the "docs" directory.
 
 The data project is located at: [https://github.com/kylethayer/bioladder](https://github.com/kylethayer/bioladder)
