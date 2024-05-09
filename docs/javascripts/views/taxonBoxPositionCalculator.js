@@ -21,7 +21,7 @@ const dashLength2 = 0.5
 // vertical spacing
 
 // vertical space is divided into units as follows:
-const verticalSpacing = [
+const verticalSpacingAncHorizontal =  [
     {height: 2, use: "top-padding"}, // - 2 units padding
     {height: taxonClosedLabelHeight*distantTaxonResizeAmt * 1.5, use: "pop-ancestor-space"}, //  each a little lower and to the side
     {height: 6, use: "elbow-parent-pop-ancestor"}, // - 4 units elbow joint
@@ -35,21 +35,49 @@ const verticalSpacing = [
     {height: 2, use: "bottom-padding"}, // - 2 units padding
 ]
 
+const verticalSpacingAncVertical = [
+    {height: 2, use: "top-padding"}, // - 2 units padding
+    {height: taxonClosedLabelHeight*distantTaxonResizeAmt * 4 + 2 * 3, use: "pop-ancestor-space"}, //  4 labels + 3 paddings of 2
+    {height: 4, use: "elbow-parent-pop-ancestor"}, // - 4 units elbow joint
+    {height: taxonClosedLabelHeight, use: "parent-box"}, // - 4 units parent taxon box
+    {height: 4, use: "elbow-main-parent"}, // - 4 units elbow joint (straight up and down)
+    {height: taxonBoxOpenHeight, use: "main-box"}, // - 28 units main taxon box (title bar is 4 of those units)
+    {height: 8, use: "elbow-children-parent"}, // - 8 units elbow joint
+    {height: taxonClosedLabelHeight, use: "child-box"}, // - 4 units child boxes
+    {height: 8, use: "elbow-pop-descendents-parent"},// - 8 units elbow joints
+    {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendents-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
+    {height: 2, use: "bottom-padding"}, // - 2 units padding
+]
+
+let ancHorizontal = true
+
 //calculate for each vertical spacing area what the top, bottom and middle points are
-let minHeightUnits = 0
+let minHeightUnitsAncHorizontal = 0
+let minHeightUnitsAncVertical = 0
 let verticalSpacingLookup = {}
 
-for(const spacingArea of verticalSpacing){
+for(const spacingArea of verticalSpacingAncHorizontal){
     let currentHeight = spacingArea.height
-    minHeightUnits += currentHeight
+    minHeightUnitsAncHorizontal += currentHeight
 }
 
-// minHeightUnits is now set
+for(const spacingArea of verticalSpacingAncVertical){
+    let currentHeight = spacingArea.height
+    minHeightUnitsAncVertical += currentHeight
+}
+
+
+
+// minHeightUnitsAncHorizontal, minHeightUnitsAncVertical are now set
 
 let totalHeightUnits = 100 // TODO: use this to center vertical
 let extraYForCenter = 0
 
 function setVerticalSpacingLookup(){
+    let verticalSpacing = verticalSpacingAncVertical
+    if(ancHorizontal){
+        verticalSpacing = verticalSpacingAncHorizontal
+    }
     let ySoFar = extraYForCenter
     for(const spacingArea of verticalSpacing){
         let currentHeight = spacingArea.height
@@ -67,7 +95,11 @@ setVerticalSpacingLookup() // make sure this is run at least once
 
 function setVerticalPixels(taxaViewHeight){
     totalHeightUnits = pixelScale.invert(taxaViewHeight)
-    extraYForCenter = (totalHeightUnits - minHeightUnits) / 2
+    if(ancHorizontal){
+        extraYForCenter = (totalHeightUnits - minHeightUnitsAncHorizontal) / 2
+    }else{
+        extraYForCenter = (totalHeightUnits - minHeightUnitsAncVertical) / 2
+    }
     setVerticalSpacingLookup()
 }
 
@@ -81,7 +113,7 @@ function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
 
     let verticalChange =  bottomMiddle - topMiddle
     
-    let verticalForThis =  verticalChange / (numAncestors - 1) * (numAncestors - ancestorNum)
+    let verticalForThis =  verticalChange / (numAncestors - 1) * (numAncestors - ancestorNum - 1)
 
     return topMiddle + verticalForThis
 }
@@ -105,6 +137,9 @@ function getTotalPopAncestorWidth(numAncestors){
 }
 
 function getPopAncestorHorizontalCenter(ancestorNum, numAncestors){
+    if(!ancHorizontal){
+        return getHorizontalCenter()
+    }
     let totalPopAncestorWidth = getTotalPopAncestorWidth(numAncestors)
     let rightPosStart = getHorizontalCenter() + totalPopAncestorWidth / 2 // start of rightmost subtaxon
     let numBoxesToRight = ancestorNum // index is the number of children to right (index 0 has none to right)
@@ -145,8 +180,9 @@ const sidePadding = 2
 function getMaxWidth(){
     return 2*sidePadding + Math.max(taxonBoxOpenWidth, getTotalPopAncestorWidth(4))
 }
-let minWidthUnits = getMaxWidth()
 
+let minWidthUnitsAncHorizontal = getMaxWidth()
+let minWidthUnitsAncVertical = 2*sidePadding + taxonBoxOpenWidth
 
 
 
@@ -162,13 +198,21 @@ function setScales(taxaViewHeight, taxaViewWidth){
         // if one dimension is missing, there is no reasonable action we can take
         return
     }
+
     let taxaViewAspectRatio = taxaViewWidth / taxaViewHeight
-    let ourMinAspectRatio = minWidthUnits / minHeightUnits
+
+    let ourMinAspectRatioAncHorizontal = minWidthUnitsAncHorizontal / minHeightUnitsAncHorizontal
+    let ourMinAspectRatioAncVertical = minWidthUnitsAncVertical / minHeightUnitsAncVertical
     
-    if (taxaViewAspectRatio > ourMinAspectRatio){ // more widthy than we need, use height
-        pixelScale = d3.scaleLinear([0, minHeightUnits], [0, taxaViewHeight]);
-    } else{ // more heighty than we need, use width
-        pixelScale = d3.scaleLinear([0, minWidthUnits], [0, taxaViewWidth]);
+    if (taxaViewAspectRatio > ourMinAspectRatioAncHorizontal){ // more widthy than our wide option, use height and ancestors horizontal
+        ancHorizontal = true
+        pixelScale = d3.scaleLinear([0, minHeightUnitsAncHorizontal], [0, taxaViewHeight]);
+    } else if (taxaViewAspectRatio < ourMinAspectRatioAncVertical){ // more heighty than our tall option, use width and ancestors veritcal
+        ancHorizontal = false
+        pixelScale = d3.scaleLinear([0, minWidthUnitsAncVertical], [0, taxaViewWidth]);
+    } else { // in between our two options, we'll choose horizontal layout and use width to set scale
+        ancHorizontal = true
+        pixelScale = d3.scaleLinear([0, minWidthUnitsAncHorizontal], [0, taxaViewWidth]);
     }
     setVerticalPixels(taxaViewHeight)
     setHorizontalWidth(taxaViewWidth)
