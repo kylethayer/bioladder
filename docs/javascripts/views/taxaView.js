@@ -27,6 +27,14 @@ function gotoTaxon(taxon){
   taxon.ensureRelatedRelatedLoaded()
 
   taxaView = new TaxaView(taxon)
+    // TODO: compare new taxa view with old one for figuring out motion
+    // for each box in old/new view
+      // find if they are in both, note position change
+    // if none are in both (or old view doesn't exist), all fade in
+    // if some are in both
+      // if any move up or down, that sets general direction
+      // for each box check up and down the tree for some guidance on where to go
+      // if a parent and child both still exist, this dissapears between them
   childDragPosition[0].dx = 0
   d3Update()
 }
