@@ -89,9 +89,9 @@ function findOrCreateTaxonBox(taxaContainer, taxon){
 }
 
 // code to create or update the d3 taxon boxes
-function taxonBoxD3(taxonBoxes, taxaContainer){
+function taxonBoxD3(taxonBoxes, taxaContainer, isDrag){
     // add draggable boxes for children drag event (when screen too wide)
-    taxaContainer.selectAll("g.child-drag-taxon-box")
+    let childDragBoxSelect = taxaContainer.selectAll("g.child-drag-taxon-box")
     .data(taxonBoxes, (d) => d.taxon.name)
     .join(enter => {
         let childDragG = enter.append('g')
@@ -118,23 +118,35 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
         return childDragG
     })
     .attr('class', 'child-drag-taxon-box')
-    .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+    
 
 
     // NOTE: We'll also need a loading circle for unknown / loading
-    let selection = d3.selectAll('g.taxon-box')
+    d3.selectAll('g.taxon-box')
       .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
-      .transition().duration(transitionSpeed)
-      .attr('opacity', 1)
-      .attr('transform', (d) =>  `
+
+    if(isDrag){// transitions and other updates aren't needed for just dragging children
+        childDragBoxSelect
+            .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+    } else {
+        childDragBoxSelect
+            .transition().duration(transitionSpeed)
+            .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+
+        d3.selectAll('g.taxon-box')
+            .transition().duration(transitionSpeed)
+            .attr('opacity', 1)
+            .attr('transform', (d) =>  `
                 translate(${d.x},${d.y}) 
                 rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
                 scale(${d.scale})
-                `)
+            `)
+            //.attr('transform', (d) =>  `translate(${d.dragX},0) `)
 
-  
-    for(const taxonBoxElement of taxonBoxElements){
-        taxonBoxElement.refreshFn(transitionSpeed)
+        
+            for(const taxonBoxElement of taxonBoxElements){
+                taxonBoxElement.refreshFn(transitionSpeed)
+            }
     }
 }
 

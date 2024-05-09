@@ -37,7 +37,7 @@ function d3Update(isDrag){
   setScales(taxaViewHeight, taxaViewWidth)
 
   taxaView.updateTaxonBoxes()
-  taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
+  taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer, isDrag)
   elbowConnectorD3(taxaView.getElbowConnectors(), elbowConnectorContainer, isDrag)
   taxaChildDraggableD3(taxaContainer)
 
@@ -45,11 +45,8 @@ function d3Update(isDrag){
 }
 
 
-
-
 function taxaChildDragged(event, d) {
   d3.select(this).raise()//.attr("x", d.dx = event.x);
-  //console.log("event", event)
   d.dx += event.dx
   d3Update(true)
 }
@@ -61,9 +58,7 @@ function taxaChildDraggableD3(taxaContainer){
       .join('rect')
       .attr('class', 'taxon-children-draggable')
       .lower()// put in background
-      .style("pointer-events", "fill")
-      .attr('opacity', 0.5)
-      .attr('fill', "red")
+      .attr('opacity', 0)
       .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa)/2))
       .attr('y', (d) => pixelScale(verticalSpacingLookup["child-box"].top))
       .attr('height', (d) => pixelScale(verticalSpacingLookup["pop-descendants-box"].bottom - verticalSpacingLookup["child-box"].top))

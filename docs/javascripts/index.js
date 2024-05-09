@@ -64,7 +64,7 @@ if(!window.location.hash){
 }
 
 
-d3.select(window).on('resize', d3Update);
+d3.select(window).on('resize', () => {d3Update()});
 
 
 

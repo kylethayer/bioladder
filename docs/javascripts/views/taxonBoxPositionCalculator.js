@@ -151,6 +151,9 @@ function getPopAncestorHorizontalCenter(ancestorNum, numAncestors){
 }
 
 function getSubtaxaWidth(numChildren){
+    if(numChildren == 0){
+        return 0
+    }
     return numChildren * taxonBoxClosedWidth + (numChildren - 1) * taxonChildHorizontalSpacing
 }
 
