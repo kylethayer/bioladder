@@ -52,7 +52,7 @@ function taxaChildDragged(event, d) {
 function taxaChildDraggableD3(taxaContainer, isDrag){
   if(isDrag){
     taxaContainer.selectAll("rect.taxon-children-draggable")
-      .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa)/2))
+      .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa + 1)/2))// the plus 1 is for padding
     return
   }
   taxaContainer
@@ -61,11 +61,11 @@ function taxaChildDraggableD3(taxaContainer, isDrag){
       .join('rect')
       .attr('class', 'taxon-children-draggable')
       .lower()// put in background
-      .attr('opacity', 0)
-      .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa)/2))
-      .attr('y', (d) => pixelScale(verticalSpacingLookup["child-box"].top))
-      .attr('height', (d) => pixelScale(verticalSpacingLookup["pop-descendants-box"].bottom - verticalSpacingLookup["child-box"].top))
-      .attr('width', (d) => pixelScale(getSubtaxaWidth(d.numSubtaxa))) // todo: should be width of all child taxon boxes
+      .attr('opacity', 1)
+      .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa + 1)/2)) // the plus 1 is for padding
+      .attr('y', (d) => pixelScale(verticalSpacingLookup["main-box"].bottom))
+      .attr('height', (d) => pixelScale(verticalSpacingLookup["bottom-padding"].bottom - verticalSpacingLookup["main-box"].bottom))
+      .attr('width', (d) => pixelScale(getSubtaxaWidth(d.numSubtaxa + 1))) // the plus 1 is for padding
       .call(d3.drag().on("drag", taxaChildDragged))
 }
 
