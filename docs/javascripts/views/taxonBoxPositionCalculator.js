@@ -10,6 +10,8 @@ const taxonChildHorizontalSpacing = 2
 const popSubtaxonHorizontalSpacing = 2
 const popAncestorHorizontalSpacing = 2
 
+const popularityBoxShadowWidth = 2
+
 const dashLength1 = 1
 const dashLength2 = 0.5
 
@@ -180,6 +182,7 @@ export {
     taxonBoxClosedWidth,
     taxonBoxOpenWidth,
     distantTaxonResizeAmt,
+    popularityBoxShadowWidth,
     dashLength1,
     dashLength2,
     pixelScale, 

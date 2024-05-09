@@ -1,3 +1,5 @@
+import {popularityBoxShadowWidth, pixelScale} from "./taxonBoxPositionCalculator.js"
+
 
 class TaxonBoxElement{
     // constructor options can have
@@ -52,9 +54,9 @@ const taxonBoxElements = [
             .attr('height', (d) => d.height)
             .attr('style', (d) => {
                 let popularity = d.taxon.popularity ? d.taxon.popularity : 0;
-                let minShadowWidth = popularity / 100.0 * 0.3;
-                let maxShadowWidth = popularity / 100.0 * 0.9;
-                return `filter: drop-shadow(0 ${minShadowWidth}em ${maxShadowWidth}em rgba(0,0,0,0.8));`
+                let minShadowWidth = pixelScale(popularityBoxShadowWidth * popularity / 100.0 * 0.5);
+                let maxShadowWidth = pixelScale(popularityBoxShadowWidth * popularity / 100.0 * 1.3);
+                return `filter: drop-shadow(0 ${minShadowWidth}px ${maxShadowWidth}px rgba(0,0,0,0.8));`
             })
         
     }),
