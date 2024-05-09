@@ -30,8 +30,8 @@ const verticalSpacingAncHorizontal =  [
     {height: taxonBoxOpenHeight, use: "main-box"}, // - 28 units main taxon box (title bar is 4 of those units)
     {height: 8, use: "elbow-children-parent"}, // - 8 units elbow joint
     {height: taxonClosedLabelHeight, use: "child-box"}, // - 4 units child boxes
-    {height: 8, use: "elbow-pop-descendents-parent"},// - 8 units elbow joints
-    {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendents-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
+    {height: 8, use: "elbow-pop-descendants-parent"},// - 8 units elbow joints
+    {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendants-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
     {height: 2, use: "bottom-padding"}, // - 2 units padding
 ]
 
@@ -44,8 +44,8 @@ const verticalSpacingAncVertical = [
     {height: taxonBoxOpenHeight, use: "main-box"}, // - 28 units main taxon box (title bar is 4 of those units)
     {height: 8, use: "elbow-children-parent"}, // - 8 units elbow joint
     {height: taxonClosedLabelHeight, use: "child-box"}, // - 4 units child boxes
-    {height: 8, use: "elbow-pop-descendents-parent"},// - 8 units elbow joints
-    {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendents-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
+    {height: 8, use: "elbow-pop-descendants-parent"},// - 8 units elbow joints
+    {height: distantTaxonResizeAmt*taxonBoxClosedWidth, use: "pop-descendants-box"}, //  - 30 units vertical popular descendences (at .75 size, normal width is 40 units)
     {height: 2, use: "bottom-padding"}, // - 2 units padding
 ]
 
@@ -150,8 +150,12 @@ function getPopAncestorHorizontalCenter(ancestorNum, numAncestors){
     return boxCenter
 }
 
+function getSubtaxaWidth(numChildren){
+    return numChildren * taxonBoxClosedWidth + (numChildren - 1) * taxonChildHorizontalSpacing
+}
+
 function getSubtaxonHorizontalCenter(childNum, numChildren){
-    let totalSubtaxonsWidth = numChildren * taxonBoxClosedWidth + (numChildren - 1) * taxonChildHorizontalSpacing
+    let totalSubtaxonsWidth = getSubtaxaWidth(numChildren)
     let leftPosStart = getHorizontalCenter() - totalSubtaxonsWidth / 2 // start of leftmost subtaxon
     let numBoxesToLeft = childNum // index is the number of children to left (index 0 has none to left)
 
@@ -236,6 +240,7 @@ export {
     getPopAncestorVerticalCenter,
     getHorizontalCenter,
     getPopAncestorHorizontalCenter,
+    getSubtaxaWidth,
     getSubtaxonHorizontalCenter,
     getPopSubtaxonHorizontalCenter}
 

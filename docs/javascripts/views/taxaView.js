@@ -4,13 +4,17 @@ import {taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
 import {elbowConnectorD3, findOrCreateElbowConnector} from './elbowConnectors.js'
 import {distantTaxonResizeAmt,
   setScales, pixelScale, verticalSpacingLookup, getPopAncestorVerticalCenter, getHorizontalCenter, getPopAncestorHorizontalCenter, 
-  getSubtaxonHorizontalCenter, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
+  getSubtaxonHorizontalCenter, getSubtaxaWidth, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
 let taxaViewSVG =  d3.select("#taxaView")
 let taxaContainer = d3.select("#taxaContainer")
 let elbowConnectorContainer = d3.select("#elbowConnectorContainer")
 
+const childDragPosition = [{
+  dx: 0,
+  numSubtaxa: 0
+}]
 
 /**
  * goToTaxon function
@@ -23,19 +27,48 @@ function gotoTaxon(taxon){
   taxon.ensureRelatedRelatedLoaded()
 
   taxaView = new TaxaView(taxon)
+  childDragPosition[0].dx = 0
   d3Update()
 }
 
-function d3Update(){
+function d3Update(isDrag){
   let taxaViewHeight = taxaViewSVG.node().getBoundingClientRect().height;
   let taxaViewWidth = taxaViewSVG.node().getBoundingClientRect().width;
   setScales(taxaViewHeight, taxaViewWidth)
 
   taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer)
-  elbowConnectorD3(taxaView.getElbowConnectors(), elbowConnectorContainer)
+  elbowConnectorD3(taxaView.getElbowConnectors(), elbowConnectorContainer, isDrag)
+  taxaChildDraggableD3(taxaContainer)
 
   taxaView.setUpdateFunctionCalls()
+}
+
+
+
+
+function taxaChildDragged(event, d) {
+  d3.select(this).raise()//.attr("x", d.dx = event.x);
+  //console.log("event", event)
+  d.dx += event.dx
+  d3Update(true)
+}
+
+function taxaChildDraggableD3(taxaContainer){
+  taxaContainer
+      .selectAll("rect.taxon-children-draggable")
+      .data(childDragPosition)
+      .join('rect')
+      .attr('class', 'taxon-children-draggable')
+      .lower()// put in background
+      .style("pointer-events", "fill")
+      .attr('opacity', 0.5)
+      .attr('fill', "red")
+      .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa)/2))
+      .attr('y', (d) => pixelScale(verticalSpacingLookup["child-box"].top))
+      .attr('height', (d) => pixelScale(verticalSpacingLookup["pop-descendants-box"].bottom - verticalSpacingLookup["child-box"].top))
+      .attr('width', (d) => pixelScale(getSubtaxaWidth(d.numSubtaxa))) // todo: should be width of all child taxon boxes
+      .call(d3.drag().on("drag", taxaChildDragged))
 }
 
 class TaxaView{
@@ -64,7 +97,7 @@ class TaxaView{
       }
       
 
-      //subtaxa and popular descendents of them
+      //subtaxa and popular descendants of them
       if(mainTaxon.subtaxa && mainTaxon.subtaxa.length > 0){
         this.subtaxonBoxes = []
         for(const [subtaxonNum, subtaxon] of mainTaxon.subtaxa.entries()){
@@ -88,20 +121,24 @@ class TaxaView{
     let taxonBoxes = []
     
     //set position, scale, and open for each TaxonBox
+    this.mainTaxonBox.position = "main"
     this.mainTaxonBox.isOpen = true
     this.mainTaxonBox.centerX = pixelScale(getHorizontalCenter())
     this.mainTaxonBox.centerY = pixelScale(verticalSpacingLookup["main-box"].middle)
     this.mainTaxonBox.rotate = 0
     this.mainTaxonBox.scale = 1
+    this.mainTaxonBox.dragX = 0
     this.mainTaxonBox.updatePositionsAndSizes()
     taxonBoxes.push(this.mainTaxonBox)
 
     if(this.parentTaxonBox){
+      this.parentTaxonBox.position = "parent"
       this.parentTaxonBox.isOpen = false
       this.parentTaxonBox.centerX = pixelScale(getHorizontalCenter())
       this.parentTaxonBox.centerY = pixelScale(verticalSpacingLookup["parent-box"].middle)
       this.parentTaxonBox.rotate = 0
       this.parentTaxonBox.scale = 1
+      this.parentTaxonBox.dragX = 0
       this.parentTaxonBox.updatePositionsAndSizes()
       taxonBoxes.push(this.parentTaxonBox)
     }
@@ -109,11 +146,13 @@ class TaxaView{
     if(this.popularAncestorsTaxonBoxes){
       const numPopAncestors = this.popularAncestorsTaxonBoxes.length
       for(const [popAncestorNum, popAncestorTaxonBox] of this.popularAncestorsTaxonBoxes.entries()){
+        popAncestorTaxonBox.position = "pop-ancestor"
         popAncestorTaxonBox.isOpen = false
         popAncestorTaxonBox.centerX = pixelScale(getPopAncestorHorizontalCenter(popAncestorNum, numPopAncestors))
         popAncestorTaxonBox.centerY = pixelScale(getPopAncestorVerticalCenter(popAncestorNum, numPopAncestors))
         popAncestorTaxonBox.rotate = 0
         popAncestorTaxonBox.scale = distantTaxonResizeAmt
+        popAncestorTaxonBox.dragX = 0
         popAncestorTaxonBox.updatePositionsAndSizes()
         taxonBoxes.push(popAncestorTaxonBox)
       }
@@ -121,12 +160,15 @@ class TaxaView{
 
     if(this.subtaxonBoxes){
       const numSubtaxa = this.subtaxonBoxes.length
+      childDragPosition[0].numSubtaxa = numSubtaxa
       for(const [subtaxonNum, subtaxonBox] of this.subtaxonBoxes.entries()){
+        subtaxonBox.position = "child"
         subtaxonBox.isOpen = false
         subtaxonBox.centerX = pixelScale(getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa))
         subtaxonBox.centerY = pixelScale(verticalSpacingLookup["child-box"].middle)
         subtaxonBox.rotate = 0
         subtaxonBox.scale = 1
+        subtaxonBox.dragX = childDragPosition[0].dx
         subtaxonBox.updatePositionsAndSizes()
         taxonBoxes.push(subtaxonBox)
       }
@@ -138,13 +180,15 @@ class TaxaView{
         if(a){
           let numPopSubtaxa = a.length
           for(const [popSubtaxonNum, popSubtaxonBox] of a.entries()){
+            popSubtaxonBox.position = "pop-descendants"
             popSubtaxonBox.isOpen = false
             popSubtaxonBox.centerX = pixelScale(
               getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum, numPopSubtaxa)
             )
-            popSubtaxonBox.centerY = pixelScale(verticalSpacingLookup["pop-descendents-box"].middle)
+            popSubtaxonBox.centerY = pixelScale(verticalSpacingLookup["pop-descendants-box"].middle) 
             popSubtaxonBox.rotate = 90
             popSubtaxonBox.scale = distantTaxonResizeAmt
+            popSubtaxonBox.dragX = childDragPosition[0].dx
             popSubtaxonBox.updatePositionsAndSizes()
             taxonBoxes.push(popSubtaxonBox)
           }

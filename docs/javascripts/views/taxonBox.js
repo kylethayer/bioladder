@@ -90,12 +90,15 @@ function findOrCreateTaxonBox(taxaContainer, taxon){
 
 // code to create or update the d3 taxon boxes
 function taxonBoxD3(taxonBoxes, taxaContainer){
-    // NOTE: We'll also need a loading circle for unknown / loading
-    taxaContainer
-      .selectAll("g.taxon-box")
-      .data(taxonBoxes, (d) => d.taxon.name)
-      .join(enter => {
-        let g = enter.append('g')
+    // add draggable boxes for children drag event (when screen too wide)
+    taxaContainer.selectAll("g.child-drag-taxon-box")
+    .data(taxonBoxes, (d) => d.taxon.name)
+    .join(enter => {
+        let childDragG = enter.append('g')
+            .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+          
+        let g = childDragG.append('g')
+            .attr('class', 'taxon-box')
             .attr('opacity', 0)
             .attr('transform', (d) =>  `
                         translate(${d.x},${d.y}) 
@@ -112,9 +115,14 @@ function taxonBoxD3(taxonBoxes, taxaContainer){
             taxonBoxElement.enterFn(g)
         }
 
-        return g
-      })
-      .attr('class', 'taxon-box')
+        return childDragG
+    })
+    .attr('class', 'child-drag-taxon-box')
+    .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+
+
+    // NOTE: We'll also need a loading circle for unknown / loading
+    let selection = d3.selectAll('g.taxon-box')
       .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
       .transition().duration(transitionSpeed)
       .attr('opacity', 1)

@@ -40,20 +40,36 @@ function getElbowConnectorPath(d, lookupCurrentPos){
         childPosition = childPosition.getCurrentPosition()
     }
 
+    let parentCenterX = parentPosition.centerX
+    let parentRightX = parentPosition.rightX
+    let parentCenterY = parentPosition.centerY
+    let parentBottomY = parentPosition.bottomY
+
+    let childCenterX = childPosition.centerX
+    let childLeftX = childPosition.leftX
+    let childTopY = childPosition.topY
+
+    if(!lookupCurrentPos){ // if not looking up current position, include dragX
+        parentCenterX = parentCenterX + d.parentTaxonBox.dragX
+        childCenterX = childCenterX + d.childTaxonBox.dragX
+        parentRightX = parentRightX + d.childTaxonBox.dragX
+        childLeftX = childLeftX + d.childTaxonBox.dragX
+    }
+
     if(!d.sideways){
         return `
-        M ${parentPosition.centerX} ${parentPosition.centerY}
-        L ${parentPosition.centerX} ${(parentPosition.bottomY + childPosition.topY) / 2}
-        L ${childPosition.centerX} ${(parentPosition.bottomY + childPosition.topY) / 2}
-        L ${childPosition.centerX} ${childPosition.centerY}
+        M ${parentCenterX} ${parentCenterY}
+        L ${parentCenterX} ${(parentBottomY + childTopY) / 2}
+        L ${childCenterX} ${(parentBottomY + childTopY) / 2}
+        L ${childCenterX} ${childPosition.centerY}
         `
     }else {
         //debugger
         return `
-        M ${parentPosition.centerX} ${parentPosition.centerY}
-        L ${(parentPosition.rightX + childPosition.leftX) / 2} ${parentPosition.centerY}
-        L ${(parentPosition.rightX + childPosition.leftX) / 2} ${childPosition.centerY}
-        L ${childPosition.centerX} ${childPosition.centerY}
+        M ${parentCenterX} ${parentCenterY}
+        L ${(parentRightX+ childLeftX) / 2 }  ${parentCenterY}
+        L ${(parentRightX+ childLeftX) / 2 }  ${childPosition.centerY}
+        L ${childCenterX} ${childPosition.centerY}
         `
     }
 }
@@ -61,9 +77,9 @@ function getElbowConnectorPath(d, lookupCurrentPos){
 
 // code to create or update the d3 elbow connectors
 // NOTE: Should be run after the taxon boxes are updated so elbow connector transitions work right
-function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
+function elbowConnectorD3(elbowConnectors, elbowConnectorContainer, isDrag){
     // NOTE: We'll also need a loading circle for unknown / loading
-    elbowConnectorContainer
+    let elbowSelect = elbowConnectorContainer
       .selectAll("path.elbow-connector")
       .data(elbowConnectors, (d) => makeElbowDataName(d.childTaxonBox, d.parentTaxonBox))
       .join(enter => enter.append('path')
@@ -80,19 +96,25 @@ function elbowConnectorD3(elbowConnectors, elbowConnectorContainer){
             })
       )
       .attr('class', 'elbow-connector')
-      .transition().duration(transitionSpeed)
-      .attr('opacity', 1)
-      .attr('d', (d) => getElbowConnectorPath(d, false)) 
-      //.attr('stroke-dasharray', (d) => "35,10")
-      .attr('stroke', 'black')
-      .attr('fill', 'none')
-      .attr('stroke-dasharray', (d) => {
-            if(d.childTaxonBox.taxon.parentTaxon && d.childTaxonBox.taxon.parentTaxon.name == d.parentTaxonBox.taxon.name){ // solid
-                return null
-            } else{
-                return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
-            }
-        })
+
+    if(isDrag){
+        elbowSelect
+            .attr('d', (d) => getElbowConnectorPath(d, true)) 
+    } else{
+        elbowSelect
+            .transition().duration(transitionSpeed)
+            .attr('opacity', 1)
+            .attr('d', (d) => getElbowConnectorPath(d, false)) 
+            .attr('stroke', 'black')
+            .attr('fill', 'none')
+            .attr('stroke-dasharray', (d) => {
+                if(d.childTaxonBox.taxon.parentTaxon && d.childTaxonBox.taxon.parentTaxon.name == d.parentTaxonBox.taxon.name){ // solid
+                    return null
+                } else{
+                    return `${pixelScale(dashLength1)},${pixelScale(dashLength2)}`
+                }
+            })
+    }
 
   
 }
