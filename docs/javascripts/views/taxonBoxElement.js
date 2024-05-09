@@ -1,5 +1,5 @@
 import {popularityBoxShadowWidth, pixelScale} from "./taxonBoxPositionCalculator.js"
-
+import {navigateToTaxonViaUrl} from "../controllers/mainController.js"
 
 class TaxonBoxElement{
     // constructor options can have
@@ -111,18 +111,28 @@ const taxonBoxElements = [
             .attr('class', 'taxon-wikipedia-img')
             .attr('href', (d) =>  d.taxon.getPreviewImage())
             .attr('hidden', (d) => d.taxon.getPreviewImage() ? null: true)
+            .on("click", (event, d) => {
+                if(d.isOpen && !d.taxon.wikipediaImg && d.taxon.getPreviewImage()){ 
+                    event.stopPropagation();
+                    navigateToTaxonViaUrl(d.taxon.exampleMember.name)
+                }
+            })
         ,
         postTransitionFn: selection => selection
             .attr('x', (d) => {
                 if(d.isOpen){
-                    return d.labelHeight / 2
+                    return 0//d.labelHeight / 2
                 } else {
                     return d.labelHeight / 10
                 }
             })
             .attr('y', (d) => {
                 if(d.isOpen){
-                    return d.labelHeight + 10
+                    if(d.taxon.wikipediaImg){
+                        return d.labelHeight + 1
+                    }else{
+                        return d.labelHeight + d.labelHeight/2
+                    }
                 } else {
                     return d.labelHeight / 10
                 }
@@ -130,7 +140,7 @@ const taxonBoxElements = [
             .attr('transform', (d) =>  `rotate(${-d.rotate}, ${d.labelHeight/2}, ${d.labelHeight/2})`)  // WHY IS ROTATE 1.5???
             .attr('style', (d) => {
                 if(d.isOpen){
-                    return `width:${d.width / 2}px; height:${d.height - d.labelHeight - 20}px;`
+                    return `width:${d.width / 2}px; height:${d.height - d.labelHeight - (d.taxon.wikipediaImg ? 2: d.labelHeight)}px;`
                 } else {
                     return  `width:${d.labelHeight * 8 / 10}px; height:${d.labelHeight * 8 / 10}px;`
                 }
@@ -142,8 +152,14 @@ const taxonBoxElements = [
         className: 'taxon-wikipedia-img-outline',
         refreshPreTransitionFn: selection => selection
             .attr('class', 'taxon-wikipedia-img-outline')
-            .attr('hidden', (d) => d.taxon.getPreviewImage() ? null: true)
+            .attr('hidden', (d) => !d.taxon.wikipediaImg && d.taxon.getPreviewImage() ? null: true)
             .attr('stroke-width', 2)
+            .on("click", (event, d) => {
+                if(d.isOpen && !d.taxon.wikipediaImg && d.taxon.getPreviewImage()){ 
+                    event.stopPropagation();
+                    navigateToTaxonViaUrl(d.taxon.exampleMember.name)
+                }
+            })
             .attr('stroke', (d) =>{
                 if(d.taxon.getPreviewImageExtinct() === undefined){
                     return "#b7c9e1" // light blue
@@ -158,14 +174,14 @@ const taxonBoxElements = [
         postTransitionFn: selection => selection
             .attr('x', (d) => {
                 if(d.isOpen){
-                    return d.labelHeight / 2
+                    return 1
                 } else {
                     return d.labelHeight / 10
                 }
             })
             .attr('y', (d) => {
                 if(d.isOpen){
-                    return d.labelHeight + 10
+                    return d.labelHeight+1
                 } else {
                     return d.labelHeight / 10
                 }
@@ -173,12 +189,57 @@ const taxonBoxElements = [
             .attr('transform', (d) =>  `rotate(${-d.rotate}, ${d.labelHeight/2}, ${d.labelHeight/2})`)  // WHY IS ROTATE 1.5???
             .attr('style', (d) => {
                 if(d.isOpen){
-                    return `width:${d.width / 2}px; height:${d.height - d.labelHeight - 20}px;`
+                    return `width:${d.width / 2 - 2}px; height:${d.height - d.labelHeight - 2}px;`
                 } else {
                     return  `width:${d.labelHeight * 8 / 10}px; height:${d.labelHeight * 8 / 10}px;`
                 }
             })
             .attr('opacity', (d) => d.isOpen ? 1 : 0)      
+    }),
+    // example type text
+    new TaxonBoxElement({
+        elementName: 'text', 
+        className: 'example-type-text',
+        refreshPreTransitionFn: selection => selection
+            .text((d) => d.taxon.exampleMemberType)
+            .attr('dominant-baseline', 'hanging')
+            .attr('text-anchor', 'middle')
+            .attr('hidden', (d) => !d.taxon.wikipediaImg && d.taxon.getPreviewImage() ? null: true)
+            .on("click", (event, d) => {
+                if(d.isOpen && !d.taxon.wikipediaImg && d.taxon.getPreviewImage()){ 
+                    event.stopPropagation();
+                    navigateToTaxonViaUrl(d.taxon.exampleMember.name)
+                }
+            })
+        ,
+        postTransitionFn: selection => selection
+            .attr('x', (d) => d.width / 4)
+            .attr('y', (d) => d.labelHeight + 1)
+            .attr('opacity', (d) => d.isOpen ? 1 : 0)
+            .attr('style', (d) => `font-size: ${d.labelHeight/2.5}px`)
+    }),
+    // example text
+    new TaxonBoxElement({
+        elementName: 'text', 
+        className: 'example-text',
+        refreshPreTransitionFn: selection => selection
+            .text((d) => d.taxon.exampleMember ? d.taxon.exampleMember.name : "")
+            .attr('dominant-baseline', 'text-top')
+            .attr('text-anchor', 'middle')
+            .attr('hidden', (d) => !d.taxon.wikipediaImg && d.taxon.getPreviewImage() ? null: true)
+            .on("click", (event, d) => {
+                if(d.isOpen && !d.taxon.wikipediaImg && d.taxon.getPreviewImage()){ 
+                    event.stopPropagation();
+                    navigateToTaxonViaUrl(d.taxon.exampleMember.name)
+                }
+            })
+        ,
+        postTransitionFn: selection => selection
+            .attr('x', (d) => d.width / 4)
+            .attr('y', (d) => d.height - d.labelHeight / 8)
+            .attr('opacity', (d) => d.isOpen ? 1 : 0) 
+            .attr('style', (d) => `font-size: ${d.labelHeight/2.5}px`)
+
     }),
     // outline
     new TaxonBoxElement({
