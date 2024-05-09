@@ -15,3 +15,14 @@
     fill: none
 }
 
+.taxon-details{
+    overflow: scroll;
+    overflow-x: hidden;
+    height:100%
+}
+
+.taxon-details p{
+    margin: 0;
+    padding: 0;
+    font-size: small;
+}

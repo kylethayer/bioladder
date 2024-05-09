@@ -78,6 +78,30 @@ const taxonBoxElements = [
             })
         
     }),
+    // details div, right half of open taxonBox
+    // https://developer.mozilla.org/en-US/docs/Web/SVG/Element/foreignObject
+    new TaxonBoxElement({
+        elementName: 'foreignObject', 
+        className: 'taxon-details-foreign-object',
+        refreshPreTransitionFn: selection => selection
+            .html((d) => `
+            <div class="taxon-details">
+            <p>Extinct? ${d.taxon.isExtinct}</p>
+            <p>Other names: ${d.taxon.otherNames}</p>
+            <p>Scientific name: ${d.taxon.scientificName}</p>
+            <p>Taxonomic Rank: ${d.taxon.taxonomicRank}</p>
+            <p>Description: ${d.taxon.description}</p>
+            <p><a href="${d.taxon.wikipediaPage}">Wikipedia Source</a></p>
+            </div>
+            `)
+        ,
+        postTransitionFn: selection => selection
+            .attr('x', (d) => d.width / 2)
+            .attr('y', (d) => d.labelHeight)
+            .attr('width', (d) =>  d.width / 2)
+            .attr('height', (d) =>  d.height - d.labelHeight)
+            .attr('opacity', (d) => d.isOpen ? 1 : 0)   
+    }),
     // label text
     new TaxonBoxElement({
         elementName: 'text', 
