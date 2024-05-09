@@ -108,7 +108,7 @@ function taxonBoxD3(taxonBoxes, taxaContainer, isDrag){
             .attr('class', 'taxon-box')
             .attr('opacity', 0)
             .attr('transform', (d) =>  `
-                        translate(${d.x},${d.y}) 
+                        translate(${d.x},${d.virticalDirection ? (d.virticalDirection == "up" ? -200 : 1000 ): d.y}) 
                         rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
                         scale(${d.scale})
                         `) 
@@ -132,6 +132,11 @@ function taxonBoxD3(taxonBoxes, taxaContainer, isDrag){
 
         transition.selectAll('g.taxon-box')
             .attr('opacity', 0)
+            .attr('transform', (d) =>  `
+                translate(${d.x},${d.virticalDirection ? (d.virticalDirection == "up" ? 1000 : -200 ): d.y}) 
+                rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
+                scale(${d.scale})
+                `) 
 
         transition
          .remove()

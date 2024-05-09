@@ -3,7 +3,7 @@
 import {taxonBoxD3, findOrCreateTaxonBox} from './taxonBox.js'
 import {elbowConnectorD3, findOrCreateElbowConnector} from './elbowConnectors.js'
 import {distantTaxonResizeAmt,
-  setScales, pixelScale, verticalSpacingLookup, getPopAncestorVerticalCenter, getHorizontalCenter, getPopAncestorHorizontalCenter, 
+  setScales, pixelScale, verticalSpacingLookup, getPopAncestorVerticalCenter, getVerticalNum, getHorizontalCenter, getPopAncestorHorizontalCenter, 
   getSubtaxonHorizontalCenter, getSubtaxaWidth, getPopSubtaxonHorizontalCenter} from "./taxonBoxPositionCalculator.js"
 
 let taxaView;
@@ -26,8 +26,85 @@ function gotoTaxon(taxon){
   taxon.ensureRelatedLoaded()
   taxon.ensureRelatedRelatedLoaded()
 
+  let oldTaxaView = taxaView
   taxaView = new TaxaView(taxon)
-    // TODO: compare new taxa view with old one for figuring out motion
+
+  if(oldTaxaView){
+    calculateExitEnterLocations(oldTaxaView, taxaView)
+  }
+  
+  childDragPosition[0].dx = 0
+  d3Update()
+}
+
+function calculateExitEnterLocations(oldTaxaView, newTaxaView){
+  let oldTaxonBoxes = oldTaxaView.getTaxonBoxesArray()
+  let oldTaxonBoxesInfo = oldTaxonBoxes.map(taxonBox => {return {
+    position: taxonBox.position,
+    name: taxonBox.taxon.name,
+    taxonBox: taxonBox
+  }})
+  // TODO: make sure these are set, I'll have to switch up d3update
+  let taxaViewHeight = taxaViewSVG.node().getBoundingClientRect().height;
+  let taxaViewWidth = taxaViewSVG.node().getBoundingClientRect().width;
+  setScales(taxaViewHeight, taxaViewWidth)
+
+  taxaView.updateTaxonBoxes()
+  let newTaxonBoxes = taxaView.getTaxonBoxes()
+
+  let newTaxonBoxesInfo = newTaxonBoxes.map(taxonBox => {return {
+    position: taxonBox.position,
+    name: taxonBox.taxon.name,
+    taxonBox: taxonBox
+  }})
+
+  let oldTaxonNames = oldTaxonBoxesInfo.map(a => a.name)
+  let newTaxonNames = newTaxonBoxesInfo.map(a => a.name)
+
+
+  let exitingBoxes = []
+  let enteringBoxes = []
+  let updatingBoxes = []
+
+  for(const oldTaxonBoxInfo of oldTaxonBoxesInfo){
+    if(newTaxonNames.includes(oldTaxonBoxInfo.name)){
+      updatingBoxes.push({
+        old: oldTaxonBoxInfo,
+        new: newTaxonBoxesInfo[newTaxonNames.indexOf(oldTaxonBoxInfo.name)]
+      })
+    } else{
+      exitingBoxes.push(oldTaxonBoxInfo)
+    }
+  }
+  for(const newTaxonBoxInfo of newTaxonBoxesInfo){
+    if(!oldTaxonNames.includes(newTaxonBoxInfo.name)){
+      enteringBoxes.push(newTaxonBoxInfo)
+    }
+  }
+
+  let generalVerticalDirection
+  for(const taxonBoxInfo of updatingBoxes){
+    let oldVert = getVerticalNum(taxonBoxInfo.old.position)
+    let newVert = getVerticalNum(taxonBoxInfo.new.position)
+    if(oldVert > newVert){
+      console.log("setting vertical direction down", taxonBoxInfo.name)
+      generalVerticalDirection = "down"
+    } else if (oldVert < newVert){
+      console.log("setting vertical direction up", taxonBoxInfo.name)
+      generalVerticalDirection = "up"
+    }
+  }
+
+  // first pass, all up or down
+  for(const taxonBoxInfo of enteringBoxes){
+    taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
+  }
+
+  for(const taxonBoxInfo of exitingBoxes){
+    taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
+  }
+
+      // TODO: compare new taxa view with old one for figuring out motion
     // for each box in old/new view
       // find if they are in both, note position change
     // if none are in both (or old view doesn't exist), all fade in
@@ -35,8 +112,9 @@ function gotoTaxon(taxon){
       // if any move up or down, that sets general direction
       // for each box check up and down the tree for some guidance on where to go
       // if a parent and child both still exist, this dissapears between them
-  childDragPosition[0].dx = 0
-  d3Update()
+      // will have to look at neighbor children too, for coming in from side
+
+
 }
 
 function d3Update(isDrag){
@@ -123,11 +201,44 @@ class TaxaView{
     }
   }
 
+  getTaxonBoxesArray(){
+    let taxonBoxes = []
+    taxonBoxes.push(this.mainTaxonBox)
+    if(this.parentTaxonBox){
+      taxonBoxes.push(this.parentTaxonBox)
+    }
+    if(this.popularAncestorsTaxonBoxes){
+      for(const  popAncestorTaxonBox of this.popularAncestorsTaxonBoxes){
+        taxonBoxes.push(popAncestorTaxonBox)
+      }
+    }
+    if(this.subtaxonBoxes){
+      for(const subtaxonBox of this.subtaxonBoxes){
+        taxonBoxes.push(subtaxonBox)
+      }
+    }
+    if(this.subtaxonBoxes){
+      for(const subtaxonBox of this.subtaxonBoxes){
+        taxonBoxes.push(subtaxonBox)
+      }
+    }
+    if(this.popularSubtaxonBoxes){
+      for(const a of this.popularSubtaxonBoxes){
+        if(a){
+          for(const popSubtaxonBox of a){
+            taxonBoxes.push(popSubtaxonBox)
+          }
+        }
+      }
+    }
+    return taxonBoxes;
+  }
+
   getTaxonBoxes(){
     let taxonBoxes = []
     
     //set position, scale, and open for each TaxonBox
-    this.mainTaxonBox.position = "main"
+    this.mainTaxonBox.position = {name: "main"}
     this.mainTaxonBox.isOpen = true
     this.mainTaxonBox.centerX = pixelScale(getHorizontalCenter())
     this.mainTaxonBox.centerY = pixelScale(verticalSpacingLookup["main-box"].middle)
@@ -138,7 +249,7 @@ class TaxaView{
     taxonBoxes.push(this.mainTaxonBox)
 
     if(this.parentTaxonBox){
-      this.parentTaxonBox.position = "parent"
+      this.parentTaxonBox.position = {name: "parent"}
       this.parentTaxonBox.isOpen = false
       this.parentTaxonBox.centerX = pixelScale(getHorizontalCenter())
       this.parentTaxonBox.centerY = pixelScale(verticalSpacingLookup["parent-box"].middle)
@@ -152,7 +263,7 @@ class TaxaView{
     if(this.popularAncestorsTaxonBoxes){
       const numPopAncestors = this.popularAncestorsTaxonBoxes.length
       for(const [popAncestorNum, popAncestorTaxonBox] of this.popularAncestorsTaxonBoxes.entries()){
-        popAncestorTaxonBox.position = "pop-ancestor"
+        popAncestorTaxonBox.position = {name: "pop-ancestor", num: popAncestorNum, total: numPopAncestors}
         popAncestorTaxonBox.isOpen = false
         popAncestorTaxonBox.centerX = pixelScale(getPopAncestorHorizontalCenter(popAncestorNum, numPopAncestors))
         popAncestorTaxonBox.centerY = pixelScale(getPopAncestorVerticalCenter(popAncestorNum, numPopAncestors))
@@ -168,7 +279,7 @@ class TaxaView{
       const numSubtaxa = this.subtaxonBoxes.length
       childDragPosition[0].numSubtaxa = numSubtaxa
       for(const [subtaxonNum, subtaxonBox] of this.subtaxonBoxes.entries()){
-        subtaxonBox.position = "child"
+        subtaxonBox.position = {name: "child", num: subtaxonNum, total: numSubtaxa}
         subtaxonBox.isOpen = false
         subtaxonBox.centerX = pixelScale(getSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa))
         subtaxonBox.centerY = pixelScale(verticalSpacingLookup["child-box"].middle)
@@ -186,7 +297,7 @@ class TaxaView{
         if(a){
           let numPopSubtaxa = a.length
           for(const [popSubtaxonNum, popSubtaxonBox] of a.entries()){
-            popSubtaxonBox.position = "pop-descendants"
+            popSubtaxonBox.position = {name: "pop-descendants", num: subtaxonNum, total: numSubtaxa, popNum: popSubtaxonNum, totalPop: numPopSubtaxa} 
             popSubtaxonBox.isOpen = false
             popSubtaxonBox.centerX = pixelScale(
               getPopSubtaxonHorizontalCenter(subtaxonNum, numSubtaxa, popSubtaxonNum, numPopSubtaxa)

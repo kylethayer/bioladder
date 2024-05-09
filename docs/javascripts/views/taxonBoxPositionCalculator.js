@@ -118,6 +118,36 @@ function getPopAncestorVerticalCenter(ancestorNum, numAncestors){
     return topMiddle + verticalForThis
 }
 
+function getVerticalNum(taxonBoxPositionInfo){
+    if(taxonBoxPositionInfo.name == "pop-ancestor"){
+        if(taxonBoxPositionInfo.num == 0){
+            return 1
+        }
+        if(taxonBoxPositionInfo.num == 1){
+            return 2
+        }
+        if(taxonBoxPositionInfo.num == 2){
+            return 3
+        }
+        if(taxonBoxPositionInfo.num == 3){
+            return 4
+        }
+    }
+    if(taxonBoxPositionInfo.name == "parent"){
+        return 5
+    }
+    if(taxonBoxPositionInfo.name == "main"){
+        return 6
+    }
+    if(taxonBoxPositionInfo.name == "child"){
+        return 7
+    }
+    if(taxonBoxPositionInfo.name == "pop-descendants"){
+        return 8
+    }
+    throw new Error("could not identify position")
+}
+
 //////////////////////////
 // horizontal spacing
 
@@ -241,6 +271,7 @@ export {
     verticalSpacingLookup,
     extraYForCenter,
     getPopAncestorVerticalCenter,
+    getVerticalNum,
     getHorizontalCenter,
     getPopAncestorHorizontalCenter,
     getSubtaxaWidth,
