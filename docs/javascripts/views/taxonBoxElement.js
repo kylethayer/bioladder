@@ -1,5 +1,6 @@
 import {popularityBoxShadowWidth, pixelScale} from "./taxonBoxPositionCalculator.js"
 import {navigateToTaxonViaUrl} from "../controllers/mainController.js"
+import taxonBoxDetails from "./taxonBoxDetails.js"
 
 class TaxonBoxElement{
     // constructor options can have
@@ -84,16 +85,7 @@ const taxonBoxElements = [
         elementName: 'foreignObject', 
         className: 'taxon-details-foreign-object',
         refreshPreTransitionFn: selection => selection
-            .html((d) => `
-            <div class="taxon-details">
-            <p>Extinct? ${d.taxon.isExtinct}</p>
-            <p>Other names: ${d.taxon.otherNames}</p>
-            <p>Scientific name: ${d.taxon.scientificName}</p>
-            <p>Taxonomic Rank: ${d.taxon.taxonomicRank}</p>
-            <p>Description: ${d.taxon.description}</p>
-            <p><a href="${d.taxon.wikipediaPage}">Wikipedia Source</a></p>
-            </div>
-            `)
+            .html(taxonBoxDetails )
         ,
         postTransitionFn: selection => selection
             .attr('x', (d) => d.width / 2)
@@ -101,6 +93,7 @@ const taxonBoxElements = [
             .attr('width', (d) =>  d.width / 2)
             .attr('height', (d) =>  d.height - d.labelHeight)
             .attr('opacity', (d) => d.isOpen ? 1 : 0)   
+            .attr('style', (d) => `font-size: ${d.labelHeight/2.5}px; padding-left: ${d.labelHeight/2.5}px;`)
     }),
     // label text
     new TaxonBoxElement({
