@@ -90,6 +90,7 @@ function findOrCreateTaxonBox(taxaContainer, taxon){
 
 // code to create or update the d3 taxon boxes
 function taxonBoxD3(taxonBoxes, taxaContainer, isDrag){
+    const taxonNames = taxonBoxes.map(tb => tb.taxon.name)
     if(isDrag){// transitions and other updates aren't needed for just dragging children
         let childDragBoxSelect = taxaContainer.selectAll("g.child-drag-taxon-box")
         childDragBoxSelect
@@ -122,38 +123,47 @@ function taxonBoxD3(taxonBoxes, taxaContainer, isDrag){
         }
 
         return childDragG
-    })
+    },
+    (update) => update,
+    (exit) => {
+
+        let transition = exit
+            .transition().duration(transitionSpeed/2)
+
+        transition.selectAll('g.taxon-box')
+            .attr('opacity', 0)
+
+        transition
+         .remove()
+    }
+
+    )
     .attr('class', 'child-drag-taxon-box')
     
 
 
-    // NOTE: We'll also need a loading circle for unknown / loading
     d3.selectAll('g.taxon-box')
       .on("click", (event, d) => navigateToTaxonViaUrl(d.taxon.name))
 
-    if(isDrag){// transitions and other updates aren't needed for just dragging children
-        childDragBoxSelect
-            .attr('transform', (d) =>  `translate(${d.dragX},0) `)
-    } else {
-        childDragBoxSelect
-            .transition().duration(transitionSpeed)
-            .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+    childDragBoxSelect
+        .transition().duration(transitionSpeed)
+        .attr('transform', (d) =>  `translate(${d.dragX},0) `)
 
-        d3.selectAll('g.taxon-box')
-            .transition().duration(transitionSpeed)
-            .attr('opacity', 1)
-            .attr('transform', (d) =>  `
-                translate(${d.x},${d.y}) 
-                rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
-                scale(${d.scale})
-            `)
-            //.attr('transform', (d) =>  `translate(${d.dragX},0) `)
+    // set transitions (for those currently still existing, others will be being exited)
+    d3.selectAll('g.taxon-box').filter(function(d){return taxonNames.includes(d.taxon.name)})
+        .transition().duration(transitionSpeed)
+        .attr('opacity', (d) => 1)
+        .attr('transform', (d) =>  `
+            translate(${d.x},${d.y}) 
+            rotate(${d.rotate}, ${d.width*d.scale/2}, ${d.height*d.scale/2})
+            scale(${d.scale})
+        `)
 
-        
-            for(const taxonBoxElement of taxonBoxElements){
-                taxonBoxElement.refreshFn(transitionSpeed)
-            }
-    }
+    
+        for(const taxonBoxElement of taxonBoxElements){
+            taxonBoxElement.refreshFn(transitionSpeed)
+        }
+    
 }
 
 export {TaxonBox, taxonBoxD3, findOrCreateTaxonBox}
