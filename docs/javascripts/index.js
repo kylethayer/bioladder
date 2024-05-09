@@ -2,7 +2,7 @@ import {navigateToTaxon, d3Update} from "./controllers/mainController.js"
 import {allTaxaDictionary} from "./models/allTaxa.js"
 
 
-const myModal = document.getElementById('exampleModal')
+const myModal = document.getElementById('searchModal')
 const searchInput = document.getElementById('search-text')
 
 function searchTaxa(){

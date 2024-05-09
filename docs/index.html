@@ -20,29 +20,131 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item active">
-                    <button class="nav-link"type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <button class="nav-link" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#searchModal">
                         Search</button>
+                </li>
+                <li class="nav-item active">
+                  <button class="nav-link" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#explanationModal">
+                      Explanation</button>
+                </li>
+                <li class="nav-item active">
+                  <button class="nav-link" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#aboutModal">
+                      About</button>
                 </li>
             </ul>
         </div>
     </nav>
 
-  <!-- Modal -->
-  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+  <!-- Search Modal -->
+  <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Search</h1>
+          <h1 class="modal-title fs-5" id="searchModalLabel">Search</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <input type="text" id="search-text" />
           <ul id="searchResults" class='list-group'></ul>
         </div>
-        <!-- <div class="modal-footer">
+        <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+   <!-- Explanation Modal -->
+   <div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="explanationModalLabel">Explanation</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h3>What is BioLadder.org?</h3>
+          <p>
+              BioLadder.org is a website that lets you see how life evolved by moving up and down the tree of life.
+          </p><br>
+          <div style="float:right;padding-left:5px;padding-right:5px;text-align:center;">
+              <br> 
+              <img src="imgs/cursorexample.png" width="250px" ><br><br>
+              <img src="imgs/searchexample.png" width="251px" ><br><br>
+              <b>Clade Diagram:</b><br><img src="imgs/cladeexample.png" width="207px" >
+          </div>
+          <p>
+              <b>How do I navigate?</b>
+          </p><br>
+          <p>
+              * To close this help popup, press close above. 
+              To find this help again, press the question mark at the top right of the site.<br><br>
+              * To go up the tree of life (to earlier splits in evolution), click on the light blue box above the currently open one.<br><br>
+              * To go go down the tree of life (to later splits in evolution), click on any of the light blue boxes below the currently open one. The view will center on and open whichever one you click on.<br><br>
+              * To go go back, you can use the browser\'s back button.<br><br>
+              * To search, click on the magnifying glass in the top right corner and type in a name (eg. Life, Dinosaur, Dog), and click on the one you want.<br><br>
+          </p><br>
+            <p>
+              <b>How is this site organized?</b>
+          </p><br>
+          <p>
+              This website shows the evolutionary tree of life through 
+              <a href="http://en.wikipedia.org/wiki/Clade" target="_blank">clades</a>.
+          </p><br>
+          <p>
+              <b>What are Clades?</b>
+          </p><br>
+          <p>
+              Biologists don\'t tend to make claims about direct ancestry and descent. Rather, 
+              they group animals by common ancestry into 
+              <a href="http://en.wikipedia.org/wiki/Clade" target="_blank">clades</a>*.
+          </p><br>
+          <p>
+              A Clade consists of an organism and all its descendants. For example, in the diagram to the right, 
+              <a href="#Coelurosauria" target="_blank">Coelurosauria</a> is a clade made of some dinosaur 
+              and all its descendants, including the giant <a href="#Tyrannosaurus" target="_blank">Tyrannosaurus</a> 
+              and all living <a href="#Bird" target="_blank">birds</a>. We probably haven\'t found the precise dinosaur that 
+              everything Coelurosauria descendent from, but 
+              we still know that everything in Coelurosauria is related.
+          </p><br>
+          <p>
+              The clade diagram to the right shows us that <a href="#Bird" target="_blank">Birds</a> are 
+              more closely related to the <a href="#Velociraptor" target="_blank">Velociraptor</a> (a small feathered dinosaur with sickle-shaped claws) than 
+              to the <a href="#Compsognathus" target="_blank">Compsognathus</a> (a small dinosaur the size of a turkey), and closer to the <a href="#Compsognathus" target="_blank">Compsognathus</a> than to 
+              the <a href="#Tyrannosaurus" target="_blank">Tyrannosaurus</a>.
+          </p><br>
+          <p>
+              As scientists do their research, they debate precisely how things are related, so many 
+              specifics of the tree on this site are likely to change, but the general shape of the 
+              tree of life is agreed upon.
+          </p><br>
+          <p style="font-size:10pt">
+              * Some commonly known groups of organisms are not clades, so you wont find them on this site. 
+              For example, mammals and birds are descended from reptiles, but not included in the group called "reptiles." 
+              Since the group "reptiles" doesn\'t include all its descendants, it is not a clade and can\'t be found on this site.
+          </p><br>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="aboutModalLabel">About</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Links to projects, creator, license, etc.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
