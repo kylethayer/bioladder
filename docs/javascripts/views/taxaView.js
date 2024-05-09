@@ -61,7 +61,7 @@ function taxaChildDraggableD3(taxaContainer, isDrag){
       .join('rect')
       .attr('class', 'taxon-children-draggable')
       .lower()// put in background
-      .attr('opacity', 1)
+      .attr('opacity', 0)
       .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa + 1)/2)) // the plus 1 is for padding
       .attr('y', (d) => pixelScale(verticalSpacingLookup["main-box"].bottom))
       .attr('height', (d) => pixelScale(verticalSpacingLookup["bottom-padding"].bottom - verticalSpacingLookup["main-box"].bottom))
