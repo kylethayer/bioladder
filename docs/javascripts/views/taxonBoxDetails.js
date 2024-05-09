@@ -70,16 +70,6 @@ function getDetailsDiv(d){
     }
 
     return detailsDiv.outerHTML
-return `
-
-    <div class="taxon-details">
-    <p>Extinct? ${d.taxon.isExtinct}</p>
-    <p>Other names: ${d.taxon.otherNames}</p>
-    <p>Scientific name: ${d.taxon.scientificName}</p>
-    <p>Taxonomic Rank: ${d.taxon.taxonomicRank}</p>
-    <p>Description: ${d.taxon.description}</p>
-    <p><a href="${d.taxon.wikipediaPage}">Wikipedia Source</a></p>
-    </div>
-`} 
+} 
 
 export default getDetailsDiv

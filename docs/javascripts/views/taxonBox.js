@@ -90,6 +90,12 @@ function findOrCreateTaxonBox(taxaContainer, taxon){
 
 // code to create or update the d3 taxon boxes
 function taxonBoxD3(taxonBoxes, taxaContainer, isDrag){
+    if(isDrag){// transitions and other updates aren't needed for just dragging children
+        let childDragBoxSelect = taxaContainer.selectAll("g.child-drag-taxon-box")
+        childDragBoxSelect
+            .attr('transform', (d) =>  `translate(${d.dragX},0) `)
+        return
+    }
     // add draggable boxes for children drag event (when screen too wide)
     let childDragBoxSelect = taxaContainer.selectAll("g.child-drag-taxon-box")
     .data(taxonBoxes, (d) => d.taxon.name)

@@ -39,19 +39,22 @@ function d3Update(isDrag){
   taxaView.updateTaxonBoxes()
   taxonBoxD3(taxaView.getTaxonBoxes(), taxaContainer, isDrag)
   elbowConnectorD3(taxaView.getElbowConnectors(), elbowConnectorContainer, isDrag)
-  taxaChildDraggableD3(taxaContainer)
+  taxaChildDraggableD3(taxaContainer, isDrag)
 
   taxaView.setUpdateFunctionCalls()
 }
 
-
 function taxaChildDragged(event, d) {
-  d3.select(this).raise()//.attr("x", d.dx = event.x);
   d.dx += event.dx
   d3Update(true)
 }
 
-function taxaChildDraggableD3(taxaContainer){
+function taxaChildDraggableD3(taxaContainer, isDrag){
+  if(isDrag){
+    taxaContainer.selectAll("rect.taxon-children-draggable")
+      .attr('x', (d) =>  d.dx + pixelScale(getHorizontalCenter() - getSubtaxaWidth(d.numSubtaxa)/2))
+    return
+  }
   taxaContainer
       .selectAll("rect.taxon-children-draggable")
       .data(childDragPosition)
