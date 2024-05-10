@@ -8,7 +8,7 @@ const searchInput = document.getElementById('search-text')
 function searchTaxa(){
 
     let relevantTaxa = Object.values(allTaxaDictionary).filter((taxonInfo) => 
-            taxonInfo.name.toLowerCase().includes(searchInput.value.trim().toLowerCase()))
+            taxonInfo.getSearchText().toLowerCase().includes(searchInput.value.trim().toLowerCase()))
     let orderedRelevantTaxa = relevantTaxa.sort((a, b) => {
         if(a.popularity && b.popularity){
             return b.popularity - a.popularity
@@ -20,21 +20,19 @@ function searchTaxa(){
             return b.length - a.length
         }
     })
-    let orderedRelevantTaxaNames = orderedRelevantTaxa.map(taxon => taxon.name)
-    
-    let searchResults = document.getElementById("searchResults")
 
+    let searchResults = document.getElementById("searchResults")
     
     searchResults.innerHTML =""
-    orderedRelevantTaxaNames.forEach(taxonName => {
+    orderedRelevantTaxa.forEach(taxon => {
         var li = document.createElement("li");
         li.classList.add("list-group-item")
         li.setAttribute("data-bs-dismiss", "modal")
-        li.innerText = taxonName
+        li.innerText = taxon.getSearchText()
         li.onclick = () => {
             searchInput.value = ""
             searchResults.innerHTML = ""
-            window.location.hash = "#" + encodeURIComponent(taxonName);
+            window.location.hash = "#" + encodeURIComponent(taxon.name);
         }
         searchResults.appendChild(li)
     })

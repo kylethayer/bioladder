@@ -30,6 +30,23 @@ class Taxon extends EventTarget{
         
     }
 
+    getSearchText(){
+        let searchText = this.displayName
+
+        let altNames = []
+        if(this.otherNames && this.otherNames.length > 0){
+            altNames.push(this.otherNames)
+        }
+        if(this.scientificName){
+            altNames.push(this.scientificName)
+        }
+        
+        if(altNames.length > 0){
+            searchText += " (" + altNames.join(", ") + ")"
+        }
+        return searchText
+    }
+
     getPreviewImage(){
         if(this.wikipediaImg){
             return this.wikipediaImg
