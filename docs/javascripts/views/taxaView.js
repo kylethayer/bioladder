@@ -67,17 +67,20 @@ function calculateExitEnterLocations(oldTaxaView, newTaxaView){
   let updatingBoxes = []
 
   for(const oldTaxonBoxInfo of oldTaxonBoxesInfo){
-    if(newTaxonNames.includes(oldTaxonBoxInfo.name)){
+    if(newTaxonNames.includes(oldTaxonBoxInfo.taxonBox.name)){
       updatingBoxes.push({
+        type: "updating",
         old: oldTaxonBoxInfo,
         new: newTaxonBoxesInfo[newTaxonNames.indexOf(oldTaxonBoxInfo.name)]
       })
     } else{
+      oldTaxonBoxInfo.type = "exiting"
       exitingBoxes.push(oldTaxonBoxInfo)
     }
   }
   for(const newTaxonBoxInfo of newTaxonBoxesInfo){
-    if(!oldTaxonNames.includes(newTaxonBoxInfo.name)){
+    if(!oldTaxonNames.includes(newTaxonBoxInfo.taxonBox.name)){
+      newTaxonBoxesInfo.type = "entering"
       enteringBoxes.push(newTaxonBoxInfo)
     }
   }
@@ -88,21 +91,66 @@ function calculateExitEnterLocations(oldTaxaView, newTaxaView){
     let newVert = getVerticalNum(taxonBoxInfo.new.position)
     if(oldVert > newVert){
       console.log("setting vertical direction down", taxonBoxInfo.name)
+      taxonBoxInfo.vDirect = "down"
       generalVerticalDirection = "down"
     } else if (oldVert < newVert){
       console.log("setting vertical direction up", taxonBoxInfo.name)
+      taxonBoxInfo.vDirect = "up"
       generalVerticalDirection = "up"
     }
   }
 
-  // first pass, all up or down
-  for(const taxonBoxInfo of enteringBoxes){
-    taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
-  }
+  //////////////////////////////////
+  //first pass solution, all up or down
+  // for(const taxonBoxInfo of enteringBoxes){
+  //   taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
+  // }
 
-  for(const taxonBoxInfo of exitingBoxes){
-    taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
-  }
+  // for(const taxonBoxInfo of exitingBoxes){
+  //   taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
+  // }
+
+  // let updatingBoxesByVertNum = {
+  //   "old": updatingBoxes.sort((a, b), getVerticalNum(a.old.position) < getVerticalNum(b.old.position)),
+  //   "new": updatingBoxes.sort((a, b), getVerticalNum(a.new.position) < getVerticalNum(b.new.position))
+  // }
+
+  // function findUpdatingAboveBelow(taxonBoxInfo, updatingBoxes, oldOrNew){
+    
+  //   let vertNum = getVerticalNum(taxonBoxInfo.position)
+    
+  //     // find closest updating box above if it exists
+  //   let closestUpdatingAbove = false
+  //   let closestUpdatingBelow = false
+  //   for(const updatingBox of updatingBoxes[oldOrNew]){
+      
+  //     if(getVerticalNum(updatingBox.old.position) > vertNum){
+  //       if(["pop-ancestor", "parent", "main", "child"].includes(taxonBoxInfo.position.name)){
+  //         // TODO: Or ancestor, and same branch as child
+  //         if(!closestUpdatingAbove){
+  //           closestUpdatingAbove = updatingBox
+  //         }
+  //       }
+  //     }
+  //     if(getVerticalNum(updatingBox.old.position) > vertNum){
+  //       if(["pop-ancestor", "parent", "main"].includes(taxonBoxInfo.position.name)){
+  //         // TODO: or "child" or ancestor and same branch
+  //         closestUpdatingBelow = updatingBox
+  //       }
+  //     }
+  //   }
+  // }
+
+  // // entering boxes
+  // for(const taxonBoxInfo of enteringBoxes){
+  //   let [above, below] = findUpdatingAboveBelow(taxonBoxInfo, updatingBoxes, "new")
+  //   // entering as an ancestor
+  //   if(taxonBoxInfo.position.name == "pop-ancestor"){
+
+  //   }
+  //   taxonBoxInfo.taxonBox.virticalDirection = generalVerticalDirection
+  // }
+
 
       // TODO: compare new taxa view with old one for figuring out motion
     // for each box in old/new view
