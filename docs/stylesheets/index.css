@@ -22,4 +22,5 @@ body{
     filter: drop-shadow(1px 2px 2px);
     background-color: #acdcff;
     margin-left: 5px;
+    border-radius: 5px;
 }
