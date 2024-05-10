@@ -24,7 +24,7 @@ function getDetailsDiv(d){
         detailsContentDiv.append(p)
     }
 
-    if(d.taxon.otherNames){
+    if(d.taxon.otherNames && d.taxon.otherNames.length > 0){
         let p = document.createElement("p")
         let label = document.createElement("strong")
         label.innerText = "Other Names: "
