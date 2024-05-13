@@ -65,6 +65,22 @@ class Taxon extends EventTarget{
         }
     }
 
+    getMaxThisOrSubtaxaPopularity(){
+        let subtaxaMaxPopularity = -100
+        if(this.popularity && this.popularity > subtaxaMaxPopularity) {
+            subtaxaMaxPopularity = this.popularity
+        }
+        if(this.popularSubtaxa){
+            for(const subtaxon of this.popularSubtaxa){
+                if(subtaxon.popularity && subtaxon.popularity > subtaxaMaxPopularity){
+                    subtaxaMaxPopularity =  subtaxon.popularity
+                }
+            }
+        }
+
+        return subtaxaMaxPopularity
+    }
+
     // Loads this taxon info
     // can be awaited reliably
     async ensureLoaded(){
@@ -125,6 +141,8 @@ class Taxon extends EventTarget{
             }
             if(taxonData.subtaxa !== undefined){
                 this.subtaxa = taxonData.subtaxa.map(subtaxonName => findOrCreateTaxon(subtaxonName))
+            } else {
+                this.subtaxa = []
             }
             if(taxonData.wikipediaImg !== undefined && taxonData.wikipediaImg !== ""){
                 this.loadInfo.isPreviewImageLoaded = true;
