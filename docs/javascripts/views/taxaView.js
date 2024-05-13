@@ -218,12 +218,12 @@ function sortTaxaByBranchPopularity(taxa){
           !b.popularSubtaxa || 
           a.popularSubtaxa.length > b.popularSubtaxa.length
         )){
-        return 1
+        return -1
       }else if(b.popularSubtaxa && (
         !a.popularSubtaxa || 
         b.popularSubtaxa.length > a.popularSubtaxa.length
         )){
-          return -1
+          return 1
       }
       
       // otherwise alphabetical order
