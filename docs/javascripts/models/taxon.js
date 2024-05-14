@@ -65,22 +65,6 @@ class Taxon extends EventTarget{
         }
     }
 
-    getMaxThisOrSubtaxaPopularity(){
-        let subtaxaMaxPopularity = -100
-        if(this.popularity && this.popularity > subtaxaMaxPopularity) {
-            subtaxaMaxPopularity = this.popularity
-        }
-        if(this.popularSubtaxa){
-            for(const subtaxon of this.popularSubtaxa){
-                if(subtaxon.popularity && subtaxon.popularity > subtaxaMaxPopularity){
-                    subtaxaMaxPopularity =  subtaxon.popularity
-                }
-            }
-        }
-
-        return subtaxaMaxPopularity
-    }
-
     // Loads this taxon info
     // can be awaited reliably
     async ensureLoaded(){

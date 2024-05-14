@@ -203,48 +203,10 @@ function taxaChildDraggableD3(taxaContainer, isDrag){
       .call(d3.drag().on("drag", taxaChildDragged))
 }
 
-function sortTaxaByBranchPopularity(taxa){
-  let taxaCopy = taxa.slice()
-  taxaCopy.sort((a, b) =>{
-      //find max popularity in subtaxa and it's descendents
-      if(a.getMaxThisOrSubtaxaPopularity() > b.getMaxThisOrSubtaxaPopularity()){
-          return -1
-      } else if(a.getMaxThisOrSubtaxaPopularity() < b.getMaxThisOrSubtaxaPopularity()){
-          return 1
-      }
-
-      // find out which one has more popular subtaxa
-      if(a.popularSubtaxa && (
-          !b.popularSubtaxa || 
-          a.popularSubtaxa.length > b.popularSubtaxa.length
-        )){
-        return -1
-      }else if(b.popularSubtaxa && (
-        !a.popularSubtaxa || 
-        b.popularSubtaxa.length > a.popularSubtaxa.length
-        )){
-          return 1
-      }
-      
-      // otherwise alphabetical order
-      if(a.name > b.name){
-          return 1
-      }else if (a.name < b.name){
-          return -1
-      } else{
-          return 0
-      }
-    
-  })
-
-  //console.log("sorted normal", taxaCopy.map(taxon => taxon.name + ": " + taxon.getMaxThisOrSubtaxaPopularity()))
-  return taxaCopy
-}
-
 // sort boxes by the popularity of thier branch (max of their or childrens' popularities)
 // then make that sort centered (so boxes are centered in view)
 function centerSortTaxaByBranchPopularity(taxa){
-  let sortedTaxa = sortTaxaByBranchPopularity(taxa)
+  let sortedTaxa = taxa.slice() // make a copy
   let centeredSortedtaxa = []
   let addToFront = false
   for(const subtaxa of sortedTaxa){
@@ -293,13 +255,11 @@ class TaxaView{
         for(const [subtaxonNum, subtaxon] of centerSortedSubtaxa.entries()){
           this.subtaxonBoxes.push(findOrCreateTaxonBox(taxaContainer, subtaxon))
           if(subtaxon.popularSubtaxa && subtaxon.popularSubtaxa.length > 0){
-            let sortedPopSubtaxa = sortTaxaByBranchPopularity(subtaxon.popularSubtaxa)
-
             if(!this.popularSubtaxonBoxes){
               this.popularSubtaxonBoxes = []
             }
             this.popularSubtaxonBoxes[subtaxonNum] = []
-            for(const popSubtaxon of sortedPopSubtaxa){
+            for(const popSubtaxon of subtaxon.popularSubtaxa){
               this.popularSubtaxonBoxes[subtaxonNum].push(findOrCreateTaxonBox(taxaContainer, popSubtaxon))
             }
           }
