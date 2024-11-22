@@ -2,7 +2,7 @@ import settings from "../settings.js"
 import {findOrCreateTaxon} from './allTaxa.js'
 
 function isTaxonNameValid(taxonName){
-    return /^[-_\w\s'ñ]+$/.test(taxonName)
+    return /^[-_\w\s'ñēā]+$/.test(taxonName)
 }
 
 class Taxon extends EventTarget{
